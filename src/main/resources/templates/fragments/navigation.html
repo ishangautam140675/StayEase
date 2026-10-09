@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+
+<!-- ── Shared Public & Customer Navbar Fragment ──────────────────────────── -->
+<header th:fragment="navbar" class="se-header">
+    <div class="se-container w-100 d-flex align-items-center justify-content-between">
+        <!-- Brand Wordmark in Oxblood -->
+        <a class="se-brand" th:href="@{/}">
+            <i class="bi bi-building-fill text-oxblood"></i>
+            StayEase
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="d-none d-md-flex align-items-center gap-2">
+            <a class="se-nav-link" th:href="@{/}" th:classappend="${activePage == 'home'} ? ' active' : ''">Explore</a>
+            <a class="se-nav-link" th:href="@{/rooms}" th:classappend="${activePage == 'rooms'} ? ' active' : ''">Rooms</a>
+            <a class="se-nav-link" th:href="@{/customer/dashboard}" th:classappend="${activePage == 'customer'} ? ' active' : ''">My Bookings</a>
+            <a class="se-nav-link" th:href="@{/admin/dashboard}" th:classappend="${activePage == 'admin'} ? ' active' : ''">Admin Portal</a>
+        </nav>
+
+        <!-- Primary CTA Buttons -->
+        <div class="d-flex align-items-center gap-3">
+            <a th:href="@{/customer/dashboard}" class="btn btn-outline-se d-none d-sm-inline-flex">Sign In</a>
+            <a th:href="@{/rooms}" class="btn btn-cobalt">
+                <i class="bi bi-search"></i>
+                <span>Find Stay</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+</body>
+</html>

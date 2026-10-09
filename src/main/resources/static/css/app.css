@@ -1,0 +1,666 @@
+/* ==========================================================================
+   StayEase — Complete Visual Design System & UI Styling Specification
+   Theme: Editorial Hospitality × Bold Color Blocking
+   Brand Colors: Oxblood (#481D2A), Cobalt (#3046D3), Tangerine (#FF7A30), Warm Cream (#FFF8ED)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Font imports and design tokens
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Brand */
+  --brand-oxblood: #481D2A;
+  --brand-oxblood-hover: #35141E;
+  --brand-oxblood-pressed: #291019;
+
+  --brand-cobalt: #3046D3;
+  --brand-cobalt-hover: #2538B5;
+  --brand-cobalt-pressed: #1D2C91;
+  --brand-cobalt-soft: #EEF0FF;
+  --brand-cobalt-border: #C7CEFA;
+  --brand-cobalt-focus: rgba(48, 70, 211, 0.24);
+
+  --brand-tangerine: #FF7A30;
+  --brand-tangerine-hover: #E9631D;
+
+  /* Surfaces */
+  --surface-page: #FFF8ED;
+  --surface-card: #FFFFFF;
+  --surface-muted: #F5EBDD;
+  --surface-hover: #FAF0E3;
+
+  /* Text */
+  --text-primary: #202020;
+  --text-secondary: #66615F;
+  --text-subtle: #77716D;
+  --text-inverse: #FFFFFF;
+
+  /* Borders */
+  --border-default: #E7DED5;
+  --border-strong: #D6C9BE;
+
+  /* Status */
+  --success: #21633E;
+  --success-bg: #E5F2E8;
+  --success-border: #B8DCC2;
+
+  --warning: #805400;
+  --warning-bg: #FFF3D6;
+  --warning-border: #EAD39A;
+
+  --danger: #B42318;
+  --danger-bg: #FDECEC;
+  --danger-border: #F3B9B5;
+
+  --neutral: #5F6670;
+  --neutral-bg: #EEF0EC;
+  --neutral-border: #D7DCD6;
+
+  --info: #2447A8;
+  --info-bg: #EAF0FF;
+  --info-border: #C7D5FF;
+
+  /* Typography */
+  --font-heading: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Spacing: 4px base scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+
+  --container-max: 1240px;
+  --sidebar-width: 252px;
+  --header-height: 76px;
+
+  /* Elevation */
+  --shadow-card: 0 3px 12px rgba(72, 29, 42, 0.05);
+  --shadow-card-hover: 0 9px 24px rgba(72, 29, 42, 0.10);
+  --shadow-dropdown: 0 12px 32px rgba(32, 32, 32, 0.12);
+  --shadow-modal: 0 20px 60px rgba(32, 32, 32, 0.20);
+
+  /* Motion */
+  --transition-fast: 150ms ease;
+  --transition-standard: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* Focus */
+  --focus-color: #3046D3;
+  --focus-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Base typography and global styles (with sticky footer layout)
+   -------------------------------------------------------------------------- */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+main,
+.page-content,
+.content-wrapper {
+  flex: 1 0 auto;
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-heading {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+a {
+  color: var(--brand-cobalt);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--brand-cobalt-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* Eyebrow Label */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--brand-oxblood);
+  margin-bottom: var(--space-2);
+}
+
+.eyebrow-accent {
+  color: var(--brand-tangerine);
+}
+
+/* --------------------------------------------------------------------------
+   3. Shared page layout and containers
+   -------------------------------------------------------------------------- */
+.se-container {
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-8);
+  padding-right: var(--space-8);
+}
+
+@media (max-width: 991px) {
+  .se-container {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (max-width: 575px) {
+  .se-container {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. Navigation and footer
+   -------------------------------------------------------------------------- */
+.se-header {
+  background-color: var(--surface-page);
+  border-bottom: 1px solid var(--border-default);
+  min-height: var(--header-height);
+  position: relative;
+  z-index: 100;
+}
+
+.se-brand {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--brand-oxblood) !important;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.se-nav-link {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary) !important;
+  padding: var(--space-2) var(--space-3) !important;
+  position: relative;
+  transition: color var(--transition-fast);
+}
+
+.se-nav-link:hover {
+  color: var(--brand-oxblood) !important;
+}
+
+.se-nav-link.active {
+  color: var(--brand-oxblood) !important;
+  font-weight: 600;
+}
+
+.se-footer {
+  margin-top: auto;
+  background-color: var(--brand-oxblood);
+  color: #E6D9DC;
+}
+
+.se-footer a {
+  color: var(--surface-muted);
+  transition: color var(--transition-fast);
+}
+
+.se-footer a:hover {
+  color: var(--brand-tangerine);
+}
+
+.se-footer-brand {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFFFFF !important;
+}
+
+.se-footer-divider {
+  border-color: rgba(255, 255, 255, 0.16);
+  margin: var(--space-6) 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. Buttons and interactive controls
+   -------------------------------------------------------------------------- */
+.btn-cobalt {
+  background-color: var(--brand-cobalt);
+  color: #FFFFFF !important;
+  border: 1px solid var(--brand-cobalt);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 22px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-cobalt:hover {
+  background-color: var(--brand-cobalt-hover);
+  border-color: var(--brand-cobalt-hover);
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.btn-cobalt:active {
+  background-color: var(--brand-cobalt-pressed);
+  border-color: var(--brand-cobalt-pressed);
+  transform: translateY(0);
+}
+
+.btn-cobalt:disabled {
+  background-color: #D5D8E8;
+  border-color: #D5D8E8;
+  color: #666B80 !important;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-outline-se {
+  background-color: #FFFFFF;
+  color: var(--brand-oxblood) !important;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 22px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-outline-se:hover {
+  background-color: var(--surface-muted);
+  border-color: var(--brand-oxblood);
+  color: var(--brand-oxblood-hover) !important;
+}
+
+.btn-outline-se:active {
+  background-color: #EDE0D0;
+}
+
+.btn-oxblood {
+  background-color: var(--brand-oxblood);
+  color: #FFFFFF !important;
+  border: 1px solid var(--brand-oxblood);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 22px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background-color var(--transition-fast);
+}
+
+.btn-oxblood:hover {
+  background-color: var(--brand-oxblood-hover);
+  border-color: var(--brand-oxblood-hover);
+  color: #FFFFFF !important;
+}
+
+.btn-oxblood:active {
+  background-color: var(--brand-oxblood-pressed);
+  border-color: var(--brand-oxblood-pressed);
+}
+
+/* --------------------------------------------------------------------------
+   6. Forms and validation
+   -------------------------------------------------------------------------- */
+.form-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.form-control,
+.form-select {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-primary);
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  height: 48px;
+  padding: 12px 14px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control:hover,
+.form-select:hover {
+  border-color: #B9A89B;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--brand-cobalt);
+  box-shadow: 0 0 0 3px var(--brand-cobalt-focus);
+  background-color: #FFFFFF;
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: var(--text-subtle);
+}
+
+.form-control.is-invalid {
+  border-color: var(--danger);
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.14);
+}
+
+.invalid-feedback {
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: var(--space-1);
+}
+
+/* --------------------------------------------------------------------------
+   7. Hero and editorial sections
+   -------------------------------------------------------------------------- */
+.se-hero {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  background-color: var(--surface-page);
+}
+
+.hero-title {
+  font-size: clamp(2.3rem, 4.5vw, 3.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.hero-title .accent-phrase {
+  color: var(--brand-cobalt);
+}
+
+.hero-description {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin-bottom: var(--space-6);
+}
+
+.editorial-panel {
+  background-color: var(--brand-oxblood);
+  color: #FFFFFF;
+  border-radius: var(--radius-panel);
+  padding: var(--space-12) var(--space-8);
+}
+
+/* --------------------------------------------------------------------------
+   8. Room listings, cards and hover effects
+   -------------------------------------------------------------------------- */
+.card,
+.se-card,
+.room-card,
+.customer-summary-card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+}
+
+.card:hover,
+.se-card:hover,
+.room-card:hover,
+.customer-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-strong);
+}
+
+.room-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-card-img-wrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--surface-muted);
+}
+
+.room-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-standard);
+}
+
+.room-card:hover .room-card-img {
+  transform: scale(1.02);
+}
+
+.room-card-body {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.room-price-tag {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.room-price-unit {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.customer-summary-card {
+  padding: var(--space-6);
+}
+
+/* --------------------------------------------------------------------------
+   9. Administrator dashboard
+   -------------------------------------------------------------------------- */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--brand-oxblood);
+  color: var(--surface-muted);
+  flex-shrink: 0;
+  padding: var(--space-6);
+}
+
+.admin-main {
+  flex-grow: 1;
+  background-color: var(--surface-page);
+  padding: var(--space-8);
+}
+
+/* --------------------------------------------------------------------------
+   10. Tables and status badges
+   -------------------------------------------------------------------------- */
+.se-table-container {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.se-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.se-table th {
+  background-color: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-default);
+  text-align: left;
+}
+
+.se-table td {
+  padding: 14px 16px;
+  color: var(--text-primary);
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-default);
+  vertical-align: middle;
+}
+
+.se-table tbody tr:hover {
+  background-color: #FFFCF7;
+}
+
+/* Status Badges */
+.se-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+.se-badge-pending {
+  color: var(--warning);
+  background-color: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+
+.se-badge-approved {
+  color: var(--success);
+  background-color: var(--success-bg);
+  border-color: var(--success-border);
+}
+
+.se-badge-rejected {
+  color: var(--danger);
+  background-color: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+
+.se-badge-cancelled {
+  color: var(--neutral);
+  background-color: var(--neutral-bg);
+  border-color: var(--neutral-border);
+}
+
+/* --------------------------------------------------------------------------
+   11. Error Pages
+   -------------------------------------------------------------------------- */
+.error-page-container {
+  max-width: 580px;
+  margin: var(--space-16) auto;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.error-code {
+  font-size: clamp(4rem, 8vw, 6.5rem);
+  font-weight: 900;
+  color: var(--brand-oxblood);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  margin-bottom: var(--space-2);
+}
+
+/* --------------------------------------------------------------------------
+   12. Responsive media queries & accessibility
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

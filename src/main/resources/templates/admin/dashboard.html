@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="StayEase Administrator Portal — Property and reservations management."/>
+    <title>Administrator Dashboard – StayEase</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+          crossorigin="anonymous"/>
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+
+    <!-- Design Tokens -->
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+
+<div class="admin-layout">
+    <!-- 13.1 & 13.2 Dark Oxblood Sidebar -->
+    <aside class="admin-sidebar d-flex flex-column justify-content-between">
+        <div>
+            <!-- Brand -->
+            <div class="d-flex align-items-center gap-2 mb-4 pb-3 border-bottom" style="border-color: rgba(255,255,255,0.15) !important;">
+                <i class="bi bi-shield-shaded fs-4 text-white"></i>
+                <span class="fs-5 fw-bold text-white tracking-tight">StayEase Admin</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="d-flex flex-column gap-1">
+                <a th:href="@{/admin/dashboard}" class="d-flex align-items-center gap-3 p-2 rounded-2 text-decoration-none fw-semibold"
+                   style="background-color: #FFFFFF; color: var(--brand-oxblood);">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a th:href="@{/rooms}" class="d-flex align-items-center gap-3 p-2 rounded-2 text-decoration-none"
+                   style="color: #E6D9DC;">
+                    <i class="bi bi-door-closed"></i>
+                    <span>Manage Rooms</span>
+                </a>
+                <a href="#bookings" class="d-flex align-items-center gap-3 p-2 rounded-2 text-decoration-none"
+                   style="color: #E6D9DC;">
+                    <i class="bi bi-journal-bookmark"></i>
+                    <span>All Bookings</span>
+                    <span class="badge ms-auto" style="background-color: var(--brand-tangerine); color: #202020;">3 New</span>
+                </a>
+                <a href="#users" class="d-flex align-items-center gap-3 p-2 rounded-2 text-decoration-none"
+                   style="color: #E6D9DC;">
+                    <i class="bi bi-people"></i>
+                    <span>Resident Users</span>
+                </a>
+                <a href="#settings" class="d-flex align-items-center gap-3 p-2 rounded-2 text-decoration-none"
+                   style="color: #E6D9DC;">
+                    <i class="bi bi-gear"></i>
+                    <span>Property Settings</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="pt-3 border-top" style="border-color: rgba(255,255,255,0.15) !important;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="small" style="color: #E6D9DC;">Logged in as:</span>
+                <span class="badge bg-secondary">ADMIN</span>
+            </div>
+            <div class="fw-semibold text-white small mb-3">Admin Manager</div>
+            <a th:href="@{/}" class="btn btn-sm btn-outline-light w-100">
+                <i class="bi bi-box-arrow-left me-1"></i> Public Site
+            </a>
+        </div>
+    </aside>
+
+    <!-- 13.4 Main Workspace -->
+    <main class="admin-main">
+        <!-- Dashboard Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-3 border-bottom">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb small mb-1">
+                        <li class="breadcrumb-item"><a th:href="@{/}">StayEase</a></li>
+                        <li class="breadcrumb-item active">Admin Workspace</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-bold text-dark mb-0">Property Management Overview</h2>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex gap-2">
+                <button class="btn btn-outline-se btn-sm"><i class="bi bi-download"></i> Export Data</button>
+                <button class="btn btn-cobalt btn-sm"><i class="bi bi-plus-lg"></i> Add New Room</button>
+            </div>
+        </div>
+
+        <!-- 13.5 Administrative Metric Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 bg-white rounded-3 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted fw-semibold">Total Reservations</span>
+                        <div class="p-2 rounded-2" style="background-color: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
+                            <i class="bi bi-bookmark-check"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">148</h3>
+                    <p class="small text-success mb-0 mt-1"><i class="bi bi-arrow-up-right"></i> +12% this month</p>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 bg-white rounded-3 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted fw-semibold">Pending Approvals</span>
+                        <div class="p-2 rounded-2" style="background-color: var(--warning-bg); color: var(--warning);">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">3</h3>
+                    <p class="small text-warning fw-semibold mb-0 mt-1">Requires your review</p>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 bg-white rounded-3 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted fw-semibold">Active Inventory</span>
+                        <div class="p-2 rounded-2" style="background-color: var(--surface-muted); color: var(--brand-oxblood);">
+                            <i class="bi bi-door-open"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">24 / 28</h3>
+                    <p class="small text-muted mb-0 mt-1">85.7% Occupancy</p>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 bg-white rounded-3 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted fw-semibold">Monthly Billing</span>
+                        <div class="p-2 rounded-2" style="background-color: var(--success-bg); color: var(--success);">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-dark">₹3,42,000</h3>
+                    <p class="small text-success mb-0 mt-1"><i class="bi bi-arrow-up-right"></i> All systems current</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13.6 & 13.7 Recent Bookings & Pending Approvals Table -->
+        <div class="p-4 bg-white rounded-3 border shadow-sm mb-4" id="bookings">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Recent Booking Requests</h5>
+                    <p class="small text-muted mb-0">Review, approve, or reject incoming accommodation applications.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge se-badge se-badge-pending">3 Pending Actions</span>
+                </div>
+            </div>
+
+            <div class="se-table-container">
+                <div class="table-responsive">
+                    <table class="se-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Resident Name</th>
+                                <th>Room Number</th>
+                                <th>Type</th>
+                                <th>Check-In &mdash; Check-Out</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Management Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-semibold">#BK-882</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">Rohit Sharma</div>
+                                    <span class="small text-muted">rohit@example.com</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">101</span></td>
+                                <td>Single Studio</td>
+                                <td>Dec 01, 2026 &mdash; Dec 07, 2026</td>
+                                <td class="fw-semibold">₹7,200.00</td>
+                                <td><span class="se-badge se-badge-pending">PENDING</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        <button class="btn btn-sm text-white" style="background-color: #21633E;" title="Approve">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                        <button class="btn btn-sm text-white" style="background-color: #B42318;" title="Reject">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-se" title="Details">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">#BK-904</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">Alex Morgan</div>
+                                    <span class="small text-muted">alex.morgan@example.com</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">202</span></td>
+                                <td>Deluxe Double</td>
+                                <td>Nov 10, 2026 &mdash; Nov 15, 2026</td>
+                                <td class="fw-semibold">₹9,000.00</td>
+                                <td><span class="se-badge se-badge-approved">APPROVED</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        <button class="btn btn-sm btn-outline-se">
+                                            <i class="bi bi-file-earmark-text"></i> Invoice
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">#BK-901</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">Priya Patel</div>
+                                    <span class="small text-muted">priya.p@example.com</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">304</span></td>
+                                <td>Pod Dormitory</td>
+                                <td>Nov 01, 2026 &mdash; Nov 30, 2026</td>
+                                <td class="fw-semibold">₹19,500.00</td>
+                                <td><span class="se-badge se-badge-pending">PENDING</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        <button class="btn btn-sm text-white" style="background-color: #21633E;">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                        <button class="btn btn-sm text-white" style="background-color: #B42318;">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-se">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">#BK-750</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">Vikram Rao</div>
+                                    <span class="small text-muted">vikram@example.com</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">101</span></td>
+                                <td>Single Studio</td>
+                                <td>Sep 05, 2026 &mdash; Sep 12, 2026</td>
+                                <td class="fw-semibold">₹8,400.00</td>
+                                <td><span class="se-badge se-badge-rejected">REJECTED</span></td>
+                                <td class="text-end">
+                                    <span class="small text-muted">Conflict dates</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmBA16Syvr9sKxHHp8kJPY7oixDH"
+        crossorigin="anonymous"></script>
+</body>
+</html>

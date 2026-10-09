@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Page Not Found')}">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StayEase | Page Not Found</title>
+</head>
+<body>
+
+<!-- Navbar Fragment -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- Flash Messages Fragment -->
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- 404 Content -->
+<main class="page-content d-flex align-items-center py-5">
+    <div class="container se-container">
+        <div class="error-page-container bg-white p-5 rounded-4 border shadow-sm mx-auto">
+            <div class="error-code">404</div>
+            <h2 class="h3 fw-bold text-dark mb-3">Page Not Found</h2>
+            <p class="text-secondary mb-4">
+                The accommodation page or resource you requested cannot be found or may have been moved.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a th:href="@{/}" class="btn btn-cobalt">
+                    <i class="bi bi-house-door me-2"></i>Back to Home
+                </a>
+                <a th:href="@{/rooms}" class="btn btn-outline-se">
+                    <i class="bi bi-compass me-2"></i>Browse Rooms
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer Fragment -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Scripts Fragment -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

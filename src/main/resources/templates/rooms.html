@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Available Rooms & PG Listings')}">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StayEase | Available Rooms</title>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Room Listing Header ─────────────────────────────────────────────── -->
+<div class="py-5" style="background-color: var(--surface-muted); border-bottom: 1px solid var(--border-default);">
+    <div class="se-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-2">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Rooms</li>
+            </ol>
+        </nav>
+        <h1 class="display-6 fw-bold text-dark mb-2">Explore Accommodations</h1>
+        <p class="text-secondary mb-0">Browse verified single rooms, shared apartments, and modern student dormitories.</p>
+    </div>
+</div>
+
+<!-- ── Main Filter & Listings Grid ─────────────────────────────────────── -->
+<main class="py-5">
+    <div class="se-container">
+        <div class="row g-4">
+            <!-- Left Filter Sidebar (Section 9) -->
+            <div class="col-lg-3">
+                <div class="p-4 bg-white rounded-3 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0 text-dark">Filters</h6>
+                        <a href="#" class="small text-decoration-none" style="color: var(--brand-oxblood);">Reset</a>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Room Category</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="cat-single" checked/>
+                            <label class="form-check-label small" for="cat-single">Single Suite (Private)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="cat-double" checked/>
+                            <label class="form-check-label small" for="cat-double">Double Sharing</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="cat-triple"/>
+                            <label class="form-check-label small" for="cat-triple">Triple Sharing</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="cat-dorm"/>
+                            <label class="form-check-label small" for="cat-dorm">Community Dormitory</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Price Range / Night</label>
+                        <select class="form-select form-select-sm">
+                            <option>All Prices</option>
+                            <option>Under ₹1,000</option>
+                            <option>₹1,000 – ₹2,500</option>
+                            <option>Above ₹2,500</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label small fw-bold">Amenities</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="amenity-ac" checked/>
+                            <label class="form-check-label small" for="amenity-ac">Air Conditioning</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="amenity-wifi" checked/>
+                            <label class="form-check-label small" for="amenity-wifi">High-speed WiFi</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="amenity-food"/>
+                            <label class="form-check-label small" for="amenity-food">Meals Included</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Room Cards Grid -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="small text-muted">Showing <strong>3 verified accommodations</strong></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="small text-muted d-none d-sm-inline">Sort by:</span>
+                        <select class="form-select form-select-sm" style="width: auto;">
+                            <option>Recommended</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Card 1 -->
+                    <div class="col-md-6 col-xl-4">
+                        <div class="room-card h-100">
+                            <div class="room-card-img-wrapper">
+                                <img th:src="@{/images/hero_room.jpg}" alt="Room 101" class="room-card-img"/>
+                                <span class="position-absolute top-0 end-0 m-2 badge se-badge se-badge-approved">AVAILABLE</span>
+                            </div>
+                            <div class="room-card-body">
+                                <span class="eyebrow" style="font-size: 11px;">ROOM 101</span>
+                                <h6 class="fw-bold mb-1">Standard Studio Single</h6>
+                                <p class="small text-muted mb-3">Capacity: 1 Guest • AC • Attached Bath</p>
+                                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="room-price-tag">₹1,200</span>
+                                        <span class="room-price-unit">/ night</span>
+                                    </div>
+                                    <a th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="col-md-6 col-xl-4">
+                        <div class="room-card h-100">
+                            <div class="room-card-img-wrapper">
+                                <img th:src="@{/images/deluxe_room.jpg}" alt="Room 202" class="room-card-img"/>
+                                <span class="position-absolute top-0 end-0 m-2 badge se-badge se-badge-approved">AVAILABLE</span>
+                            </div>
+                            <div class="room-card-body">
+                                <span class="eyebrow" style="font-size: 11px;">ROOM 202</span>
+                                <h6 class="fw-bold mb-1">Deluxe Double Shared</h6>
+                                <p class="small text-muted mb-3">Capacity: 2 Guests • AC • Work Station</p>
+                                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="room-price-tag">₹1,800</span>
+                                        <span class="room-price-unit">/ night</span>
+                                    </div>
+                                    <a th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="col-md-6 col-xl-4">
+                        <div class="room-card h-100">
+                            <div class="room-card-img-wrapper">
+                                <img th:src="@{/images/dormitory_room.jpg}" alt="Room 304" class="room-card-img"/>
+                                <span class="position-absolute top-0 end-0 m-2 badge se-badge se-badge-pending">2 BEDS LEFT</span>
+                            </div>
+                            <div class="room-card-body">
+                                <span class="eyebrow" style="font-size: 11px;">ROOM 304</span>
+                                <h6 class="fw-bold mb-1">Privacy Pod Dormitory</h6>
+                                <p class="small text-muted mb-3">Capacity: 4 Guests • Pod Bunk • Lockers</p>
+                                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="room-price-tag">₹650</span>
+                                        <span class="room-price-unit">/ night</span>
+                                    </div>
+                                    <a th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

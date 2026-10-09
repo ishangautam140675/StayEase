@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Hostel & PG Booking')}">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StayEase | Hostel &amp; PG Booking</title>
+</head>
+<body>
+
+<!-- ── Navbar Fragment ─────────────────────────────────────────────────── -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- ── Flash Messages Fragment ─────────────────────────────────────────── -->
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main Content Area ───────────────────────────────────────────────── -->
+<main class="page-content">
+    <!-- ── Hero Section ────────────────────────────────────────────────── -->
+    <section class="se-hero">
+        <div class="container se-container">
+            <div class="row align-items-center g-5">
+                <!-- Hero Left: Tagline & Browse rooms CTA -->
+                <div class="col-lg-6">
+                    <span class="eyebrow">FIND YOUR NEXT STAY</span>
+                    <h1 class="hero-title">
+                        Refined living for students &amp; professionals in <span class="accent-phrase">prime spaces</span>.
+                    </h1>
+                    <p class="hero-description">
+                        Curated hostels and PG accommodations designed for comfort, community, and peace of mind. Transparent rates, flexible durations, and verified properties.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <a th:href="@{/rooms}" class="btn btn-cobalt">
+                            <i class="bi bi-compass"></i>
+                            Browse rooms
+                        </a>
+                        <a href="#features" class="btn btn-outline-se">
+                            How It Works
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center gap-4 text-secondary small">
+                        <span><i class="bi bi-check2-circle text-success me-1"></i> No broker commissions</span>
+                        <span><i class="bi bi-check2-circle text-success me-1"></i> Physically verified stays</span>
+                    </div>
+                </div>
+
+                <!-- Hero Right: Accommodation Photo Composition -->
+                <div class="col-lg-6">
+                    <div class="position-relative">
+                        <div class="room-card-img-wrapper rounded-4 shadow-lg overflow-hidden border">
+                            <img th:src="@{/images/hero_room.jpg}"
+                                 alt="Modern boutique accommodation interior"
+                                 class="img-fluid w-100 object-fit-cover"
+                                 style="max-height: 460px;"/>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 m-3 p-3 bg-white rounded-3 shadow border d-none d-sm-block"
+                             style="max-width: 260px;">
+                            <span class="badge se-badge se-badge-approved mb-1">FEATURED STAY</span>
+                            <h6 class="fw-bold mb-1 text-dark">Sunlit Studio Suite</h6>
+                            <p class="small text-muted mb-0">High-speed WiFi • Work desk • Ensuite bath</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Search & Filter Panel ───────────────────────────────── -->
+            <div class="mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm border">
+                <h5 class="fw-bold mb-3 text-dark">
+                    <i class="bi bi-sliders text-cobalt me-2"></i>
+                    Check Availability &amp; Find Your Room
+                </h5>
+                <form th:action="@{/rooms}" method="GET" class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">Location / Landmark</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" class="form-control border-start-0" placeholder="e.g. University Campus, Tech Park"/>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Room Type</label>
+                        <select class="form-select">
+                            <option value="">All Types (Any)</option>
+                            <option value="SINGLE">Single Room (Private)</option>
+                            <option value="DOUBLE">Double Sharing</option>
+                            <option value="TRIPLE">Triple Sharing</option>
+                            <option value="DORMITORY">Modern Dormitory</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Check-in Date</label>
+                        <input type="date" class="form-control"/>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <button type="submit" class="btn btn-cobalt w-100">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Benefits Section ────────────────────────────────────────────── -->
+    <section class="py-5" style="background-color: var(--surface-muted);" id="features">
+        <div class="container se-container">
+            <div class="text-center mx-auto mb-5" style="max-width: 580px;">
+                <span class="eyebrow">WHY CHOOSE STAYEASE</span>
+                <h2 class="display-6 fw-bold">Designed for Comfort and Peace of Mind</h2>
+                <p class="text-muted">A modern approach to hostel and PG living without complications.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
+                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--surface-muted); color: var(--brand-oxblood);">
+                            <i class="bi bi-shield-check fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Verified Properties</h5>
+                        <p class="small text-muted mb-0">Every property is inspected for hygiene, safety, and true-to-photo conditions.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
+                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
+                            <i class="bi bi-currency-rupee fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Transparent Pricing</h5>
+                        <p class="small text-muted mb-0">Clear per-night and monthly billing with electricity and amenities included.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
+                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--surface-muted); color: var(--brand-oxblood);">
+                            <i class="bi bi-lightning-charge fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Fast Approvals</h5>
+                        <p class="small text-muted mb-0">Direct hostel manager approvals with automated status notifications.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
+                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
+                            <i class="bi bi-people fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Community Living</h5>
+                        <p class="small text-muted mb-0">Live alongside verified peers in an environment that fosters study and friendship.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Featured Accommodations ─────────────────────────────────────── -->
+    <section class="py-5" style="background-color: var(--surface-page);">
+        <div class="container se-container">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <span class="eyebrow">FEATURED SPACES</span>
+                    <h2 class="display-6 fw-bold">Popular Accommodations</h2>
+                </div>
+                <a th:href="@{/rooms}" class="btn btn-outline-se d-none d-sm-inline-flex">View All Rooms</a>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="room-card h-100">
+                        <div class="room-card-img-wrapper">
+                            <img th:src="@{/images/hero_room.jpg}" alt="Room 101" class="room-card-img"/>
+                            <span class="position-absolute top-0 end-0 m-3 badge se-badge se-badge-approved">AVAILABLE</span>
+                        </div>
+                        <div class="room-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0">Room 101 — Studio Single</h5>
+                                <span class="badge bg-light text-dark border">Single</span>
+                            </div>
+                            <p class="small text-muted mb-3">Air-conditioned private room with personal study desk, WiFi, and attached restroom.</p>
+                            <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="room-price-tag">₹1,200</span>
+                                    <span class="room-price-unit">/ night</span>
+                                </div>
+                                <a th:href="@{/rooms}" class="btn btn-sm btn-cobalt">Browse rooms</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="room-card h-100">
+                        <div class="room-card-img-wrapper">
+                            <img th:src="@{/images/deluxe_room.jpg}" alt="Room 202" class="room-card-img"/>
+                            <span class="position-absolute top-0 end-0 m-3 badge se-badge se-badge-approved">AVAILABLE</span>
+                        </div>
+                        <div class="room-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0">Room 202 — Deluxe Double</h5>
+                                <span class="badge bg-light text-dark border">Double</span>
+                            </div>
+                            <p class="small text-muted mb-3">Spacious shared twin bedroom with dual wardrobes, balcony view, and housekeeping.</p>
+                            <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="room-price-tag">₹1,800</span>
+                                    <span class="room-price-unit">/ night</span>
+                                </div>
+                                <a th:href="@{/rooms}" class="btn btn-sm btn-cobalt">Browse rooms</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="room-card h-100">
+                        <div class="room-card-img-wrapper">
+                            <img th:src="@{/images/dormitory_room.jpg}" alt="Room 304" class="room-card-img"/>
+                            <span class="position-absolute top-0 end-0 m-3 badge se-badge se-badge-pending">2 BEDS LEFT</span>
+                        </div>
+                        <div class="room-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0">Room 304 — Pod Dormitory</h5>
+                                <span class="badge bg-light text-dark border">4-Bed Dorm</span>
+                            </div>
+                            <p class="small text-muted mb-3">Modern privacy pods with reading lights, personal charging stations, and lockers.</p>
+                            <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="room-price-tag">₹650</span>
+                                    <span class="room-price-unit">/ night</span>
+                                </div>
+                                <a th:href="@{/rooms}" class="btn btn-sm btn-cobalt">Browse rooms</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Promotional Editorial Panel ─────────────────────────────────── -->
+    <section class="py-5" style="background-color: var(--surface-page);">
+        <div class="container se-container">
+            <div class="editorial-panel text-center py-5 px-4 rounded-4">
+                <span class="eyebrow eyebrow-accent text-uppercase mb-2">THE STAYEASE STANDARD</span>
+                <h2 class="display-6 fw-bold text-white mb-3">
+                    Experience Hospitality Crafted for Your Journey
+                </h2>
+                <p class="lead mb-4 mx-auto" style="color: var(--surface-muted); max-width: 600px;">
+                    Whether attending university or starting your professional career, StayEase provides safe, welcoming spaces designed for living well.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a th:href="@{/rooms}" class="btn btn-light px-4 fw-bold" style="color: var(--brand-oxblood);">
+                        Browse rooms
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- ── Footer Fragment ─────────────────────────────────────────────────── -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- ── Scripts Fragment ────────────────────────────────────────────────── -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>
