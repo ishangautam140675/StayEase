@@ -58,9 +58,15 @@ public class CustomerController {
 
     /**
      * Displays the new booking request form with the selected room summary if provided.
+     * Optionally pre-fills requested dates and guests (used when booking alternatives).
      */
     @GetMapping("/customer/bookings/new")
-    public String showBookingForm(@RequestParam(value = "roomId", required = false) Long roomId, Model model) {
+    public String showBookingForm(
+            @RequestParam(value = "roomId", required = false) Long roomId,
+            @RequestParam(value = "checkIn", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam(value = "checkOut", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate checkOut,
+            @RequestParam(value = "guests", required = false) Integer guests,
+            Model model) {
         Room room = null;
         if (roomId != null) {
             room = roomService.getActiveRoom(roomId);
@@ -70,9 +76,9 @@ public class CustomerController {
         if (room != null) {
             bookingForm.setRoomId(room.getId());
         }
-        bookingForm.setGuests(1);
-        bookingForm.setCheckIn(LocalDate.now());
-        bookingForm.setCheckOut(LocalDate.now().plusDays(1));
+        bookingForm.setGuests(guests != null ? guests : 1);
+        bookingForm.setCheckIn(checkIn != null ? checkIn : LocalDate.now());
+        bookingForm.setCheckOut(checkOut != null ? checkOut : LocalDate.now().plusDays(1));
 
         model.addAttribute("room", room);
         model.addAttribute("bookingForm", bookingForm);
@@ -101,6 +107,38 @@ public class CustomerController {
             redirectAttributes.addFlashAttribute("successMessage",
                     "Booking request sent. The admin will review it.");
             return "redirect:/customer/bookings";
+        } catch (com.stayease.exception.BookingConflictException ex) {
+            Room room = bookingForm.getRoomId() != null
+                    ? roomRepository.findById(bookingForm.getRoomId()).orElse(null)
+                    : null;
+            String roomNumber = room != null ? room.getRoomNumber() : "";
+
+            java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("MMM d", java.util.Locale.ENGLISH);
+            List<String> conflictMessages = ex.getConflictingBookings().stream()
+                    .map(b -> {
+                        String rNum = b.getRoom() != null ? b.getRoom().getRoomNumber() : roomNumber;
+                        return String.format("Room %s is already booked from %s to %s",
+                                rNum,
+                                b.getCheckIn().format(dtf),
+                                b.getCheckOut().format(dtf));
+                    })
+                    .toList();
+
+            List<Room> alternativeRooms = java.util.Collections.emptyList();
+            if (bookingForm.getCheckIn() != null && bookingForm.getCheckOut() != null && bookingForm.getGuests() != null) {
+                alternativeRooms = new java.util.ArrayList<>(
+                        roomService.findAvailableRooms(bookingForm.getCheckIn(), bookingForm.getCheckOut(), bookingForm.getGuests())
+                );
+                if (bookingForm.getRoomId() != null) {
+                    alternativeRooms.removeIf(r -> r.getId().equals(bookingForm.getRoomId()));
+                }
+            }
+
+            model.addAttribute("conflictMessages", conflictMessages);
+            model.addAttribute("alternativeRooms", alternativeRooms);
+            loadRoomForForm(bookingForm.getRoomId(), model);
+            model.addAttribute("today", LocalDate.now());
+            return "customer/booking-form";
         } catch (BookingValidationException ex) {
             bindingResult.rejectValue(ex.getField(), "validation.booking", ex.getMessage());
             loadRoomForForm(bookingForm.getRoomId(), model);

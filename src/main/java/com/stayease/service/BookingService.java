@@ -1,6 +1,7 @@
 package com.stayease.service;
 
 import com.stayease.dto.BookingForm;
+import com.stayease.exception.BookingConflictException;
 import com.stayease.exception.BookingValidationException;
 import com.stayease.model.Booking;
 import com.stayease.model.BookingStatus;
@@ -44,6 +45,7 @@ public class BookingService {
      * @param form      form containing booking details
      * @return the saved {@link Booking} with status {@link BookingStatus#PENDING}
      * @throws BookingValidationException if any business validation rule is violated
+     * @throws BookingConflictException   if dates overlap with an existing PENDING or APPROVED booking
      */
     @Transactional
     public Booking createBooking(String userEmail, BookingForm form) {
@@ -54,7 +56,10 @@ public class BookingService {
             throw new BookingValidationException("roomId", "Room selection is required.");
         }
 
-        Room room = roomRepository.findById(form.getRoomId())
+        // Lock the room row with PESSIMISTIC_WRITE (SELECT ... FOR UPDATE).
+        // This serializes concurrent booking requests for the same room, preventing race conditions
+        // where multiple simultaneous transactions check for overlapping dates before either has committed.
+        Room room = roomRepository.findByIdForUpdate(form.getRoomId())
                 .orElseThrow(() -> new BookingValidationException("roomId", "The selected room does not exist."));
 
         if (!room.isActive()) {
@@ -82,6 +87,18 @@ public class BookingService {
         if (form.getGuests() > room.getCapacity()) {
             throw new BookingValidationException("guests",
                     "Number of guests (" + form.getGuests() + ") exceeds the room capacity of " + room.getCapacity() + ".");
+        }
+
+        // Overlap detection: only PENDING or APPROVED bookings actively block room inventory
+        List<Booking> conflicts = bookingRepository.findOverlapping(
+                room.getId(),
+                form.getCheckIn(),
+                form.getCheckOut(),
+                BookingStatus.BLOCKING
+        );
+
+        if (!conflicts.isEmpty()) {
+            throw new BookingConflictException(conflicts);
         }
 
         Booking booking = new Booking();

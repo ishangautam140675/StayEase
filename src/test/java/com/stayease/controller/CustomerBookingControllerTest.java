@@ -258,4 +258,36 @@ class CustomerBookingControllerTest {
                 .andExpect(model().attributeExists("room"))
                 .andExpect(model().attributeHasFieldErrors("bookingForm", "checkOut"));
     }
+
+    @Test
+    @DisplayName("Submitting a conflicting booking re-renders the form with conflict message and alternatives")
+    void submitConflictingBooking_showsConflictMessageAndAlternatives() throws Exception {
+        LocalDate existingCheckIn = LocalDate.now().plusDays(10);
+        LocalDate existingCheckOut = LocalDate.now().plusDays(15);
+        bookingRepository.save(new Booking(
+                customerB,
+                roomA,
+                existingCheckIn,
+                existingCheckOut,
+                1,
+                BookingStatus.APPROVED,
+                null
+        ));
+
+        // Customer A tries to book room A for overlapping dates
+        mockMvc.perform(post("/customer/bookings/new")
+                        .with(user(customerA.getEmail()).roles("CUSTOMER"))
+                        .with(csrf())
+                        .param("roomId", roomA.getId().toString())
+                        .param("checkIn", existingCheckIn.plusDays(1).toString())
+                        .param("checkOut", existingCheckOut.plusDays(2).toString())
+                        .param("guests", "1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("customer/booking-form"))
+                .andExpect(model().attributeExists("conflictMessages"))
+                .andExpect(model().attributeExists("alternativeRooms"))
+                .andExpect(content().string(containsString("is already booked")))
+                .andExpect(content().string(containsString("Book this room instead")))
+                .andExpect(content().string(containsString("202-B")));
+    }
 }

@@ -2,12 +2,16 @@ package com.stayease.repository;
 
 import com.stayease.model.Room;
 import com.stayease.model.RoomType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +32,27 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("capacity") Integer capacity,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from Room r where r.id = :id")
+    Optional<Room> findByIdForUpdate(@Param("id") Long id);
+
+    @Query("SELECT r FROM Room r WHERE r.active = true " +
+           "AND r.capacity >= :guests " +
+           "AND NOT EXISTS (" +
+           "    SELECT b FROM Booking b " +
+           "    WHERE b.room = r " +
+           "    AND b.status IN :statuses " +
+           "    AND :checkIn < b.checkOut " +
+           "    AND :checkOut > b.checkIn" +
+           ") " +
+           "ORDER BY r.roomNumber")
+    List<Room> findAvailableRooms(
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            @Param("guests") Integer guests,
+            @Param("statuses") Collection<com.stayease.model.BookingStatus> statuses
     );
 
     Optional<Room> findByIdAndActiveTrue(Long id);

@@ -48,6 +48,16 @@ public class RoomService {
                 .orElseThrow(() -> new RoomNotFoundException("Room not found or inactive with id: " + id));
     }
 
+    /**
+     * Finds active rooms with capacity >= guests that have no blocking bookings overlapping the requested dates.
+     */
+    public List<Room> findAvailableRooms(java.time.LocalDate checkIn, java.time.LocalDate checkOut, Integer guests) {
+        if (checkIn == null || checkOut == null || guests == null) {
+            return java.util.Collections.emptyList();
+        }
+        return roomRepository.findAvailableRooms(checkIn, checkOut, guests, com.stayease.model.BookingStatus.BLOCKING);
+    }
+
     // ── Admin CRUD Methods ─────────────────────────────────────────────────
 
     /**
