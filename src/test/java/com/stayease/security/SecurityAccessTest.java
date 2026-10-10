@@ -104,9 +104,19 @@ class SecurityAccessTest {
             "/login,              ADMIN,     OK",
 
             // /customer/dashboard — anonymous redirects, CUSTOMER 200, ADMIN 403
-            "/customer/dashboard, ANONYMOUS, REDIRECT_LOGIN",
-            "/customer/dashboard, CUSTOMER,  OK",
-            "/customer/dashboard, ADMIN,     FORBIDDEN",
+            "/customer/dashboard,    ANONYMOUS, REDIRECT_LOGIN",
+            "/customer/dashboard,    CUSTOMER,  OK",
+            "/customer/dashboard,    ADMIN,     FORBIDDEN",
+
+            // /customer/bookings — anonymous redirects, CUSTOMER 200, ADMIN 403
+            "/customer/bookings,     ANONYMOUS, REDIRECT_LOGIN",
+            "/customer/bookings,     CUSTOMER,  OK",
+            "/customer/bookings,     ADMIN,     FORBIDDEN",
+
+            // /customer/bookings/new — anonymous redirects, CUSTOMER 200, ADMIN 403
+            "/customer/bookings/new, ANONYMOUS, REDIRECT_LOGIN",
+            "/customer/bookings/new, CUSTOMER,  OK",
+            "/customer/bookings/new, ADMIN,     FORBIDDEN",
 
             // /admin/dashboard — anonymous redirects, CUSTOMER 403, ADMIN 200
             "/admin/dashboard,    ANONYMOUS, REDIRECT_LOGIN",

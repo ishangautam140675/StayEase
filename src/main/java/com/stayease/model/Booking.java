@@ -150,6 +150,20 @@ public class Booking {
         this.createdAt = createdAt;
     }
 
+    public long getNights() {
+        if (checkIn == null || checkOut == null) {
+            return 0;
+        }
+        return java.time.temporal.ChronoUnit.DAYS.between(checkIn, checkOut);
+    }
+
+    public java.math.BigDecimal getTotalPrice() {
+        if (room == null || room.getPricePerNight() == null) {
+            return java.math.BigDecimal.ZERO;
+        }
+        return room.getPricePerNight().multiply(java.math.BigDecimal.valueOf(getNights()));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

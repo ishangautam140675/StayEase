@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Request Booking')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main Content ─────────────────────────────────────────────────────── -->
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Navigation Back Link -->
+        <div class="mb-4">
+            <a th:href="${room != null} ? @{/rooms/{id}(id=${room.id})} : @{/rooms}"
+               class="text-decoration-none small fw-medium"
+               style="color: var(--brand-cobalt);">
+                <i class="bi bi-arrow-left me-1"></i>Back to room details
+            </a>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+
+            <!-- Left / Top Column: Room Summary Card -->
+            <div class="col-12 col-lg-5" th:if="${room != null}">
+                <div class="card border-0 shadow-sm p-4 h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-uppercase fw-bold small tracking-wider"
+                              style="color: var(--brand-oxblood); letter-spacing: 0.08em;">
+                            Selected Room
+                        </span>
+                        <span class="badge px-3 py-1 rounded-pill"
+                              style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.8rem;"
+                              th:text="${room.type}">SINGLE</span>
+                    </div>
+
+                    <h2 class="h3 fw-bold mb-3" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                        Room <span th:text="${room.roomNumber}">101</span>
+                    </h2>
+
+                    <div class="p-3 rounded mb-3" style="background: var(--surface-page);">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <span class="small text-secondary d-block">Capacity</span>
+                                <span class="fw-semibold" style="color: var(--text-primary);">
+                                    <i class="bi bi-people-fill me-1 text-muted"></i>
+                                    <span th:text="${room.capacity}">1</span> Guests max
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <span class="small text-secondary d-block">Nightly Rate</span>
+                                <span class="fw-bold" style="color: var(--brand-oxblood);">
+                                    ₹<span th:text="${#numbers.formatDecimal(room.pricePerNight, 1, 2)}">750.00</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-secondary small mb-4 flex-grow-1"
+                       style="line-height: 1.6;"
+                       th:text="${room.description != null ? room.description : 'A modern and comfortable room equipped with all essential amenities.'}">
+                        Room description here.
+                    </p>
+
+                    <div class="alert alert-light border small text-muted mb-0">
+                        <i class="bi bi-info-circle-fill me-1 text-primary"></i>
+                        Booking requests are submitted as <strong>PENDING</strong> and reviewed by our administration team.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Booking Request Form -->
+            <div class="col-12" th:classappend="${room != null} ? 'col-lg-7' : 'col-lg-8'">
+                <div class="card border-0 shadow-sm p-4 p-md-5"
+                     style="background: var(--surface-card); border-radius: 14px;">
+
+                    <!-- Form Header -->
+                    <div class="mb-4 pb-3 border-bottom" style="border-color: var(--border-default) !important;">
+                        <span class="text-uppercase fw-bold small tracking-wider"
+                              style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                            Reservation Request
+                        </span>
+                        <h1 class="h3 fw-bold mt-1 mb-1"
+                            style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                            Reserve Your Stay
+                        </h1>
+                        <p class="text-secondary small mb-0">Specify your travel dates and number of guests below.</p>
+                    </div>
+
+                    <form th:action="@{/customer/bookings/new}"
+                          th:object="${bookingForm}"
+                          method="post"
+                          novalidate>
+
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <!-- Hidden Room ID -->
+                        <input type="hidden" th:field="*{roomId}"/>
+
+                        <!-- Room Selection Error if any -->
+                        <div class="alert alert-danger py-2 small mb-3"
+                             th:if="${#fields.hasErrors('roomId')}"
+                             th:errors="*{roomId}">
+                            Invalid room selected.
+                        </div>
+
+                        <!-- Date Inputs: Check-in and Check-out -->
+                        <div class="row g-3 mb-3">
+                            <!-- Check-in Date -->
+                            <div class="col-12 col-sm-6">
+                                <label for="checkIn" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                    Check-In Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date"
+                                       id="checkIn"
+                                       th:field="*{checkIn}"
+                                       th:classappend="${#fields.hasErrors('checkIn')} ? 'is-invalid'"
+                                       th:min="${#temporals.format(today, 'yyyy-MM-dd')}"
+                                       class="form-control"
+                                       required/>
+                                <div class="invalid-feedback d-block"
+                                     th:if="${#fields.hasErrors('checkIn')}"
+                                     th:errors="*{checkIn}">
+                                    Check-in date error
+                                </div>
+                            </div>
+
+                            <!-- Check-out Date -->
+                            <div class="col-12 col-sm-6">
+                                <label for="checkOut" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                    Check-Out Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date"
+                                       id="checkOut"
+                                       th:field="*{checkOut}"
+                                       th:classappend="${#fields.hasErrors('checkOut')} ? 'is-invalid'"
+                                       th:min="${#temporals.format(today, 'yyyy-MM-dd')}"
+                                       class="form-control"
+                                       required/>
+                                <div class="invalid-feedback d-block"
+                                     th:if="${#fields.hasErrors('checkOut')}"
+                                     th:errors="*{checkOut}">
+                                    Check-out date error
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Number of Guests -->
+                        <div class="mb-4">
+                            <label for="guests" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                Number of Guests <span class="text-danger">*</span>
+                            </label>
+                            <input type="number"
+                                   id="guests"
+                                   th:field="*{guests}"
+                                   th:classappend="${#fields.hasErrors('guests')} ? 'is-invalid'"
+                                   min="1"
+                                   th:max="${room != null ? room.capacity : 10}"
+                                   class="form-control"
+                                   required/>
+                            <div class="invalid-feedback d-block"
+                                 th:if="${#fields.hasErrors('guests')}"
+                                 th:errors="*{guests}">
+                                Guests error
+                            </div>
+                            <div class="form-text small text-secondary" th:if="${room != null}">
+                                Room accommodates up to <span th:text="${room.capacity}">1</span> guest(s).
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex align-items-center gap-3 pt-3 border-top"
+                             style="border-color: var(--border-default) !important;">
+                            <button type="submit" class="btn btn-cobalt px-4 fw-semibold">
+                                <i class="bi bi-send-check me-2"></i>Submit booking request
+                            </button>
+                            <a th:href="${room != null} ? @{/rooms/{id}(id=${room.id})} : @{/rooms}"
+                               class="btn btn-outline-secondary px-3">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>
