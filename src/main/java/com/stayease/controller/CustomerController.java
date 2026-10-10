@@ -1,6 +1,7 @@
 package com.stayease.controller;
 
 import com.stayease.dto.BookingForm;
+import com.stayease.dto.CustomerDashboardView;
 import com.stayease.exception.BookingValidationException;
 import com.stayease.model.Booking;
 import com.stayease.model.Room;
@@ -8,6 +9,7 @@ import com.stayease.model.User;
 import com.stayease.repository.RoomRepository;
 import com.stayease.repository.UserRepository;
 import com.stayease.service.BookingService;
+import com.stayease.service.DashboardService;
 import com.stayease.service.RoomService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -26,7 +28,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Controller for authenticated customer interactions: dashboard, booking requests, and history.
+ * Controller for authenticated customer interactions: dashboard, booking requests, and history (Phase 13).
  */
 @Controller
 public class CustomerController {
@@ -35,27 +37,74 @@ public class CustomerController {
     private final RoomRepository roomRepository;
     private final RoomService roomService;
     private final BookingService bookingService;
+    private final DashboardService dashboardService;
 
     public CustomerController(UserRepository userRepository,
                               RoomRepository roomRepository,
                               RoomService roomService,
-                              BookingService bookingService) {
+                              BookingService bookingService,
+                              DashboardService dashboardService) {
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.roomService = roomService;
         this.bookingService = bookingService;
+        this.dashboardService = dashboardService;
     }
 
     @GetMapping("/customer/dashboard")
     public String dashboard(Principal principal, Model model) {
-        String userName = principal != null ? principal.getName() : "Customer";
+        String email = principal != null ? principal.getName() : "";
+        String userName = "Customer";
         if (principal != null) {
             userName = userRepository.findByEmail(principal.getName())
                     .map(User::getFullName)
                     .orElse(principal.getName());
         }
+        CustomerDashboardView dashboardView = dashboardService.customerView(email);
+
         model.addAttribute("userName", userName);
+        model.addAttribute("view", dashboardView);
+        model.addAttribute("today", LocalDate.now());
         return "customer/dashboard";
+    }
+
+    /**
+     * Quick room availability search for customers (Phase 13).
+     */
+    @GetMapping("/customer/availability")
+    public String checkAvailability(
+            @RequestParam(value = "checkIn", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate checkIn,
+            @RequestParam(value = "checkOut", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate checkOut,
+            @RequestParam(value = "guests", required = false) Integer guests,
+            Model model) {
+
+        int numGuests = (guests != null && guests > 0) ? guests : 1;
+        model.addAttribute("checkIn", checkIn);
+        model.addAttribute("checkOut", checkOut);
+        model.addAttribute("guests", numGuests);
+        model.addAttribute("today", LocalDate.now());
+
+        if (checkIn == null || checkOut == null) {
+            model.addAttribute("errorMessage", "Please provide both check-in and check-out dates.");
+            model.addAttribute("rooms", List.of());
+            return "customer/availability";
+        }
+
+        if (checkIn.isBefore(LocalDate.now())) {
+            model.addAttribute("errorMessage", "Check-in date cannot be in the past.");
+            model.addAttribute("rooms", List.of());
+            return "customer/availability";
+        }
+
+        if (!checkOut.isAfter(checkIn)) {
+            model.addAttribute("errorMessage", "Check-out date must be after check-in date.");
+            model.addAttribute("rooms", List.of());
+            return "customer/availability";
+        }
+
+        List<Room> availableRooms = roomService.findAvailableRooms(checkIn, checkOut, numGuests);
+        model.addAttribute("rooms", availableRooms);
+        return "customer/availability";
     }
 
     /**

@@ -118,6 +118,11 @@ class SecurityAccessTest {
             "/customer/bookings/new, CUSTOMER,  OK",
             "/customer/bookings/new, ADMIN,     FORBIDDEN",
 
+            // /customer/availability — anonymous redirects, CUSTOMER 200, ADMIN 403 (Phase 13)
+            "/customer/availability, ANONYMOUS, REDIRECT_LOGIN",
+            "/customer/availability, CUSTOMER,  OK",
+            "/customer/availability, ADMIN,     FORBIDDEN",
+
             // /admin/dashboard — anonymous redirects, CUSTOMER 403, ADMIN 200
             "/admin/dashboard,    ANONYMOUS, REDIRECT_LOGIN",
             "/admin/dashboard,    CUSTOMER,  FORBIDDEN",

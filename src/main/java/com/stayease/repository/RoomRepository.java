@@ -64,4 +64,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByRoomNumberIgnoreCase(String roomNumber);
 
     boolean existsByRoomNumberIgnoreCaseAndIdNot(String roomNumber, Long id);
+
+    long countByActiveTrue();
 }

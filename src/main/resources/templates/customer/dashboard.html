@@ -13,31 +13,328 @@
 <!-- ── Main ─────────────────────────────────────────────────────────────── -->
 <main class="flex-grow-1 py-5">
     <div class="container se-container">
-        <div class="card border-0 shadow-sm p-4 p-md-5" style="background: var(--surface-card);">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
-                          style="width:52px;height:52px;background:var(--brand-cobalt-soft);">
-                        <i class="bi bi-person-badge fs-4" style="color:var(--brand-cobalt);"></i>
-                    </span>
-                    <div>
-                        <h1 class="h3 fw-bold mb-1" style="color:var(--text-primary);">Customer dashboard</h1>
-                        <p class="mb-0" style="color:var(--text-secondary);">
-                            Welcome, <span class="fw-semibold" style="color:var(--text-primary);" th:text="${userName}">User</span>!
-                        </p>
+
+        <!-- Top Greeting Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+            <div>
+                <span class="text-uppercase fw-bold small tracking-wider"
+                      style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                    Guest Portal
+                </span>
+                <h1 class="display-6 fw-bold mt-1 mb-1"
+                    style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                    Hello, <span th:text="${userName}">Guest</span>
+                </h1>
+                <p class="text-secondary mb-0">Track your reservations, view upcoming stays, or plan your next trip.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/customer/bookings}" class="btn btn-outline-se fw-medium px-3">
+                    <i class="bi bi-clock-history me-1"></i>All Bookings
+                </a>
+                <a th:href="@{/rooms}" class="btn btn-cobalt fw-medium px-3">
+                    <i class="bi bi-door-open me-1"></i>Browse Rooms
+                </a>
+            </div>
+        </div>
+
+        <!-- ── 1. Three Count Cards ───────────────────────────────────────── -->
+        <div class="row g-3 mb-4">
+            <!-- Upcoming Stays -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Upcoming Stays</span>
+                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                              style="width: 36px; height: 36px; background: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
+                            <i class="bi bi-calendar-event fs-5"></i>
+                        </span>
+                    </div>
+                    <div class="display-6 fw-bold mb-1" style="color: var(--brand-cobalt);"
+                         th:text="${view.upcomingCount}">2</div>
+                    <div class="small text-secondary">Active stays scheduled today or later</div>
+                </div>
+            </div>
+
+            <!-- Pending Requests -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Pending Requests</span>
+                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                              style="width: 36px; height: 36px; background: rgba(255, 193, 7, 0.15); color: #b78103;">
+                            <i class="bi bi-hourglass-split fs-5"></i>
+                        </span>
+                    </div>
+                    <div class="display-6 fw-bold mb-1" style="color: #b78103;"
+                         th:text="${view.pendingCount}">1</div>
+                    <div class="small text-secondary">Awaiting admin review</div>
+                </div>
+            </div>
+
+            <!-- Past Stays -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm p-4 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Past Stays</span>
+                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                              style="width: 36px; height: 36px; background: rgba(108, 117, 125, 0.12); color: #6c757d;">
+                            <i class="bi bi-check2-all fs-5"></i>
+                        </span>
+                    </div>
+                    <div class="display-6 fw-bold mb-1" style="color: #6c757d;"
+                         th:text="${view.pastCount}">3</div>
+                    <div class="small text-secondary">Completed previous reservations</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 2. Middle Row: Next Stay Card & Quick Availability Search ──── -->
+        <div class="row g-4 mb-4">
+            <!-- Next Stay Card -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+                    <div class="p-4 border-bottom" style="background: var(--surface-page);">
+                        <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                            <i class="bi bi-geo-alt-fill me-2" style="color: var(--brand-oxblood);"></i>Next Stay
+                        </h2>
+                        <p class="small text-secondary mb-0">Your nearest upcoming approved reservation</p>
+                    </div>
+
+                    <div class="p-4">
+                        <!-- When next stay exists -->
+                        <div th:if="${view.nextStay != null}" class="d-flex flex-column gap-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge bg-success px-3 py-1 rounded-pill small fw-semibold mb-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i>APPROVED
+                                    </span>
+                                    <h3 class="h4 fw-bold mb-1" style="color: var(--text-primary);">
+                                        Room <span th:text="${view.nextStay.room != null ? view.nextStay.room.roomNumber : ''}">101</span>
+                                    </h3>
+                                    <span class="badge px-2 py-1 small text-uppercase"
+                                          style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt);"
+                                          th:text="${view.nextStay.room != null ? view.nextStay.room.type : ''}">SINGLE</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="text-secondary small d-block">Total Price</span>
+                                    <span class="fs-4 fw-bold" style="color: var(--brand-oxblood);">
+                                        ₹<span th:text="${#numbers.formatDecimal(view.nextStay.totalPrice, 1, 2)}">2,500.00</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <hr class="my-2 border-secondary-subtle">
+
+                            <div class="row g-2 text-secondary small">
+                                <div class="col-6">
+                                    <span class="fw-semibold text-dark d-block">Check-In</span>
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span th:text="${#temporals.format(view.nextStay.checkIn, 'dd MMM yyyy')}">01 Nov 2026</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="fw-semibold text-dark d-block">Check-Out</span>
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span th:text="${#temporals.format(view.nextStay.checkOut, 'dd MMM yyyy')}">05 Nov 2026</span>
+                                </div>
+                                <div class="col-6 mt-2">
+                                    <span class="fw-semibold text-dark d-block">Duration</span>
+                                    <i class="bi bi-moon me-1"></i>
+                                    <span th:text="${view.nextStay.nights} + ' night(s)'">4 night(s)</span>
+                                </div>
+                                <div class="col-6 mt-2">
+                                    <span class="fw-semibold text-dark d-block">Guests</span>
+                                    <i class="bi bi-people me-1"></i>
+                                    <span th:text="${view.nextStay.guests}">1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- When no next stay -->
+                        <div th:if="${view.nextStay == null}" class="text-center py-4 text-secondary">
+                            <i class="bi bi-calendar-x fs-1 text-secondary opacity-50 mb-2 d-block"></i>
+                            <p class="fw-medium mb-1" style="color: var(--text-primary);">No upcoming stay scheduled</p>
+                            <p class="small text-secondary mb-3">Browse our curated rooms and request a reservation today.</p>
+                            <a th:href="@{/rooms}" class="btn btn-outline-se btn-sm px-3 fw-medium">
+                                Explore Available Rooms
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <form th:action="@{/logout}" method="post" class="m-0">
-                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="btn btn-outline-danger btn-sm px-3">
-                        <i class="bi bi-box-arrow-right me-1"></i>Sign out
-                    </button>
-                </form>
             </div>
-            <p class="text-secondary small mb-0">
-                Placeholder page for Phase 5. Full customer booking and management features will be available in Phase 13.
-            </p>
+
+            <!-- Quick Availability Search Form -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+                    <div class="p-4 border-bottom" style="background: var(--surface-page);">
+                        <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                            <i class="bi bi-search me-2" style="color: var(--brand-cobalt);"></i>Quick Availability Search
+                        </h2>
+                        <p class="small text-secondary mb-0">Check room availability for your desired stay dates</p>
+                    </div>
+
+                    <div class="p-4">
+                        <form th:action="@{/customer/availability}" method="get" class="d-flex flex-column gap-3">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label for="searchCheckIn" class="form-label small fw-semibold">Check-in Date</label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="searchCheckIn"
+                                           name="checkIn"
+                                           th:min="${today}"
+                                           required />
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="searchCheckOut" class="form-label small fw-semibold">Check-out Date</label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="searchCheckOut"
+                                           name="checkOut"
+                                           th:min="${today}"
+                                           required />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="searchGuests" class="form-label small fw-semibold">Guests</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-people"></i></span>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="searchGuests"
+                                           name="guests"
+                                           value="1"
+                                           min="1"
+                                           max="10"
+                                           required />
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-cobalt fw-medium mt-2 py-2">
+                                <i class="bi bi-search me-1"></i>Check Availability
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- ── 3. Upcoming Bookings List with Cancel Buttons ──────────────── -->
+        <div class="card border-0 shadow-sm"
+             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                 style="background: var(--surface-page);">
+                <div>
+                    <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                        <i class="bi bi-calendar-check me-2" style="color: var(--brand-cobalt);"></i>Upcoming Bookings
+                    </h2>
+                    <p class="small text-secondary mb-0">Active reservations sorted soonest first</p>
+                </div>
+                <a th:href="@{/customer/bookings}" class="btn btn-outline-se btn-sm fw-medium px-3">
+                    View full history <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <!-- Table of Upcoming Bookings -->
+            <div th:if="${view.upcomingBookings != null and !view.upcomingBookings.isEmpty()}" class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light border-bottom text-secondary small text-uppercase"
+                           style="letter-spacing: 0.05em; background: var(--surface-page);">
+                        <tr>
+                            <th scope="col" class="ps-4 py-3">Room</th>
+                            <th scope="col" class="py-3">Check-In</th>
+                            <th scope="col" class="py-3">Check-Out</th>
+                            <th scope="col" class="py-3 text-center">Nights</th>
+                            <th scope="col" class="py-3 text-center">Guests</th>
+                            <th scope="col" class="py-3 text-end">Total Price</th>
+                            <th scope="col" class="py-3 text-center">Status</th>
+                            <th scope="col" class="pe-4 py-3 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${view.upcomingBookings}">
+                            <!-- Room Number and Type -->
+                            <td class="ps-4 py-3">
+                                <div class="fw-bold" style="color: var(--text-primary);">
+                                    Room <span th:text="${b.room != null ? b.room.roomNumber : 'N/A'}">101</span>
+                                </div>
+                                <span class="badge px-2 py-0 small text-uppercase"
+                                      style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.7rem;"
+                                      th:text="${b.room != null ? b.room.type : ''}">SINGLE</span>
+                            </td>
+
+                            <!-- Dates -->
+                            <td class="py-3">
+                                <span class="fw-medium" th:text="${#temporals.format(b.checkIn, 'dd MMM yyyy')}">01 Nov 2026</span>
+                            </td>
+                            <td class="py-3">
+                                <span class="fw-medium" th:text="${#temporals.format(b.checkOut, 'dd MMM yyyy')}">05 Nov 2026</span>
+                            </td>
+
+                            <!-- Nights -->
+                            <td class="py-3 text-center">
+                                <span class="badge rounded-pill bg-light text-dark border px-2" th:text="${b.nights}">4</span>
+                            </td>
+
+                            <!-- Guests -->
+                            <td class="py-3 text-center">
+                                <span class="text-secondary"><i class="bi bi-person me-1"></i><span th:text="${b.guests}">1</span></span>
+                            </td>
+
+                            <!-- Total Price -->
+                            <td class="py-3 text-end">
+                                <span class="fw-bold" style="color: var(--brand-oxblood);">
+                                    ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
+                                </span>
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td class="py-3 text-center">
+                                <span th:if="${b.status.name() == 'PENDING'}"
+                                      class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
+                                    <i class="bi bi-hourglass-split me-1"></i>PENDING
+                                </span>
+                                <span th:if="${b.status.name() == 'APPROVED'}"
+                                      class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
+                                    <i class="bi bi-check-circle-fill me-1"></i>APPROVED
+                                </span>
+                            </td>
+
+                            <!-- Cancel Button Form (Phase 12 / 13) -->
+                            <td class="pe-4 py-3 text-end">
+                                <form th:if="${b.cancellable}"
+                                      th:action="@{/customer/bookings/{id}/cancel(id=${b.id})}"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm px-3 fw-medium">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </button>
+                                </form>
+                                <span th:unless="${b.cancellable}" class="text-muted small">&mdash;</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State for Upcoming Bookings -->
+            <div th:if="${view.upcomingBookings == null or view.upcomingBookings.isEmpty()}" class="text-center py-5 px-4">
+                <i class="bi bi-calendar2-check fs-1 text-secondary opacity-50 mb-2 d-block"></i>
+                <h3 class="h6 fw-bold mb-1" style="color: var(--text-primary);">No active upcoming bookings</h3>
+                <p class="small text-secondary mb-3">You don't have any pending or approved upcoming reservations.</p>
+                <a th:href="@{/rooms}" class="btn btn-cobalt btn-sm px-4 fw-medium">
+                    <i class="bi bi-door-open me-1"></i>Book a Room
+                </a>
+            </div>
+        </div>
+
     </div>
 </main>
 

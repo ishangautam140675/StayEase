@@ -1,7 +1,9 @@
 package com.stayease.controller;
 
+import com.stayease.dto.AdminDashboardStats;
 import com.stayease.model.User;
 import com.stayease.repository.UserRepository;
+import com.stayease.service.DashboardService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,16 +11,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.security.Principal;
 
 /**
- * Admin area controller — Phase 5 placeholder.
- * Full admin features will be built in Phase 13.
+ * Administrative console controller (Phase 13).
  */
 @Controller
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final DashboardService dashboardService;
 
-    public AdminController(UserRepository userRepository) {
+    public AdminController(UserRepository userRepository, DashboardService dashboardService) {
         this.userRepository = userRepository;
+        this.dashboardService = dashboardService;
     }
 
     @GetMapping("/admin/dashboard")
@@ -29,7 +32,10 @@ public class AdminController {
                     .map(User::getFullName)
                     .orElse(principal.getName());
         }
+        AdminDashboardStats stats = dashboardService.adminStats();
+
         model.addAttribute("userName", userName);
+        model.addAttribute("stats", stats);
         return "admin/dashboard";
     }
 }

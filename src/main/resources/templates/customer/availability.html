@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Available Rooms')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Top Header & Breadcrumb -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+            <div>
+                <span class="text-uppercase fw-bold small tracking-wider"
+                      style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                    Live Inventory
+                </span>
+                <h1 class="display-6 fw-bold mt-1 mb-1"
+                    style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                    Room Availability
+                </h1>
+                <p class="text-secondary mb-0">Rooms available for your requested stay schedule.</p>
+            </div>
+            <a th:href="@{/customer/dashboard}" class="btn btn-outline-se fw-medium px-4">
+                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+
+        <!-- ── Search Criteria Bar ──────────────────────────────────────── -->
+        <div class="card border-0 shadow-sm p-4 mb-4"
+             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important;">
+            <form th:action="@{/customer/availability}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="checkInInput" class="form-label small fw-semibold text-secondary">Check-In Date</label>
+                    <input type="date"
+                           class="form-control"
+                           id="checkInInput"
+                           name="checkIn"
+                           th:value="${checkIn}"
+                           th:min="${today}"
+                           required />
+                </div>
+                <div class="col-md-4">
+                    <label for="checkOutInput" class="form-label small fw-semibold text-secondary">Check-Out Date</label>
+                    <input type="date"
+                           class="form-control"
+                           id="checkOutInput"
+                           name="checkOut"
+                           th:value="${checkOut}"
+                           th:min="${today}"
+                           required />
+                </div>
+                <div class="col-md-2">
+                    <label for="guestsInput" class="form-label small fw-semibold text-secondary">Guests</label>
+                    <input type="number"
+                           class="form-control"
+                           id="guestsInput"
+                           name="guests"
+                           th:value="${guests}"
+                           min="1"
+                           max="10"
+                           required />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-cobalt w-100 fw-medium">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Validation Error Message ──────────────────────────────────── -->
+        <div th:if="${errorMessage}" class="alert alert-danger shadow-sm border-0 d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <span th:text="${errorMessage}">Validation error</span>
+        </div>
+
+        <!-- ── Available Rooms Grid ──────────────────────────────────────── -->
+        <div th:if="${rooms != null and !rooms.isEmpty()}">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                    Available Accommodations (<span th:text="${rooms.size()}">3</span> found)
+                </h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="r : ${rooms}">
+                    <div class="card h-100 border-0 shadow-sm"
+                         style="background: var(--surface-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-default) !important;">
+                        <!-- Room Card Header -->
+                        <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                             style="background: var(--surface-page);">
+                            <div>
+                                <h3 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                                    Room <span th:text="${r.roomNumber}">101</span>
+                                </h3>
+                                <span class="badge px-2 py-0 small text-uppercase"
+                                      style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.75rem;"
+                                      th:text="${r.type}">SINGLE</span>
+                            </div>
+                            <span class="fs-5 fw-bold" style="color: var(--brand-oxblood);">
+                                ₹<span th:text="${#numbers.formatDecimal(r.pricePerNight, 1, 2)}">550.00</span>
+                                <small class="text-secondary fw-normal" style="font-size: 0.75rem;">/ night</small>
+                            </span>
+                        </div>
+
+                        <!-- Room Card Body -->
+                        <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
+                            <div>
+                                <div class="d-flex align-items-center gap-3 text-secondary small mb-3">
+                                    <span>
+                                        <i class="bi bi-people me-1"></i>Max <span class="fw-semibold text-dark" th:text="${r.capacity}">2</span> guests
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-shield-check text-success me-1"></i>Active
+                                    </span>
+                                </div>
+                                <p class="text-secondary small mb-4"
+                                   style="line-height: 1.5; min-height: 48px;"
+                                   th:text="${r.description != null and !r.description.isEmpty() ? r.description : 'Comfortable accommodation with modern amenities.'}">
+                                    Room description
+                                </p>
+                            </div>
+
+                            <!-- Book Button Pre-filling the booking form -->
+                            <div>
+                                <a th:href="@{/customer/bookings/new(roomId=${r.id}, checkIn=${checkIn}, checkOut=${checkOut}, guests=${guests})}"
+                                   class="btn btn-cobalt w-100 fw-medium py-2">
+                                    <i class="bi bi-calendar-plus me-1"></i>Book Room
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Empty State ──────────────────────────────────────────────── -->
+        <div th:if="${(rooms == null or rooms.isEmpty()) and errorMessage == null}"
+             class="card border-0 shadow-sm text-center py-5 px-4 my-2"
+             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important;">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                 style="width: 72px; height: 72px; background: var(--brand-oxblood-soft);">
+                <i class="bi bi-calendar-x fs-1" style="color: var(--brand-oxblood);"></i>
+            </div>
+            <h3 class="h5 fw-bold mb-2" style="color: var(--text-primary);">No rooms available</h3>
+            <p class="text-secondary small mb-4" style="max-width: 460px; margin: 0 auto;">
+                All rooms matching your guest requirement are reserved for the chosen dates. Try adjusting your dates or guest count.
+            </p>
+            <a th:href="@{/rooms}" class="btn btn-outline-se btn-sm px-4 fw-medium mx-auto">
+                Browse all rooms
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

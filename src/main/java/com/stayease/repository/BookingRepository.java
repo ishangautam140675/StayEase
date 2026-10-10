@@ -61,4 +61,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     );
 
     boolean existsByRoomId(Long roomId);
+
+    @Query("SELECT COUNT(DISTINCT b.room.id) FROM Booking b " +
+           "WHERE b.room.active = true " +
+           "AND b.status = com.stayease.model.BookingStatus.APPROVED " +
+           "AND b.checkIn <= :today AND :today < b.checkOut")
+    long countOccupiedRoomsOnDate(@Param("today") java.time.LocalDate today);
+
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.createdAt >= :start AND b.createdAt < :end")
+    long countByCreatedAtBetween(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.status = :status ORDER BY b.createdAt DESC")
+    List<Booking> findRecentByStatus(@Param("status") com.stayease.model.BookingStatus status, org.springframework.data.domain.Pageable pageable);
 }
