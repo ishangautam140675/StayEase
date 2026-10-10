@@ -256,4 +256,40 @@ public class BookingService {
         booking.setAdminRemark(trimmedRemark);
         return bookingRepository.save(booking);
     }
+
+    /**
+     * Cancels a booking by the customer who owns it (Phase 12).
+     *
+     * @param bookingId the booking ID
+     * @param userEmail the authenticated user's email
+     * @return the cancelled booking
+     * @throws com.stayease.exception.BookingNotFoundException if the booking does not exist
+     * @throws org.springframework.security.access.AccessDeniedException if the booking belongs to someone else
+     * @throws com.stayease.exception.InvalidBookingStateException if status is not PENDING/APPROVED or check-in is not after today
+     */
+    @Transactional
+    public Booking cancel(Long bookingId, String userEmail) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getUser() == null || !booking.getUser().getEmail().equalsIgnoreCase(userEmail)) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to cancel this booking.");
+        }
+
+        if (booking.getStatus() != BookingStatus.PENDING && booking.getStatus() != BookingStatus.APPROVED) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be cancelled because its status is " + booking.getStatus() +
+                    " (only PENDING or APPROVED bookings can be cancelled)."
+            );
+        }
+
+        if (booking.getCheckIn() == null || !booking.getCheckIn().isAfter(LocalDate.now())) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Bookings can only be cancelled before the check-in date."
+            );
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        return bookingRepository.save(booking);
+    }
 }

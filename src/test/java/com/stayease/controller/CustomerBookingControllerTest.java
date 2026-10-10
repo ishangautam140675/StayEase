@@ -290,4 +290,128 @@ class CustomerBookingControllerTest {
                 .andExpect(content().string(containsString("Book this room instead")))
                 .andExpect(content().string(containsString("202-B")));
     }
+
+    // ── Phase 12 Cancellation Tests ─────────────────────────────────────────
+
+    @Test
+    @DisplayName("Owner can cancel a PENDING booking via POST with CSRF and gets flash message")
+    void cancelBooking_owner_pending_redirectsWithSuccessFlash() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", booking.getId())
+                        .with(user(customerA.getEmail()).roles("CUSTOMER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/customer/bookings"))
+                .andExpect(flash().attribute("successMessage", "Booking cancelled."));
+
+        Booking reloaded = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("Owner can cancel an APPROVED booking via POST with CSRF and gets flash message")
+    void cancelBooking_owner_approved_redirectsWithSuccessFlash() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.APPROVED, null
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", booking.getId())
+                        .with(user(customerA.getEmail()).roles("CUSTOMER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/customer/bookings"))
+                .andExpect(flash().attribute("successMessage", "Booking cancelled."));
+
+        Booking reloaded = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("Another customer trying to cancel gets 403 and status remains untouched")
+    void cancelBooking_otherCustomer_returnsForbidden403() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", booking.getId())
+                        .with(user(customerB.getEmail()).roles("CUSTOMER"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+
+        Booking reloaded = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("ADMIN gets 403 on the cancel URL")
+    void cancelBooking_admin_returnsForbidden403() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", booking.getId())
+                        .with(user(adminUser.getEmail()).roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /customer/bookings/{id}/cancel without CSRF is rejected with 403")
+    void cancelBooking_withoutCsrf_returnsForbidden403() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", booking.getId())
+                        .with(user(customerA.getEmail()).roles("CUSTOMER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Cancelling REJECTED or CANCELLED booking redirects with error flash message")
+    void cancelBooking_invalidState_redirectsWithErrorMessage() throws Exception {
+        Booking rejected = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.REJECTED, "Denied"
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", rejected.getId())
+                        .with(user(customerA.getEmail()).roles("CUSTOMER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/customer/bookings"))
+                .andExpect(flash().attributeExists("errorMessage"));
+
+        Booking reloaded = bookingRepository.findById(rejected.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.REJECTED);
+    }
+
+    @Test
+    @DisplayName("Cancelling on or after check-in date redirects with error flash message")
+    void cancelBooking_onOrAfterCheckIn_redirectsWithErrorMessage() throws Exception {
+        Booking todayBooking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now(), LocalDate.now().plusDays(2), 1, BookingStatus.PENDING, null
+        ));
+
+        mockMvc.perform(post("/customer/bookings/{id}/cancel", todayBooking.getId())
+                        .with(user(customerA.getEmail()).roles("CUSTOMER"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/customer/bookings"))
+                .andExpect(flash().attributeExists("errorMessage"));
+
+        Booking reloaded = bookingRepository.findById(todayBooking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("Cancelling an unknown booking ID returns 404")
+    void cancelBooking_unknownId_returns404() throws Exception {
+        mockMvc.perform(post("/customer/bookings/999999/cancel")
+                        .with(user(customerA.getEmail()).roles("CUSTOMER"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
 }

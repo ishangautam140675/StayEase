@@ -136,11 +136,22 @@ class SecurityAccessTest {
             // /admin/bookings — anonymous redirects, CUSTOMER 403, ADMIN 200
             "/admin/bookings,     ANONYMOUS, REDIRECT_LOGIN",
             "/admin/bookings,     CUSTOMER,  FORBIDDEN",
-            "/admin/bookings,     ADMIN,     OK"
+            "/admin/bookings,     ADMIN,     OK",
+
+            // /customer/bookings/{id}/cancel — anonymous redirects, ADMIN 403 (Phase 12)
+            "/customer/bookings/1/cancel, ANONYMOUS, REDIRECT_LOGIN",
+            "/customer/bookings/1/cancel, ADMIN,     FORBIDDEN"
     })
     @DisplayName("Authorization test matrix for all current routes and roles")
     void authorizationMatrix(String route, String identity, ExpectedAccess expected) throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = get(route);
+        MockHttpServletRequestBuilder requestBuilder;
+        if (route.startsWith("POST ")) {
+            requestBuilder = post(route.substring(5).trim()).with(csrf());
+        } else if (route.contains("/cancel")) {
+            requestBuilder = post(route).with(csrf());
+        } else {
+            requestBuilder = get(route);
+        }
 
         if ("CUSTOMER".equalsIgnoreCase(identity)) {
             requestBuilder.with(user("matrix.customer@stayease.com").roles("CUSTOMER"));
@@ -161,6 +172,23 @@ class SecurityAccessTest {
     }
 
     // ── Extra Security & Session Hardening Tests ───────────────────────────
+
+    @Test
+    @DisplayName("ADMIN gets 403 on the cancel URL")
+    void admin_cannotAccessCancelUrl() throws Exception {
+        mockMvc.perform(post("/customer/bookings/1/cancel")
+                        .with(user("matrix.admin@stayease.com").roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("POST /customer/bookings/{id}/cancel without a CSRF token returns 403")
+    void postCancel_withoutCsrf_returns403() throws Exception {
+        mockMvc.perform(post("/customer/bookings/1/cancel")
+                        .with(user("matrix.customer@stayease.com").roles("CUSTOMER")))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
     @DisplayName("POST /logout without a CSRF token returns 403")

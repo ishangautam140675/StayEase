@@ -310,4 +310,117 @@ class BookingServiceTest {
         assertThat(newBooking.getStatus()).isEqualTo(BookingStatus.PENDING);
         assertThat(newBooking.getUser().getId()).isEqualTo(otherCustomer.getId());
     }
+
+    // ── Phase 12 Cancellation Tests ─────────────────────────────────────────
+
+    @Test
+    @DisplayName("The owner can cancel a PENDING booking")
+    void owner_canCancelPendingBooking() {
+        Booking booking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        Booking cancelled = bookingService.cancel(booking.getId(), testCustomer.getEmail());
+        assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+
+        Booking reloaded = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("The owner can cancel an APPROVED booking")
+    void owner_canCancelApprovedBooking() {
+        Booking booking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.APPROVED, null
+        ));
+
+        Booking cancelled = bookingService.cancel(booking.getId(), testCustomer.getEmail());
+        assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+
+        Booking reloaded = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("Another customer trying to cancel gets AccessDeniedException and status stays the same")
+    void anotherCustomer_tryingToCancel_throwsAccessDeniedException_andStatusStaysSame() {
+        User otherCustomer = userRepository.save(new User(
+                "Other Customer", "other.cancel@stayease.com", "Password123", "9876543210", Role.CUSTOMER
+        ));
+
+        Booking booking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        assertThatThrownBy(() -> bookingService.cancel(booking.getId(), otherCustomer.getEmail()))
+                .isInstanceOf(org.springframework.security.access.AccessDeniedException.class)
+                .hasMessageContaining("permission");
+
+        Booking reloaded = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(BookingStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("Cancelling REJECTED or CANCELLED bookings throws InvalidBookingStateException")
+    void cancellingRejectedOrCancelledBookings_throwsInvalidBookingStateException() {
+        Booking rejected = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.REJECTED, "No vacancy"
+        ));
+        Booking cancelled = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(10), LocalDate.now().plusDays(12), 1, BookingStatus.CANCELLED, null
+        ));
+
+        assertThatThrownBy(() -> bookingService.cancel(rejected.getId(), testCustomer.getEmail()))
+                .isInstanceOf(com.stayease.exception.InvalidBookingStateException.class)
+                .hasMessageContaining("REJECTED");
+
+        assertThatThrownBy(() -> bookingService.cancel(cancelled.getId(), testCustomer.getEmail()))
+                .isInstanceOf(com.stayease.exception.InvalidBookingStateException.class)
+                .hasMessageContaining("CANCELLED");
+    }
+
+    @Test
+    @DisplayName("Cancelling on or after the check-in date fails with InvalidBookingStateException")
+    void cancellingOnOrAfterCheckInDate_throwsInvalidBookingStateException() {
+        // Check-in is today
+        Booking todayBooking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now(), LocalDate.now().plusDays(3), 1, BookingStatus.PENDING, null
+        ));
+        // Check-in was in the past
+        Booking pastBooking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().minusDays(2), LocalDate.now().plusDays(2), 1, BookingStatus.PENDING, null
+        ));
+
+        assertThatThrownBy(() -> bookingService.cancel(todayBooking.getId(), testCustomer.getEmail()))
+                .isInstanceOf(com.stayease.exception.InvalidBookingStateException.class)
+                .hasMessageContaining("before the check-in date");
+
+        assertThatThrownBy(() -> bookingService.cancel(pastBooking.getId(), testCustomer.getEmail()))
+                .isInstanceOf(com.stayease.exception.InvalidBookingStateException.class)
+                .hasMessageContaining("before the check-in date");
+    }
+
+    @Test
+    @DisplayName("After a cancellation another customer can book the same dates")
+    void afterCancellation_anotherCustomerCanBookSameDates() {
+        User otherCustomer = userRepository.save(new User(
+                "Other Customer 2", "other2.cancel@stayease.com", "Password123", "9876543210", Role.CUSTOMER
+        ));
+
+        LocalDate checkIn = LocalDate.now().plusDays(20);
+        LocalDate checkOut = LocalDate.now().plusDays(25);
+
+        // 1. Initial booking created as PENDING
+        Booking booking = bookingService.createBooking(testCustomer.getEmail(), new BookingForm(activeRoom.getId(), checkIn, checkOut, 1));
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.PENDING);
+
+        // 2. Owner cancels the booking
+        bookingService.cancel(booking.getId(), testCustomer.getEmail());
+
+        // 3. Other customer requests same dates on same room -> succeeds!
+        Booking newBooking = bookingService.createBooking(otherCustomer.getEmail(), new BookingForm(activeRoom.getId(), checkIn, checkOut, 1));
+        assertThat(newBooking).isNotNull();
+        assertThat(newBooking.getStatus()).isEqualTo(BookingStatus.PENDING);
+        assertThat(newBooking.getUser().getId()).isEqualTo(otherCustomer.getId());
+    }
 }

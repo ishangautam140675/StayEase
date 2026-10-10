@@ -48,7 +48,8 @@
                             <th scope="col" class="py-3 text-center">Nights</th>
                             <th scope="col" class="py-3 text-center">Guests</th>
                             <th scope="col" class="py-3 text-end">Total Price</th>
-                            <th scope="col" class="pe-4 py-3 text-center">Status</th>
+                            <th scope="col" class="py-3 text-center">Status</th>
+                            <th scope="col" class="pe-4 py-3 text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,7 +95,7 @@
                             </td>
 
                             <!-- Status Badge -->
-                            <td class="pe-4 py-3 text-center">
+                            <td class="py-3 text-center">
                                 <!-- PENDING: yellow -->
                                 <span th:if="${b.status.name() == 'PENDING'}"
                                       class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
@@ -121,6 +122,21 @@
                                       class="badge bg-secondary px-3 py-2 rounded-pill fw-semibold">
                                     <i class="bi bi-slash-circle me-1"></i>CANCELLED
                                 </span>
+                            </td>
+
+                            <!-- Cancel Action (Phase 12) -->
+                            <td class="pe-4 py-3 text-end">
+                                <form th:if="${b.cancellable}"
+                                      th:action="@{/customer/bookings/{id}/cancel(id=${b.id})}"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm px-3 fw-medium">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </button>
+                                </form>
+                                <span th:unless="${b.cancellable}" class="text-muted small">&mdash;</span>
                             </td>
                         </tr>
                     </tbody>

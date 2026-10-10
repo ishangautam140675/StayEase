@@ -164,6 +164,11 @@ public class Booking {
         return room.getPricePerNight().multiply(java.math.BigDecimal.valueOf(getNights()));
     }
 
+    public boolean isCancellable() {
+        return (status == BookingStatus.PENDING || status == BookingStatus.APPROVED)
+                && checkIn != null && checkIn.isAfter(LocalDate.now());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -13,8 +13,10 @@ import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import com.stayease.exception.InvalidBookingStateException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -155,6 +157,22 @@ public class CustomerController {
         List<Booking> bookings = bookingService.getBookingsForUser(principal.getName());
         model.addAttribute("bookings", bookings);
         return "customer/bookings";
+    }
+
+    /**
+     * Processes customer booking cancellation request (Phase 12).
+     */
+    @PostMapping("/customer/bookings/{id}/cancel")
+    public String cancelBooking(@PathVariable("id") Long id,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.cancel(id, principal.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Booking cancelled.");
+        } catch (InvalidBookingStateException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/customer/bookings";
     }
 
     private void loadRoomForForm(Long roomId, Model model) {
