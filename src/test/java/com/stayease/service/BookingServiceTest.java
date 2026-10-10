@@ -211,4 +211,103 @@ class BookingServiceTest {
         assertThat(booking.getNights()).isEqualTo(4L);
         assertThat(booking.getTotalPrice()).isEqualByComparingTo(new BigDecimal("3200.00"));
     }
+
+    // ── Phase 11 Admin Approve / Reject Tests ──────────────────────────────
+
+    @Test
+    @DisplayName("Admin approve moves PENDING booking to APPROVED")
+    void approve_movesPendingToApproved() {
+        Booking booking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        Booking approved = bookingService.approve(booking.getId());
+
+        assertThat(approved.getStatus()).isEqualTo(BookingStatus.APPROVED);
+        Booking fromDb = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(fromDb.getStatus()).isEqualTo(BookingStatus.APPROVED);
+    }
+
+    @Test
+    @DisplayName("Admin reject stores the remark and sets REJECTED")
+    void reject_storesRemarkAndSetsRejected() {
+        Booking booking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        Booking rejected = bookingService.reject(booking.getId(), "Room is unavailable due to maintenance");
+
+        assertThat(rejected.getStatus()).isEqualTo(BookingStatus.REJECTED);
+        assertThat(rejected.getAdminRemark()).isEqualTo("Room is unavailable due to maintenance");
+
+        Booking fromDb = bookingRepository.findById(booking.getId()).orElseThrow();
+        assertThat(fromDb.getStatus()).isEqualTo(BookingStatus.REJECTED);
+        assertThat(fromDb.getAdminRemark()).isEqualTo("Room is unavailable due to maintenance");
+    }
+
+    @Test
+    @DisplayName("Approving or rejecting an APPROVED, REJECTED, or CANCELLED booking throws InvalidBookingStateException")
+    void approveOrReject_nonPending_throwsInvalidBookingStateException() {
+        for (BookingStatus nonPending : List.of(BookingStatus.APPROVED, BookingStatus.REJECTED, BookingStatus.CANCELLED)) {
+            Booking booking = bookingRepository.save(new Booking(
+                    testCustomer, activeRoom, LocalDate.now().plusDays(10), LocalDate.now().plusDays(12), 1, nonPending, "Existing"
+            ));
+
+            assertThatThrownBy(() -> bookingService.approve(booking.getId()))
+                    .isInstanceOf(com.stayease.exception.InvalidBookingStateException.class)
+                    .hasMessageContaining(nonPending.name());
+
+            assertThatThrownBy(() -> bookingService.reject(booking.getId(), "Trying to reject again"))
+                    .isInstanceOf(com.stayease.exception.InvalidBookingStateException.class)
+                    .hasMessageContaining(nonPending.name());
+
+            bookingRepository.delete(booking);
+        }
+    }
+
+    @Test
+    @DisplayName("Reject with a blank or whitespace remark fails")
+    void reject_withBlankRemark_fails() {
+        Booking booking = bookingRepository.save(new Booking(
+                testCustomer, activeRoom, LocalDate.now().plusDays(5), LocalDate.now().plusDays(8), 1, BookingStatus.PENDING, null
+        ));
+
+        assertThatThrownBy(() -> bookingService.reject(booking.getId(), ""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("remark is required");
+
+        assertThatThrownBy(() -> bookingService.reject(booking.getId(), "   "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("remark is required");
+
+        assertThatThrownBy(() -> bookingService.reject(booking.getId(), null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("After a booking is rejected, another customer can book the same dates")
+    void afterBookingRejected_anotherCustomerCanBookSameDates() {
+        User otherCustomer = userRepository.save(new User(
+                "Other Customer",
+                "other.customer@stayease.com",
+                "Password123",
+                "9876543210",
+                Role.CUSTOMER
+        ));
+
+        LocalDate checkIn = LocalDate.now().plusDays(15);
+        LocalDate checkOut = LocalDate.now().plusDays(18);
+
+        // 1. Initial booking created as PENDING
+        Booking booking = bookingService.createBooking(testCustomer.getEmail(), new BookingForm(activeRoom.getId(), checkIn, checkOut, 1));
+
+        // 2. Admin rejects this booking
+        bookingService.reject(booking.getId(), "Maintenance scheduled");
+
+        // 3. Other customer requests the same dates on the same room -> succeeds!
+        Booking newBooking = bookingService.createBooking(otherCustomer.getEmail(), new BookingForm(activeRoom.getId(), checkIn, checkOut, 1));
+        assertThat(newBooking).isNotNull();
+        assertThat(newBooking.getStatus()).isEqualTo(BookingStatus.PENDING);
+        assertThat(newBooking.getUser().getId()).isEqualTo(otherCustomer.getId());
+    }
 }

@@ -23,6 +23,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b JOIN FETCH b.room WHERE b.user.email = :email ORDER BY b.createdAt DESC")
     List<Booking> findByUserEmailOrderByCreatedAtDesc(@Param("email") String email);
 
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room ORDER BY b.createdAt DESC")
+    List<Booking> findAllWithUserAndRoomOrderByCreatedAtDesc();
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.status = :status ORDER BY b.createdAt DESC")
+    List<Booking> findAllWithUserAndRoomByStatusOrderByCreatedAtDesc(@Param("status") com.stayease.model.BookingStatus status);
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.id = :id")
+    java.util.Optional<Booking> findByIdWithUserAndRoom(@Param("id") Long id);
+
+    long countByStatus(com.stayease.model.BookingStatus status);
+
     @Query("select b from Booking b where b.room.id = :roomId and b.status in :statuses and :checkIn < b.checkOut and :checkOut > b.checkIn")
     List<Booking> findOverlapping(
             @Param("roomId") Long roomId,

@@ -131,7 +131,12 @@ class SecurityAccessTest {
             // /admin/rooms/new — anonymous redirects, CUSTOMER 403, ADMIN 200
             "/admin/rooms/new,    ANONYMOUS, REDIRECT_LOGIN",
             "/admin/rooms/new,    CUSTOMER,  FORBIDDEN",
-            "/admin/rooms/new,    ADMIN,     OK"
+            "/admin/rooms/new,    ADMIN,     OK",
+
+            // /admin/bookings — anonymous redirects, CUSTOMER 403, ADMIN 200
+            "/admin/bookings,     ANONYMOUS, REDIRECT_LOGIN",
+            "/admin/bookings,     CUSTOMER,  FORBIDDEN",
+            "/admin/bookings,     ADMIN,     OK"
     })
     @DisplayName("Authorization test matrix for all current routes and roles")
     void authorizationMatrix(String route, String identity, ExpectedAccess expected) throws Exception {

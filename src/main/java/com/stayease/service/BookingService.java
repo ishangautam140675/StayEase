@@ -158,4 +158,102 @@ public class BookingService {
     public List<Booking> findCustomerBookings(String userEmail) {
         return getBookingsForUser(userEmail);
     }
+
+    // ── Admin Management Methods (Phase 11) ────────────────────────────────
+
+    /**
+     * Lists bookings for the administrative console. If status is specified,
+     * filters by that status; otherwise returns all bookings, newest first.
+     * Both customer and room associations are eagerly loaded.
+     */
+    public List<Booking> listForAdmin(BookingStatus status) {
+        if (status == null) {
+            return bookingRepository.findAllWithUserAndRoomOrderByCreatedAtDesc();
+        }
+        return bookingRepository.findAllWithUserAndRoomByStatusOrderByCreatedAtDesc(status);
+    }
+
+    /**
+     * Counts bookings by status for the administrative filter tabs.
+     * Includes total count under key "ALL".
+     */
+    public java.util.Map<String, Long> countByStatus() {
+        java.util.Map<String, Long> counts = new java.util.HashMap<>();
+        counts.put("ALL", bookingRepository.count());
+        for (BookingStatus s : BookingStatus.values()) {
+            counts.put(s.name(), bookingRepository.countByStatus(s));
+        }
+        return counts;
+    }
+
+    /**
+     * Approves a PENDING booking.
+     * The booking must exist and be PENDING (otherwise InvalidBookingStateException).
+     * Locks the room row with findByIdForUpdate, re-checks overlap with the
+     * "exclude this booking" query, throws BookingConflictException if conflicts exist,
+     * and sets status to APPROVED.
+     */
+    @Transactional
+    public Booking approve(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be approved because its status is " + booking.getStatus() +
+                    " (only PENDING bookings can be approved)."
+            );
+        }
+
+        // Lock room row to serialize concurrent approvals/bookings
+        roomRepository.findByIdForUpdate(booking.getRoom().getId());
+
+        List<Booking> conflicts = bookingRepository.findOverlappingExcluding(
+                booking.getRoom().getId(),
+                booking.getCheckIn(),
+                booking.getCheckOut(),
+                BookingStatus.BLOCKING,
+                booking.getId()
+        );
+
+        if (!conflicts.isEmpty()) {
+            throw new BookingConflictException(
+                    "Cannot approve booking #" + bookingId + " due to date conflicts with another booking.",
+                    conflicts
+            );
+        }
+
+        booking.setStatus(BookingStatus.APPROVED);
+        return bookingRepository.save(booking);
+    }
+
+    /**
+     * Rejects a PENDING booking with a mandatory admin remark (max 500 characters).
+     * The booking must exist and be PENDING (otherwise InvalidBookingStateException).
+     */
+    @Transactional
+    public Booking reject(Long bookingId, String remark) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be rejected because its status is " + booking.getStatus() +
+                    " (only PENDING bookings can be rejected)."
+            );
+        }
+
+        if (remark == null || remark.trim().isEmpty()) {
+            throw new IllegalArgumentException("Admin remark is required when rejecting a booking.");
+        }
+
+        String trimmedRemark = remark.trim();
+        if (trimmedRemark.length() > 500) {
+            throw new IllegalArgumentException("Admin remark cannot exceed 500 characters.");
+        }
+
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setAdminRemark(trimmedRemark);
+        return bookingRepository.save(booking);
+    }
 }
