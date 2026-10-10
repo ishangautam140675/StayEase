@@ -127,12 +127,56 @@ Recorded in [`.agents/rules/ui-design-rules.md`](.agents/rules/ui-design-rules.m
   * `HomeControllerTest`: `/`, `/rooms`, `/customer/dashboard`, `/admin/dashboard`, and `homePage_anonymousUser_containsBrowseRoomsAndLogin`.
   * `RepositoryTests`: User save/find, duplicate email constraint, duplicate room number constraint, booking save/retrieve, `BookingStatus.isBlocking()`.
 
-### 5.2 MySQL Schema Verification
-* Verified via `DESCRIBE users;`, `DESCRIBE rooms;`, `DESCRIBE bookings;`, and `SHOW CREATE TABLE bookings\G`.
+### 5.2 Test Coverage (Phases 1 to 8)
+* Total Tests: 89 passed (`BUILD SUCCESS`) across Repository, Service, Controller, and Security matrix tests.
 
 ---
 
-## 6. Git & GitHub Status
-* **Local Git:** Initialized on `main` branch.
+## 6. Phase 4: User Registration
+* Added `PasswordEncoder` BCrypt bean.
+* Implemented `RegisterForm` DTO with validation.
+* Added `AuthService.register()` with duplicate email protection (`EmailAlreadyUsedException`).
+* Created `AuthController` and `register.html` view.
+
+---
+
+## 7. Phase 5: Authentication, Sessions & Route Protection
+* Implemented `CustomUserDetailsService` loading user by normalized email with `ROLE_` prefix.
+* Added `RoleBasedSuccessHandler` redirecting ADMIN to `/admin/dashboard` and CUSTOMER to `/customer/dashboard`.
+* Configured `SecurityConfig` with form login, logout invalidation, cookie deletion, and CSRF protection.
+* Added `DataSeeder` for bootstrap admin creation.
+* Created `AuthController` `GET /login` and `login.html`.
+* Placeholder dashboards for Customer and Admin.
+
+---
+
+## 8. Phase 6: Authorization Matrix & Session Hardening
+* Implemented `SecurityAccessTest` parameterized matrix asserting public, customer, and admin routes.
+* Verified session fixation protection (`changeSessionId()`), HTTP-only cookies, and CSRF token enforcement.
+* Added "Security design" section to `README.md`.
+
+---
+
+## 9. Phase 7: Public Room Browsing, Search & Sample Data
+* Added `RoomRepository.searchActiveRooms` JPQL query and `RoomService.searchActiveRooms`.
+* Added `RoomNotFoundException` (@ResponseStatus NOT_FOUND).
+* Created `RoomController` (`/rooms`, `/rooms/{id}`) and views `rooms/list.html` and `rooms/details.html`.
+* Seeded 8 sample rooms in `DataSeeder` (including 1 inactive room).
+
+---
+
+## 10. Phase 8: Admin Room CRUD
+* Implemented `RoomForm` DTO with validation.
+* Added `DuplicateRoomNumberException`.
+* Implemented `RoomService` methods: `findAllForAdmin`, `getForEdit`, `create`, `update`, `delete` (with booking checks).
+* Created `AdminRoomController` (`/admin/rooms`, `/admin/rooms/new`, `/admin/rooms/{id}/edit`, `/admin/rooms/{id}/delete`).
+* Created `admin/rooms/list.html` and `admin/rooms/form.html`.
+* Added comprehensive service, MockMvc, and security matrix tests.
+
+---
+
+## 11. Git & GitHub Status
+* **Branch:** `main`
 * **Remote:** [https://github.com/ishangautam140675/StayEase.git](https://github.com/ishangautam140675/StayEase.git)
-* **Status:** Pushed, clean working tree, tracked to `origin/main`.
+* **Status:** All tests passing (`BUILD SUCCESS`, 89 tests).
+

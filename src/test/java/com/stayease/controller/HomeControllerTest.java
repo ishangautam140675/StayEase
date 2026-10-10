@@ -36,24 +36,4 @@ class HomeControllerTest {
                .andExpect(content().string(containsString("Login")));
     }
 
-    @Test
-    void roomsPage_returns200() throws Exception {
-        mockMvc.perform(get("/rooms"))
-               .andExpect(status().isOk())
-               .andExpect(content().string(containsString("Explore Accommodations")));
-    }
-
-    @Test
-    void customerDashboard_returns200() throws Exception {
-        mockMvc.perform(get("/customer/dashboard"))
-               .andExpect(status().isOk())
-               .andExpect(content().string(containsString("Customer Dashboard")));
-    }
-
-    @Test
-    void adminDashboard_returns200() throws Exception {
-        mockMvc.perform(get("/admin/dashboard"))
-               .andExpect(status().isOk())
-               .andExpect(content().string(containsString("Administrator Dashboard")));
-    }
 }

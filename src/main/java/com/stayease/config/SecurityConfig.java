@@ -1,35 +1,114 @@
 package com.stayease.config;
 
+import com.stayease.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Spring Security configuration.
+ * Spring Security configuration — Phase 5.
  *
- * TODO: Replace this open permit-all rule in Phase 5 when form-login,
- *       role-based access control, and CSRF protection are implemented.
- *
- * For now every request is allowed so the landing page is reachable without
- * any credentials while we scaffold the application.
+ * <p>Public routes are open to everyone; /admin/** requires ADMIN role and
+ * /customer/** requires CUSTOMER role; all other requests require any
+ * authenticated user. CSRF stays enabled. Session-fixation protection
+ * uses Spring Security's default (newSession).</p>
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CustomUserDetailsService userDetailsService;
+    private final RoleBasedSuccessHandler successHandler;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+                          RoleBasedSuccessHandler successHandler) {
+        this.userDetailsService = userDetailsService;
+        this.successHandler = successHandler;
+    }
+
     /**
-     * Defines the HTTP security filter chain.
-     * In Phase 1 all requests are permitted so we can verify the
-     * application starts and the home page renders correctly.
+     * Password encoder bean — BCrypt, shared with {@link com.stayease.service.AuthService}
+     * and {@link com.stayease.config.DataSeeder}.
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Wires the custom {@link CustomUserDetailsService} and {@link PasswordEncoder}
+     * into Spring Security's DAO authentication provider.
+     */
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    /**
+     * The main HTTP security filter chain.
+     *
+     * <ul>
+     *   <li>Public paths: {@code /}, {@code /rooms/**}, {@code /register},
+     *       {@code /login}, static assets, and error pages.</li>
+     *   <li>{@code /admin/**} — ADMIN only.</li>
+     *   <li>{@code /customer/**} — CUSTOMER only.</li>
+     *   <li>Everything else requires authentication.</li>
+     *   <li>Form login with a custom success handler and failure URL.</li>
+     *   <li>POST logout invalidates the session and deletes the cookie.</li>
+     *   <li>CSRF enabled (default). Session-fixation uses default (newSession).</li>
+     * </ul>
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Allow every request without authentication (Phase 1 only)
+            .authenticationProvider(authenticationProvider())
+
+            // ── Authorization ──────────────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
+                // Publicly accessible pages
+                .requestMatchers(
+                    "/", "/rooms", "/rooms/**",
+                    "/register", "/login",
+                    "/css/**", "/js/**", "/images/**",
+                    "/error", "/error/**"
+                ).permitAll()
+                // Role-restricted areas
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                // Everything else requires any authenticated user
+                .anyRequest().authenticated()
+            )
+
+            // ── Form Login ─────────────────────────────────────────────────
+            .formLogin(form -> form
+                .loginPage("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .successHandler(successHandler)
+                .failureUrl("/login?error")
+                .permitAll()
+            )
+
+            // ── Logout ─────────────────────────────────────────────────────
+            .logout(logout -> logout
+                .logoutUrl("/logout")                        // POST /logout
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
+            )
+
+            // ── Session Fixation Protection ────────────────────────────────
+            .sessionManagement(session -> session
+                .sessionFixation(sf -> sf.changeSessionId())
             );
 
         return http.build();

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head(${isEdit} ? 'Edit Room' : 'Add Room')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Back Link -->
+        <div class="mb-4">
+            <a th:href="@{/admin/rooms}" class="text-decoration-none small fw-medium" style="color: var(--brand-cobalt);">
+                <i class="bi bi-arrow-left me-1"></i>Back to room list
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+
+                <!-- Card -->
+                <div class="card border-0 shadow-sm p-4 p-md-5" style="background: var(--surface-card); border-radius: 14px;">
+
+                    <!-- Header -->
+                    <div class="mb-4 pb-3 border-bottom" style="border-color: var(--border-default) !important;">
+                        <span class="text-uppercase fw-bold small tracking-wider" style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                            Room Configuration
+                        </span>
+                        <h1 class="h3 fw-bold mt-1 mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;"
+                            th:text="${isEdit} ? 'Edit Room ' + ${roomForm.roomNumber} : 'Create New Room'">
+                            Room Form
+                        </h1>
+                        <p class="text-secondary small mb-0">Fill in the accommodation details below.</p>
+                    </div>
+
+                    <!-- Room Form -->
+                    <form th:action="${isEdit} ? @{/admin/rooms/{id}(id=${roomId})} : @{/admin/rooms}"
+                          th:object="${roomForm}"
+                          method="post"
+                          novalidate>
+
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <!-- Room Number -->
+                        <div class="mb-3">
+                            <label for="roomNumber" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                Room Number <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   id="roomNumber"
+                                   th:field="*{roomNumber}"
+                                   th:classappend="${#fields.hasErrors('roomNumber')} ? 'is-invalid'"
+                                   class="form-control"
+                                   placeholder="e.g. 101, 204A"
+                                   maxlength="10"
+                                   required/>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('roomNumber')}">
+                                <span th:errors="*{roomNumber}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Room Type -->
+                        <div class="mb-3">
+                            <label for="type" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                Room Type <span class="text-danger">*</span>
+                            </label>
+                            <select id="type"
+                                    th:field="*{type}"
+                                    th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'"
+                                    class="form-select"
+                                    required>
+                                <option value="" disabled selected>Select category...</option>
+                                <option th:each="t : ${roomTypes}"
+                                        th:value="${t}"
+                                        th:text="${t}"></option>
+                            </select>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('type')}">
+                                <span th:errors="*{type}"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Capacity -->
+                            <div class="col-12 col-sm-6">
+                                <label for="capacity" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                    Capacity (Guests) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       id="capacity"
+                                       th:field="*{capacity}"
+                                       th:classappend="${#fields.hasErrors('capacity')} ? 'is-invalid'"
+                                       class="form-control"
+                                       min="1"
+                                       max="10"
+                                       required/>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('capacity')}">
+                                    <span th:errors="*{capacity}"></span>
+                                </div>
+                            </div>
+
+                            <!-- Price per Night -->
+                            <div class="col-12 col-sm-6">
+                                <label for="pricePerNight" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                    Price per Night (₹) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       step="0.01"
+                                       id="pricePerNight"
+                                       th:field="*{pricePerNight}"
+                                       th:classappend="${#fields.hasErrors('pricePerNight')} ? 'is-invalid'"
+                                       class="form-control"
+                                       min="1.00"
+                                       placeholder="750.00"
+                                       required/>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('pricePerNight')}">
+                                    <span th:errors="*{pricePerNight}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                Description <span class="text-secondary fw-normal">(optional, max 1000 characters)</span>
+                            </label>
+                            <textarea id="description"
+                                      th:field="*{description}"
+                                      th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Provide amenities, furnishing, or view details..."></textarea>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('description')}">
+                                <span th:errors="*{description}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Active Toggle -->
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   role="switch"
+                                   id="active"
+                                   th:field="*{active}"/>
+                            <label class="form-check-label fw-medium small" for="active" style="color: var(--text-primary);">
+                                Active (available for customer search and booking)
+                            </label>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 justify-content-end pt-3 border-top" style="border-color: var(--border-default) !important;">
+                            <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-cobalt px-4 fw-semibold">
+                                <i class="bi bi-check-lg me-1"></i>
+                                <span th:text="${isEdit} ? 'Save Changes' : 'Create Room'">Save</span>
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Accommodations')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Page Header -->
+        <div class="mb-4">
+            <span class="text-uppercase fw-bold small tracking-wider" style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                Available Accommodations
+            </span>
+            <h1 class="display-6 fw-bold mt-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                Explore Rooms &amp; Suites
+            </h1>
+            <p class="text-secondary mb-0">Browse our curated selection of comfortable, modern hostel and PG rooms.</p>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card border-0 shadow-sm p-4 mb-5" style="background: var(--surface-card); border-radius: 12px;">
+            <form th:action="@{/rooms}" method="get" class="row g-3 align-items-end">
+
+                <!-- Room Type Dropdown -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="type" class="form-label small fw-semibold" style="color: var(--text-primary);">Room Type</label>
+                    <select id="type" name="type" class="form-select">
+                        <option value="">All Types</option>
+                        <option th:each="t : ${roomTypes}"
+                                th:value="${t}"
+                                th:text="${t}"
+                                th:selected="${t == type}"></option>
+                    </select>
+                </div>
+
+                <!-- Min Capacity -->
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label for="capacity" class="form-label small fw-semibold" style="color: var(--text-primary);">Min Capacity</label>
+                    <input type="number"
+                           id="capacity"
+                           name="capacity"
+                           class="form-control"
+                           min="1"
+                           placeholder="Any"
+                           th:value="${capacity}"/>
+                </div>
+
+                <!-- Min Price -->
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label for="minPrice" class="form-label small fw-semibold" style="color: var(--text-primary);">Min Price (₹)</label>
+                    <input type="number"
+                           step="0.01"
+                           id="minPrice"
+                           name="minPrice"
+                           class="form-control"
+                           min="0"
+                           placeholder="0.00"
+                           th:value="${minPrice}"/>
+                </div>
+
+                <!-- Max Price -->
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label for="maxPrice" class="form-label small fw-semibold" style="color: var(--text-primary);">Max Price (₹)</label>
+                    <input type="number"
+                           step="0.01"
+                           id="maxPrice"
+                           name="maxPrice"
+                           class="form-control"
+                           min="0"
+                           placeholder="Max"
+                           th:value="${maxPrice}"/>
+                </div>
+
+                <!-- Actions: Search & Clear -->
+                <div class="col-12 col-lg-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-cobalt flex-grow-1 fw-semibold">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                    <a th:href="@{/rooms}" class="btn btn-outline-secondary px-3" title="Clear all filters">
+                        Clear
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Room Cards Grid -->
+        <div th:if="${rooms != null and !rooms.isEmpty()}" class="row g-4">
+            <div th:each="r : ${rooms}" class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <div class="card h-100 border-0 shadow-sm transition-hover"
+                     style="background: var(--surface-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-default) !important;">
+
+                    <div class="card-body p-4 d-flex flex-column">
+                        <!-- Card Header: Room Number & Type Badge -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fs-5 fw-bold" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                                Room <span th:text="${r.roomNumber}">101</span>
+                            </span>
+                            <span class="badge px-2 py-1 rounded-pill"
+                                  style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.75rem; letter-spacing: 0.05em;"
+                                  th:text="${r.type}">SINGLE</span>
+                        </div>
+
+                        <!-- Capacity & Details snippet -->
+                        <div class="d-flex align-items-center gap-2 text-secondary small mb-3">
+                            <i class="bi bi-people-fill text-muted"></i>
+                            <span>Capacity: <strong th:text="${r.capacity}">1</strong> person(s)</span>
+                        </div>
+
+                        <p class="small text-secondary mb-4 flex-grow-1"
+                           style="line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+                           th:text="${r.description != null ? r.description : 'Comfortable accommodation with modern amenities.'}">
+                            Description placeholder
+                        </p>
+
+                        <!-- Card Footer: Price & Details button -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto" style="border-color: var(--border-default) !important;">
+                            <div>
+                                <span class="small text-secondary">Starting at</span>
+                                <div class="fw-bold fs-5" style="color: var(--brand-oxblood);">
+                                    ₹<span th:text="${#numbers.formatDecimal(r.pricePerNight, 1, 2)}">750.00</span>
+                                    <span class="small fw-normal text-muted" style="font-size: 0.75rem;">/ night</span>
+                                </div>
+                            </div>
+                            <a th:href="@{/rooms/{id}(id=${r.id})}" class="btn btn-outline-se btn-sm px-3 fw-medium">
+                                Details
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${rooms == null or rooms.isEmpty()}" class="text-center py-5 my-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                 style="width: 64px; height: 64px; background: var(--brand-oxblood-soft);">
+                <i class="bi bi-search fs-2" style="color: var(--brand-oxblood);"></i>
+            </div>
+            <h3 class="h5 fw-bold mb-2" style="color: var(--text-primary);">No rooms match your search.</h3>
+            <p class="text-secondary small mb-4">Try relaxing your filter criteria or clear the filters to view all available accommodations.</p>
+            <a th:href="@{/rooms}" class="btn btn-outline-se btn-sm px-4">
+                View all rooms
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>
