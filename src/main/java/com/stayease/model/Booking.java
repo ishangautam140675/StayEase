@@ -25,7 +25,10 @@ import java.util.Objects;
 @Table(name = "bookings", indexes = {
     @Index(name = "idx_bookings_room_dates", columnList = "room_id, check_in, check_out"),
     @Index(name = "idx_bookings_reference", columnList = "booking_reference"),
-    @Index(name = "idx_bookings_idempotency", columnList = "idempotency_key")
+    @Index(name = "idx_bookings_idempotency", columnList = "idempotency_key"),
+    @Index(name = "idx_bookings_user_status", columnList = "user_id, status"),
+    @Index(name = "idx_bookings_created", columnList = "created_at"),
+    @Index(name = "idx_bookings_payment_status", columnList = "payment_status")
 })
 public class Booking {
 

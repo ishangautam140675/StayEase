@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
@@ -17,7 +18,10 @@ import java.time.LocalDateTime;
  * retry resilience, and duplicate-delivery prevention.
  */
 @Entity
-@Table(name = "notification_logs")
+@Table(name = "notification_logs", indexes = {
+    @Index(name = "idx_notif_ref", columnList = "notification_type, reference_id"),
+    @Index(name = "idx_notif_status", columnList = "status")
+})
 public class NotificationLog {
 
     @Id

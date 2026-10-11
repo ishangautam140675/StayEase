@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
@@ -16,7 +17,9 @@ import java.util.Objects;
  * Entity representing a room available for booking in the StayEase system.
  */
 @Entity
-@Table(name = "rooms")
+@Table(name = "rooms", indexes = {
+    @Index(name = "idx_rooms_catalog", columnList = "active, under_maintenance, type, capacity")
+})
 public class Room {
 
     @Id

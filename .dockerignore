@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/*.iml
+target/
+*.log
+logs/
+.env*
+scripts/*.pem
+scripts/*.key
+scripts/*.dump
+scripts/*.sql.gz
+CVS
+.svn
+.DS_Store
+Thumbs.db

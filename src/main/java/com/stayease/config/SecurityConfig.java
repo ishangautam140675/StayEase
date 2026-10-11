@@ -84,14 +84,35 @@ public class SecurityConfig {
                     "/register", "/login",
                     "/forgot-password", "/reset-password", "/verify-email",
                     "/api/webhooks/**", "/webhooks/**",
+                    "/actuator/health", "/actuator/health/**", "/actuator/info",
                     "/css/**", "/js/**", "/images/**",
                     "/error", "/error/**"
                 ).permitAll()
                 // Role-restricted areas
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/customer/**").hasRole("CUSTOMER")
                 // Everything else requires any authenticated user
                 .anyRequest().authenticated()
+            )
+
+            // ── Security Headers (Production Hardening) ─────────────────────
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; img-src 'self' data: https:; connect-src 'self';")
+                )
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000)
+                )
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(contentType -> {})
+                .referrerPolicy(referrer -> referrer
+                    .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                )
+                .permissionsPolicy(permissions -> permissions
+                    .policy("camera=(), microphone=(), geolocation=()")
+                )
             )
 
             // ── Form Login ─────────────────────────────────────────────────
