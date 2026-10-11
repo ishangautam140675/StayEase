@@ -38,6 +38,14 @@ public class InAppNotificationService {
     }
 
     /**
+     * Asynchronously sends notification to a specific user without blocking caller.
+     */
+    @org.springframework.scheduling.annotation.Async("taskExecutor")
+    public void notifyUserAsync(String email, String title, String message, String type, String linkUrl) {
+        notifyUser(email, title, message, type, linkUrl);
+    }
+
+    /**
      * Send broadcast notification to all admins.
      */
     @Transactional
@@ -46,6 +54,14 @@ public class InAppNotificationService {
         InAppNotification saved = notificationRepository.save(notification);
         log.info("InAppNotification created for admins: [{}] {}", type, title);
         return saved;
+    }
+
+    /**
+     * Asynchronously sends broadcast notification to all admins without blocking caller.
+     */
+    @org.springframework.scheduling.annotation.Async("taskExecutor")
+    public void notifyAdminAsync(String title, String message, String type, String linkUrl) {
+        notifyAdmin(title, message, type, linkUrl);
     }
 
     /**

@@ -146,5 +146,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("startDate") java.time.LocalDate startDate,
             @Param("endDate") java.time.LocalDate endDate
     );
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room " +
+           "WHERE b.status = com.stayease.model.BookingStatus.APPROVED " +
+           "AND b.checkIn = :checkInDate")
+    List<Booking> findApprovedBookingsByCheckInDate(@Param("checkInDate") java.time.LocalDate checkInDate);
 }
 

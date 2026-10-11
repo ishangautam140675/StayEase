@@ -568,6 +568,26 @@ public class BookingService {
             );
         }
 
+        if (notificationService != null) {
+            try {
+                if (saved.getUser() != null) {
+                    notificationService.notifyUser(
+                            saved.getUser().getEmail(),
+                            "Reservation Marked as No-Show",
+                            "Your reservation for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " (" + saved.getBookingReference() + ") has been marked as No-Show.",
+                            "BOOKING_NO_SHOW",
+                            "/customer/bookings/" + saved.getId()
+                    );
+                }
+                notificationService.notifyAdmin(
+                        "Booking Marked No-Show",
+                        "Booking #" + saved.getId() + " (" + saved.getBookingReference() + ") for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " was marked as No-Show by " + adminEmail + ".",
+                        "BOOKING_NO_SHOW",
+                        "/admin/bookings"
+                );
+            } catch (Exception e) {}
+        }
+
         return saved;
     }
 

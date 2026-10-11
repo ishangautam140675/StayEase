@@ -240,6 +240,15 @@ public class EmailService {
     }
 
     /**
+     * Asynchronously dispatches email notification on the taskExecutor thread pool.
+     */
+    @org.springframework.scheduling.annotation.Async("taskExecutor")
+    public java.util.concurrent.CompletableFuture<Void> sendSafeAsync(String recipient, String subject, String htmlBody, NotificationType type, String refId, String idempotencyKey) {
+        sendSafe(recipient, subject, htmlBody, type, refId, idempotencyKey);
+        return java.util.concurrent.CompletableFuture.completedFuture(null);
+    }
+
+    /**
      * Builds consistent, responsive, editorial HTML email template.
      */
     private String buildBrandedEmail(String headerTitle, String greeting, String leadText, String bodyText, String extraDetails, String actionUrl, String actionLabel) {
