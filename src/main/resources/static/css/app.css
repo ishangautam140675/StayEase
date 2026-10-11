@@ -664,3 +664,47 @@ textarea:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   13. Pagination Design System (Phase 14)
+   -------------------------------------------------------------------------- */
+.pagination {
+  gap: 4px;
+}
+
+.page-item .page-link {
+  color: var(--text-primary);
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.page-item .page-link:hover {
+  background-color: var(--brand-cobalt-soft);
+  color: var(--brand-cobalt);
+  border-color: var(--brand-cobalt-border);
+}
+
+.page-item.active .page-link {
+  background-color: var(--brand-cobalt);
+  border-color: var(--brand-cobalt);
+  color: #FFFFFF !important;
+}
+
+.page-item.disabled .page-link {
+  color: var(--text-subtle);
+  background-color: var(--surface-muted);
+  border-color: var(--border-default);
+  opacity: 0.6;
+}
+
+/* Ensure table responsive containers never cause parent horizontal scroll */
+.table-responsive {
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+

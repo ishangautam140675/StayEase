@@ -12,6 +12,9 @@ import com.stayease.service.BookingService;
 import com.stayease.service.DashboardService;
 import com.stayease.service.RoomService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -199,12 +202,19 @@ public class CustomerController {
     }
 
     /**
-     * Displays the customer's personal booking reservation history.
+     * Displays the customer's personal booking reservation history (10 per page).
      */
     @GetMapping("/customer/bookings")
-    public String bookingHistory(Principal principal, Model model) {
-        List<Booking> bookings = bookingService.getBookingsForUser(principal.getName());
-        model.addAttribute("bookings", bookings);
+    public String bookingHistory(@RequestParam(value = "page", defaultValue = "1") Integer page,
+                                 Principal principal,
+                                 Model model) {
+        int pageNum = (page != null && page > 0) ? page : 1;
+        int pageIndex = pageNum - 1;
+        Pageable pageable = PageRequest.of(pageIndex, 10);
+        Page<Booking> bookingPage = bookingService.getBookingsForUser(principal.getName(), pageable);
+
+        model.addAttribute("bookings", bookingPage.getContent());
+        model.addAttribute("page", bookingPage);
         return "customer/bookings";
     }
 

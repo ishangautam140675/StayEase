@@ -10,6 +10,8 @@ import com.stayease.model.User;
 import com.stayease.repository.BookingRepository;
 import com.stayease.repository.RoomRepository;
 import com.stayease.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -153,6 +155,13 @@ public class BookingService {
     }
 
     /**
+     * Retrieves paginated booking history for a specific customer.
+     */
+    public Page<Booking> getBookingsForUser(String userEmail, Pageable pageable) {
+        return bookingRepository.findByUserEmailOrderByCreatedAtDesc(userEmail, pageable);
+    }
+
+    /**
      * Alias for {@link #getBookingsForUser(String)}.
      */
     public List<Booking> findCustomerBookings(String userEmail) {
@@ -171,6 +180,16 @@ public class BookingService {
             return bookingRepository.findAllWithUserAndRoomOrderByCreatedAtDesc();
         }
         return bookingRepository.findAllWithUserAndRoomByStatusOrderByCreatedAtDesc(status);
+    }
+
+    /**
+     * Lists paginated bookings for the administrative console with optional status filter.
+     */
+    public Page<Booking> listForAdmin(BookingStatus status, Pageable pageable) {
+        if (status == null) {
+            return bookingRepository.findAllWithUserAndRoomOrderByCreatedAtDesc(pageable);
+        }
+        return bookingRepository.findAllWithUserAndRoomByStatusOrderByCreatedAtDesc(status, pageable);
     }
 
     /**

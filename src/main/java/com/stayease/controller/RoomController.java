@@ -3,6 +3,10 @@ package com.stayease.controller;
 import com.stayease.model.Room;
 import com.stayease.model.RoomType;
 import com.stayease.service.RoomService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +29,7 @@ public class RoomController {
     }
 
     /**
-     * GET /rooms — lists active rooms matching optional search criteria.
+     * GET /rooms — lists active rooms matching optional search criteria (9 per page).
      */
     @GetMapping("/rooms")
     public String listRooms(
@@ -33,11 +37,16 @@ public class RoomController {
             @RequestParam(required = false) Integer capacity,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(name = "page", defaultValue = "1") Integer page,
             Model model) {
 
-        List<Room> rooms = roomService.searchActiveRooms(type, capacity, minPrice, maxPrice);
+        int pageNum = (page != null && page > 0) ? page : 1;
+        int pageIndex = pageNum - 1;
+        Pageable pageable = PageRequest.of(pageIndex, 9, Sort.by("roomNumber").ascending());
+        Page<Room> roomPage = roomService.searchActiveRooms(type, capacity, minPrice, maxPrice, pageable);
 
-        model.addAttribute("rooms", rooms);
+        model.addAttribute("rooms", roomPage.getContent());
+        model.addAttribute("page", roomPage);
         model.addAttribute("roomTypes", RoomType.values());
         model.addAttribute("type", type);
         model.addAttribute("capacity", capacity);

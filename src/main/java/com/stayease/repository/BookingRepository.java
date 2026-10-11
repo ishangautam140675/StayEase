@@ -2,12 +2,13 @@ package com.stayease.repository;
 
 import com.stayease.model.Booking;
 import com.stayease.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -23,11 +24,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b JOIN FETCH b.room WHERE b.user.email = :email ORDER BY b.createdAt DESC")
     List<Booking> findByUserEmailOrderByCreatedAtDesc(@Param("email") String email);
 
+    @Query(value = "SELECT b FROM Booking b JOIN FETCH b.room WHERE b.user.email = :email ORDER BY b.createdAt DESC",
+           countQuery = "SELECT count(b) FROM Booking b WHERE b.user.email = :email")
+    Page<Booking> findByUserEmailOrderByCreatedAtDesc(@Param("email") String email, Pageable pageable);
+
     @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room ORDER BY b.createdAt DESC")
     List<Booking> findAllWithUserAndRoomOrderByCreatedAtDesc();
 
+    @Query(value = "SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room ORDER BY b.createdAt DESC",
+           countQuery = "SELECT count(b) FROM Booking b")
+    Page<Booking> findAllWithUserAndRoomOrderByCreatedAtDesc(Pageable pageable);
+
     @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.status = :status ORDER BY b.createdAt DESC")
     List<Booking> findAllWithUserAndRoomByStatusOrderByCreatedAtDesc(@Param("status") com.stayease.model.BookingStatus status);
+
+    @Query(value = "SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.status = :status ORDER BY b.createdAt DESC",
+           countQuery = "SELECT count(b) FROM Booking b WHERE b.status = :status")
+    Page<Booking> findAllWithUserAndRoomByStatusOrderByCreatedAtDesc(@Param("status") com.stayease.model.BookingStatus status, Pageable pageable);
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.id = :id")
     java.util.Optional<Booking> findByIdWithUserAndRoom(@Param("id") Long id);

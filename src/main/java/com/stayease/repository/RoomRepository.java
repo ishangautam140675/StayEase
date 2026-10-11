@@ -3,6 +3,8 @@ package com.stayease.repository;
 import com.stayease.model.Room;
 import com.stayease.model.RoomType;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +34,25 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("capacity") Integer capacity,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice
+    );
+
+    @Query(value = "SELECT r FROM Room r WHERE r.active = true " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:capacity IS NULL OR r.capacity >= :capacity) " +
+           "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
+           "ORDER BY r.roomNumber",
+           countQuery = "SELECT count(r) FROM Room r WHERE r.active = true " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:capacity IS NULL OR r.capacity >= :capacity) " +
+           "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice)")
+    Page<Room> searchActiveRooms(
+            @Param("type") RoomType type,
+            @Param("capacity") Integer capacity,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            Pageable pageable
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

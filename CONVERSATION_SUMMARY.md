@@ -215,14 +215,41 @@ Recorded in [`.agents/rules/ui-design-rules.md`](.agents/rules/ui-design-rules.m
 ## 15. Phase 13: Two Genuinely Different Dashboards
 * Implemented `DashboardService` with dedicated data aggregation for each role:
   * **Admin Dashboard:** `AdminDashboardStats` featuring total rooms, active rooms, occupied rooms today, available rooms today, occupancy percentage, pending requests count, 6-month booking trends (`MonthBookingCount`), and urgent pending approvals table.
-  * **Customer Dashboard:** `CustomerDashboardView` featuring personal stay stats (upcoming, pending, past stays), hero highlight for the immediate next stay, upcoming itinerary table, and quick room availability search widget (`/customer/availability`).
+  * **Customer Dashboard:** `CustomerDashboardView` featuring personal stay stays (upcoming, pending, past stays), hero highlight for the immediate next stay, upcoming itinerary table, and quick room availability search widget (`/customer/availability`).
 * Created views: `admin/dashboard.html`, `customer/dashboard.html`, and `customer/availability.html`.
 * Added unit, integration, and security tests in `DashboardServiceTest` and `DashboardControllerTest`.
 
 ---
 
-## 16. Git & GitHub Status
+## 16. Phase 14: Polish and Responsiveness
+* **Spring Data `Pageable` Pagination:**
+  * Public rooms catalog (`/rooms`): 9 rooms per page with 1-based page query parameters (`page=1` gives 9 items, `page=3` gives 7 items for 25 rooms total).
+  * Admin booking management (`/admin/bookings`): 10 bookings per page.
+  * Customer booking management (`/customer/bookings`): 10 bookings per page.
+  * Filter query parameters (`type`, `capacity`, `minPrice`, `maxPrice`, `status`) are preserved across pagination links.
+  * Out-of-range and negative page numbers do not crash or return HTTP 500; gracefully display the empty state or clamped page.
+* **Fragments & Component Reuse:**
+  * Created [`templates/fragments/pagination.html`](src/main/resources/templates/fragments/pagination.html) with active filter retention and re-used across rooms, admin bookings, and customer bookings.
+  * Created [`templates/fragments/status-badge.html`](src/main/resources/templates/fragments/status-badge.html) providing unified badge styling for all booking statuses (`PENDING` warning, `APPROVED` success, `REJECTED` danger, `CANCELLED` secondary).
+* **Responsive Tables & Empty States:**
+  * Every data table is wrapped inside `.table-responsive` with `-webkit-overflow-scrolling: touch; max-width: 100%;` preventing parent horizontal overflow.
+  * Added friendly, illustrated empty states for rooms catalog, customer bookings, and admin bookings.
+* **Form & Interaction Polish:**
+  * Explicit `<label>` elements for all input elements and `th:errors` validation display under each field.
+  * Date inputs with `min` attributes bound to today's date (`yyyy-MM-dd`).
+  * Global double-submit prevention script attached to all forms in `layout.html` scripts fragment.
+  * Destructive action confirmation dialogs (`confirm(...)`) on room deletion, customer booking cancellation, and admin rejection.
+* **Visual Role Differentiation:**
+  * Dark navbar (`#1a1014`) with an orange "Admin" badge next to the brand for `ADMIN` users via `sec:authorize="hasRole('ADMIN')"`.
+  * Brand cobalt navbar (`#3046D3`) for `CUSTOMER` and anonymous users via `sec:authorize="!hasRole('ADMIN')"`.
+* **Testing:**
+  * Added [`PaginationTest.java`](src/test/java/com/stayease/controller/PaginationTest.java) validating room pagination (25 rooms: 9 on page 1, 7 on page 3, empty state on page 99 without 500, filter preservation) and booking pagination.
+  * Total suite: 167 tests passing (`BUILD SUCCESS`).
+
+---
+
+## 17. Git & GitHub Status
 * **Branch:** `main`
 * **Remote:** [https://github.com/ishangautam140675/StayEase.git](https://github.com/ishangautam140675/StayEase.git)
-* **Status:** All tests passing (`BUILD SUCCESS`, 164 tests across all 13 phases).
+* **Status:** All tests passing (`BUILD SUCCESS`, 167 tests across all 14 phases).
 

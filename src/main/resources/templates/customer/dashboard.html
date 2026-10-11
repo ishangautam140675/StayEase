@@ -293,16 +293,9 @@
                                 </span>
                             </td>
 
-                            <!-- Status Badge -->
+                            <!-- Status Badge (Phase 14 Fragment) -->
                             <td class="py-3 text-center">
-                                <span th:if="${b.status.name() == 'PENDING'}"
-                                      class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-hourglass-split me-1"></i>PENDING
-                                </span>
-                                <span th:if="${b.status.name() == 'APPROVED'}"
-                                      class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-check-circle-fill me-1"></i>APPROVED
-                                </span>
+                                <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
                             </td>
 
                             <!-- Cancel Button Form (Phase 12 / 13) -->

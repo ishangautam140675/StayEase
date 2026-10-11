@@ -7,6 +7,8 @@ import com.stayease.model.Room;
 import com.stayease.model.RoomType;
 import com.stayease.repository.BookingRepository;
 import com.stayease.repository.RoomRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,13 @@ public class RoomService {
      */
     public List<Room> searchActiveRooms(RoomType type, Integer capacity, BigDecimal minPrice, BigDecimal maxPrice) {
         return roomRepository.searchActiveRooms(type, capacity, minPrice, maxPrice);
+    }
+
+    /**
+     * Finds active rooms matching optional filtering criteria with pagination.
+     */
+    public Page<Room> searchActiveRooms(RoomType type, Integer capacity, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return roomRepository.searchActiveRooms(type, capacity, minPrice, maxPrice, pageable);
     }
 
     /**

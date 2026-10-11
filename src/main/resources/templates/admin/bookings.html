@@ -158,24 +158,9 @@
                                 </span>
                             </td>
 
-                            <!-- Status Badge -->
+                            <!-- Status Badge (Phase 14 Fragment) -->
                             <td class="py-3 text-center">
-                                <span th:if="${b.status.name() == 'PENDING'}"
-                                      class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-hourglass-split me-1"></i>PENDING
-                                </span>
-                                <span th:if="${b.status.name() == 'APPROVED'}"
-                                      class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-check-circle-fill me-1"></i>APPROVED
-                                </span>
-                                <span th:if="${b.status.name() == 'REJECTED'}"
-                                      class="badge bg-danger px-3 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-x-circle-fill me-1"></i>REJECTED
-                                </span>
-                                <span th:if="${b.status.name() == 'CANCELLED'}"
-                                      class="badge bg-secondary px-3 py-2 rounded-pill fw-semibold">
-                                    <i class="bi bi-slash-circle me-1"></i>CANCELLED
-                                </span>
+                                <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
                             </td>
 
                             <!-- Admin Remark -->
@@ -202,10 +187,11 @@
                                         </button>
                                     </form>
 
-                                    <!-- Reject Inline Form with Remark -->
+                                    <!-- Reject Inline Form with Remark & Confirm Dialog (Phase 14) -->
                                     <form th:action="@{/admin/bookings/{id}/reject(id=${b.id})}"
                                           method="post"
-                                          class="d-inline-flex gap-1 m-0">
+                                          class="d-inline-flex gap-1 m-0"
+                                          onsubmit="return confirm('Are you sure you want to reject this booking?');">
                                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                         <input type="text"
                                                name="remark"
@@ -246,6 +232,9 @@
             </div>
 
         </div>
+
+        <!-- Pagination (Phase 14) -->
+        <div th:replace="~{fragments/pagination :: pagination(page=${page}, baseUrl='/admin/bookings')}"></div>
 
     </div>
 </main>

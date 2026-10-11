@@ -140,6 +140,9 @@
             </div>
         </div>
 
+        <!-- Pagination (Phase 14) -->
+        <div th:replace="~{fragments/pagination :: pagination(page=${page}, baseUrl='/rooms')}"></div>
+
         <!-- Empty State -->
         <div th:if="${rooms == null or rooms.isEmpty()}" class="text-center py-5 my-4">
             <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"

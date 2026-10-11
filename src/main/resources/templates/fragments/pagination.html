@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Reusable pagination fragment -->
+<nav th:fragment="pagination(page, baseUrl)"
+     th:if="${page != null and page.totalPages > 1}"
+     aria-label="Page navigation"
+     class="d-flex justify-content-center my-4">
+    <ul class="pagination pagination-md shadow-sm mb-0">
+        <!-- Previous Page Link -->
+        <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="${page.first} ? '#' : @{${baseUrl}(page=${page.number}, type=${type}, capacity=${capacity}, minPrice=${minPrice}, maxPrice=${maxPrice}, status=${selectedStatus})}"
+               aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <!-- Page Numbers (1-indexed for user display) -->
+        <li th:each="i : ${#numbers.sequence(1, page.totalPages)}"
+            class="page-item"
+            th:classappend="${i == (page.number + 1)} ? 'active'">
+            <a class="page-link"
+               th:href="@{${baseUrl}(page=${i}, type=${type}, capacity=${capacity}, minPrice=${minPrice}, maxPrice=${maxPrice}, status=${selectedStatus})}"
+               th:text="${i}">1</a>
+        </li>
+
+        <!-- Next Page Link -->
+        <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="${page.last} ? '#' : @{${baseUrl}(page=${page.number + 2}, type=${type}, capacity=${capacity}, minPrice=${minPrice}, maxPrice=${maxPrice}, status=${selectedStatus})}"
+               aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+</body>
+</html>
