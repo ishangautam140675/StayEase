@@ -31,6 +31,8 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final AuditLogService auditLogService;
+    private final SeasonalPricingService seasonalPricingService;
 
     @org.springframework.beans.factory.annotation.Value("${app.booking.cancellation-lead-hours:24}")
     private int cancellationLeadHours = 24;
@@ -38,18 +40,22 @@ public class BookingService {
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           UserRepository userRepository) {
-        this(bookingRepository, roomRepository, userRepository, null);
+        this(bookingRepository, roomRepository, userRepository, null, null, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           UserRepository userRepository,
-                          @org.springframework.beans.factory.annotation.Autowired(required = false) EmailService emailService) {
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) EmailService emailService,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) AuditLogService auditLogService,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) SeasonalPricingService seasonalPricingService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.auditLogService = auditLogService;
+        this.seasonalPricingService = seasonalPricingService;
     }
 
     /**
@@ -133,7 +139,9 @@ public class BookingService {
         }
 
         long nights = calculateNights(form.getCheckIn(), form.getCheckOut());
-        BigDecimal pricePerNight = room.getPricePerNight();
+        BigDecimal pricePerNight = (seasonalPricingService != null)
+                ? seasonalPricingService.calculateStayAverageRate(room, form.getCheckIn(), form.getCheckOut())
+                : room.getPricePerNight();
         BigDecimal total = calculateTotalPrice(pricePerNight, nights);
 
         Booking booking = new Booking();
@@ -291,10 +299,172 @@ public class BookingService {
         booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.APPROVED,
                 adminEmail != null ? adminEmail : "ADMIN", "Booking approved by administrator");
         Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    adminEmail,
+                    "BOOKING_APPROVED",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Approved booking #" + saved.getId() + " (" + saved.getBookingReference() + ") for Room " +
+                    (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "")
+            );
+        }
+
         if (emailService != null) {
             emailService.sendBookingApproved(saved);
         }
         return saved;
+    }
+
+    /**
+     * Checks in a guest for an APPROVED booking.
+     * Transitions status from APPROVED -> CHECKED_IN.
+     */
+    @Transactional
+    public Booking checkIn(Long bookingId, String adminEmail) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.APPROVED) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be checked in because its status is " + booking.getStatus() +
+                    " (only APPROVED bookings can be checked in)."
+            );
+        }
+
+        booking.setStatus(BookingStatus.CHECKED_IN);
+        booking.setCheckedInAt(java.time.LocalDateTime.now());
+        booking.addStatusHistory(BookingStatus.APPROVED, BookingStatus.CHECKED_IN,
+                adminEmail != null ? adminEmail : "ADMIN", "Guest checked in");
+        Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    adminEmail,
+                    "GUEST_CHECKED_IN",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Checked in guest for booking #" + saved.getId() + " (" + saved.getBookingReference() + ")"
+            );
+        }
+
+        return saved;
+    }
+
+    /**
+     * Checks out a guest for a CHECKED_IN booking.
+     * Transitions status from CHECKED_IN -> CHECKED_OUT. Releases inventory block.
+     */
+    @Transactional
+    public Booking checkOut(Long bookingId, String adminEmail) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be checked out because its status is " + booking.getStatus() +
+                    " (only CHECKED_IN bookings can be checked out)."
+            );
+        }
+
+        booking.setStatus(BookingStatus.CHECKED_OUT);
+        booking.setCheckedOutAt(java.time.LocalDateTime.now());
+        booking.addStatusHistory(BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT,
+                adminEmail != null ? adminEmail : "ADMIN", "Guest checked out");
+        Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    adminEmail,
+                    "GUEST_CHECKED_OUT",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Checked out guest for booking #" + saved.getId() + " (" + saved.getBookingReference() + ")"
+            );
+        }
+
+        return saved;
+    }
+
+    /**
+     * Marks an APPROVED booking as NO_SHOW if the guest did not arrive.
+     * Transitions status from APPROVED -> NO_SHOW. Releases inventory block.
+     */
+    @Transactional
+    public Booking markNoShow(Long bookingId, String adminEmail, String remark) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.APPROVED) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be marked as NO_SHOW because its status is " + booking.getStatus() +
+                    " (only APPROVED bookings can be marked as NO_SHOW)."
+            );
+        }
+
+        String reason = (remark != null && !remark.trim().isEmpty()) ? remark.trim() : "Guest marked as no-show";
+        booking.setStatus(BookingStatus.NO_SHOW);
+        booking.setAdminRemark(reason);
+        booking.addStatusHistory(BookingStatus.APPROVED, BookingStatus.NO_SHOW,
+                adminEmail != null ? adminEmail : "ADMIN", reason);
+        Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    adminEmail,
+                    "BOOKING_NO_SHOW",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Marked booking #" + saved.getId() + " (" + saved.getBookingReference() + ") as NO_SHOW. Reason: " + reason
+            );
+        }
+
+        return saved;
+    }
+
+    /**
+     * Updates internal operational notes for a booking.
+     */
+    @Transactional
+    public Booking updateOperationalNotes(Long bookingId, String notes, String adminEmail) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        String trimmed = (notes != null) ? notes.trim() : null;
+        if (trimmed != null && trimmed.length() > 1000) {
+            trimmed = trimmed.substring(0, 1000);
+        }
+        booking.setOperationalNotes(trimmed);
+        Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    adminEmail,
+                    "OPERATIONAL_NOTES_UPDATED",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Updated operational notes for booking #" + saved.getId()
+            );
+        }
+
+        return saved;
+    }
+
+    /**
+     * Searches administrative bookings with status, keyword (customer name, email, ref, room),
+     * and date-range filters.
+     */
+    public Page<Booking> searchAdminBookings(BookingStatus status, String query, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        String cleanQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        return bookingRepository.searchAdminBookings(status, cleanQuery, startDate, endDate, pageable);
+    }
+
+    /**
+     * Retrieves bookings for CSV export with optional status and date filters.
+     */
+    public List<Booking> listForExport(BookingStatus status, LocalDate startDate, LocalDate endDate) {
+        return bookingRepository.findBookingsForExport(status, startDate, endDate);
     }
 
     /**
@@ -335,6 +505,17 @@ public class BookingService {
         booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.REJECTED,
                 adminEmail != null ? adminEmail : "ADMIN", trimmedRemark);
         Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    adminEmail,
+                    "BOOKING_REJECTED",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Rejected booking #" + saved.getId() + " (" + saved.getBookingReference() + "). Reason: " + trimmedRemark
+            );
+        }
+
         if (emailService != null) {
             emailService.sendBookingRejected(saved, trimmedRemark);
         }
@@ -439,7 +620,10 @@ public class BookingService {
             return new com.stayease.dto.PriceBreakdown(0, BigDecimal.ZERO, checkIn, checkOut);
         }
         long nights = calculateNights(checkIn, checkOut);
-        return new com.stayease.dto.PriceBreakdown(nights, room.getPricePerNight(), checkIn, checkOut);
+        BigDecimal effectiveRate = (seasonalPricingService != null && checkIn != null && checkOut != null && checkIn.isBefore(checkOut))
+                ? seasonalPricingService.calculateStayAverageRate(room, checkIn, checkOut)
+                : room.getPricePerNight();
+        return new com.stayease.dto.PriceBreakdown(nights, effectiveRate, checkIn, checkOut);
     }
 
     public int getCancellationLeadHours() {

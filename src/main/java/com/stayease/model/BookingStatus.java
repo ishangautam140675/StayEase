@@ -10,14 +10,18 @@ import java.util.Set;
 public enum BookingStatus {
     PENDING,
     APPROVED,
+    CHECKED_IN,
+    CHECKED_OUT,
+    NO_SHOW,
     REJECTED,
     CANCELLED;
 
     /**
      * Set of booking statuses that actively block room inventory from other bookings.
+     * Both PENDING, APPROVED, and active in-house stays (CHECKED_IN) occupy inventory.
      */
     public static final Set<BookingStatus> BLOCKING = Collections.unmodifiableSet(
-            EnumSet.of(PENDING, APPROVED)
+            EnumSet.of(PENDING, APPROVED, CHECKED_IN)
     );
 
     /**

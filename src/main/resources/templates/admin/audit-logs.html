@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Admin Audit Trail')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+            <div>
+                <span class="text-uppercase fw-bold small tracking-wider"
+                      style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                    Security &amp; Compliance
+                </span>
+                <h1 class="display-6 fw-bold mt-1 mb-1"
+                    style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                    Administrative Audit Trail
+                </h1>
+                <p class="text-secondary mb-0">
+                    Immutable log of administrative operations: approvals, rejections, cancellations, check-ins, pricing updates, and inventory changes.
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-door-closed me-1"></i>Rooms
+                </a>
+                <a th:href="@{/admin/bookings}" class="btn btn-outline-se px-3">
+                    <i class="bi bi-calendar-check me-1"></i>Bookings
+                </a>
+                <a th:href="@{/admin/dashboard}" class="btn btn-cobalt px-3">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card border-0 shadow-sm p-3 mb-4"
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+            <form th:action="@{/admin/operations/audit-logs}" method="get" class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Admin Email</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                        <input type="text" name="adminEmail" class="form-control border-start-0"
+                               placeholder="e.g. admin@stayease.com" th:value="${filterEmail}"/>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Action Type</label>
+                    <select name="action" class="form-select form-select-sm">
+                        <option value="ALL" th:selected="${filterAction == 'ALL'}">All Actions</option>
+                        <option value="BOOKING_APPROVED" th:selected="${filterAction == 'BOOKING_APPROVED'}">Booking Approved</option>
+                        <option value="BOOKING_REJECTED" th:selected="${filterAction == 'BOOKING_REJECTED'}">Booking Rejected</option>
+                        <option value="GUEST_CHECKED_IN" th:selected="${filterAction == 'GUEST_CHECKED_IN'}">Guest Checked In</option>
+                        <option value="GUEST_CHECKED_OUT" th:selected="${filterAction == 'GUEST_CHECKED_OUT'}">Guest Checked Out</option>
+                        <option value="BOOKING_NO_SHOW" th:selected="${filterAction == 'BOOKING_NO_SHOW'}">Booking No-Show</option>
+                        <option value="OPERATIONAL_NOTES_UPDATED" th:selected="${filterAction == 'OPERATIONAL_NOTES_UPDATED'}">Notes Updated</option>
+                        <option value="MAINTENANCE_SCHEDULED" th:selected="${filterAction == 'MAINTENANCE_SCHEDULED'}">Maintenance Scheduled</option>
+                        <option value="MAINTENANCE_CANCELLED" th:selected="${filterAction == 'MAINTENANCE_CANCELLED'}">Maintenance Cancelled</option>
+                        <option value="SEASONAL_PRICE_CREATED" th:selected="${filterAction == 'SEASONAL_PRICE_CREATED'}">Seasonal Rate Created</option>
+                        <option value="SEASONAL_PRICE_DELETED" th:selected="${filterAction == 'SEASONAL_PRICE_DELETED'}">Seasonal Rate Deleted</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-cobalt btn-sm">Filter</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Audit Table Container -->
+        <div class="card border-0 shadow-sm"
+             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                 style="background: var(--surface-page);">
+                <div>
+                    <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                        <i class="bi bi-journal-text me-2" style="color: var(--brand-oxblood);"></i>Audit Log History
+                    </h2>
+                    <p class="small text-secondary mb-0">Chronological activity record with actor email, action type, and details</p>
+                </div>
+            </div>
+
+            <div th:if="${logs != null and !logs.isEmpty()}" class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-secondary">
+                        <tr>
+                            <th class="ps-4 py-3">Timestamp</th>
+                            <th class="py-3">Administrator</th>
+                            <th class="py-3">Action</th>
+                            <th class="py-3">Target</th>
+                            <th class="pe-4 py-3">Details / Diff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="l : ${logs.content}">
+                            <td class="ps-4 py-3 text-nowrap">
+                                <span class="fw-semibold text-dark"
+                                      th:text="${#temporals.format(l.timestamp, 'dd MMM yyyy, HH:mm:ss')}">
+                                    11 Oct 2026, 12:00:00
+                                </span>
+                            </td>
+                            <td class="py-3">
+                                <span class="badge bg-light text-dark border font-monospace" th:text="${l.adminEmail}">admin@example.com</span>
+                            </td>
+                            <td class="py-3">
+                                <span class="badge"
+                                      th:classappend="${#strings.contains(l.action, 'APPROVED') or #strings.contains(l.action, 'CHECKED_IN')} ? 'bg-success' :
+                                                      (${#strings.contains(l.action, 'REJECTED') or #strings.contains(l.action, 'NO_SHOW')} ? 'bg-danger' :
+                                                      (${#strings.contains(l.action, 'MAINTENANCE')} ? 'bg-warning text-dark' : 'bg-primary'))"
+                                      th:text="${l.action}">ACTION</span>
+                            </td>
+                            <td class="py-3 small text-secondary">
+                                <span class="fw-semibold" th:text="${l.entityType}">BOOKING</span>
+                                <span th:if="${l.entityId != null}">#<span th:text="${l.entityId}">1</span></span>
+                            </td>
+                            <td class="pe-4 py-3 small text-secondary" style="max-width: 380px;">
+                                <span th:text="${l.details}">Operation details here...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${logs == null or logs.isEmpty()}" class="text-center py-5 px-4">
+                <i class="bi bi-shield-check fs-1 text-success mb-2 d-block"></i>
+                <h3 class="h6 fw-bold mb-1">No audit records found</h3>
+                <p class="small text-secondary mb-0">No administrative activities match the current filter criteria.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${logs != null and logs.totalPages > 1}" class="p-3 border-top">
+                <div th:replace="~{fragments/pagination :: pagination(page=${logs}, baseUrl='/admin/operations/audit-logs')}"></div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

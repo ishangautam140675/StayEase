@@ -69,6 +69,15 @@ public class Booking {
     @Column(name = "admin_remark", length = 500)
     private String adminRemark;
 
+    @Column(name = "operational_notes", length = 1000)
+    private String operationalNotes;
+
+    @Column(name = "checked_in_at")
+    private LocalDateTime checkedInAt;
+
+    @Column(name = "checked_out_at")
+    private LocalDateTime checkedOutAt;
+
     @jakarta.persistence.OneToMany(mappedBy = "booking", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @jakarta.persistence.OrderBy("changedAt ASC")
     private java.util.List<BookingStatusHistory> statusHistory = new java.util.ArrayList<>();
@@ -253,6 +262,30 @@ public class Booking {
     public void addStatusHistory(BookingStatus fromStatus, BookingStatus toStatus, String changedBy, String reason) {
         BookingStatusHistory history = new BookingStatusHistory(this, fromStatus, toStatus, changedBy, reason);
         this.statusHistory.add(history);
+    }
+
+    public String getOperationalNotes() {
+        return operationalNotes;
+    }
+
+    public void setOperationalNotes(String operationalNotes) {
+        this.operationalNotes = operationalNotes;
+    }
+
+    public LocalDateTime getCheckedInAt() {
+        return checkedInAt;
+    }
+
+    public void setCheckedInAt(LocalDateTime checkedInAt) {
+        this.checkedInAt = checkedInAt;
+    }
+
+    public LocalDateTime getCheckedOutAt() {
+        return checkedOutAt;
+    }
+
+    public void setCheckedOutAt(LocalDateTime checkedOutAt) {
+        this.checkedOutAt = checkedOutAt;
     }
 
     public com.stayease.dto.PriceBreakdown getPriceBreakdown() {

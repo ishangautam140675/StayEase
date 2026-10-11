@@ -25,7 +25,11 @@ public class AdminController {
     }
 
     @GetMapping("/admin/dashboard")
-    public String dashboard(Principal principal, Model model) {
+    public String dashboard(@org.springframework.web.bind.annotation.RequestParam(value = "startDate", required = false)
+                            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+                            @org.springframework.web.bind.annotation.RequestParam(value = "endDate", required = false)
+                            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+                            Principal principal, Model model) {
         String userName = principal != null ? principal.getName() : "Administrator";
         if (principal != null) {
             userName = userRepository.findByEmail(principal.getName())
@@ -33,9 +37,13 @@ public class AdminController {
                     .orElse(principal.getName());
         }
         AdminDashboardStats stats = dashboardService.adminStats();
+        com.stayease.dto.AdminAnalyticsReport report = dashboardService.generateAnalyticsReport(startDate, endDate);
 
         model.addAttribute("userName", userName);
         model.addAttribute("stats", stats);
+        model.addAttribute("report", report);
+        model.addAttribute("startDate", report.getStartDate());
+        model.addAttribute("endDate", report.getEndDate());
         return "admin/dashboard";
     }
 }

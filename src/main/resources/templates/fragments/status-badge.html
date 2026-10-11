@@ -12,6 +12,18 @@
           class="se-badge se-badge-approved">
         <i class="bi bi-check-circle-fill me-1"></i>APPROVED
     </span>
+    <span th:if="${status.name() == 'CHECKED_IN' or status == 'CHECKED_IN'}"
+          class="se-badge se-badge-checked-in">
+        <i class="bi bi-box-arrow-in-right me-1"></i>CHECKED IN
+    </span>
+    <span th:if="${status.name() == 'CHECKED_OUT' or status == 'CHECKED_OUT'}"
+          class="se-badge se-badge-checked-out">
+        <i class="bi bi-box-arrow-right me-1"></i>CHECKED OUT
+    </span>
+    <span th:if="${status.name() == 'NO_SHOW' or status == 'NO_SHOW'}"
+          class="se-badge se-badge-no-show">
+        <i class="bi bi-person-x me-1"></i>NO SHOW
+    </span>
     <span th:if="${status.name() == 'REJECTED' or status == 'REJECTED'}"
           class="se-badge se-badge-rejected">
         <i class="bi bi-x-circle-fill me-1"></i>REJECTED

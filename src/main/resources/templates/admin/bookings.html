@@ -28,9 +28,12 @@
                 <p class="text-secondary mb-0">Review booking requests, verify date availability, and approve or reject reservations.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <a th:href="@{/admin/bookings/export(status=${selectedStatus})}"
+                <a th:href="@{/admin/bookings/export(status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"
                    class="btn btn-outline-success px-3">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV
+                </a>
+                <a th:href="@{/admin/operations/maintenance}" class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-tools me-1"></i>Maintenance
                 </a>
                 <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary px-3">
                     <i class="bi bi-door-closed me-1"></i>Manage Rooms
@@ -41,13 +44,40 @@
             </div>
         </div>
 
+        <!-- Search and Date Filter Form -->
+        <div class="card border-0 shadow-sm p-3 mb-4"
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+            <form th:action="@{/admin/bookings}" method="get" class="row g-2 align-items-end">
+                <input type="hidden" name="status" th:value="${selectedStatus}"/>
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Search Guest, Room or Booking Reference</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="query" class="form-control border-start-0"
+                               placeholder="e.g. John, SE-202610, 101" th:value="${query}"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Check-in from</label>
+                    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}"/>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Checkout to</label>
+                    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}"/>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-cobalt btn-sm">Filter</button>
+                </div>
+            </form>
+        </div>
+
         <!-- Filter Nav-Pills -->
-        <ul class="nav nav-pills gap-2 mb-4 p-2 rounded border"
+        <ul class="nav nav-pills gap-2 mb-4 p-2 rounded border flex-wrap"
             style="background: var(--surface-card); border-color: var(--border-default) !important;">
             <li class="nav-item">
                 <a class="nav-link fw-semibold px-3 py-2"
                    th:classappend="${selectedStatus == 'ALL'} ? 'active btn-cobalt' : 'text-secondary'"
-                   th:href="@{/admin/bookings(status='ALL')}">
+                   th:href="@{/admin/bookings(status='ALL', query=${query}, startDate=${startDate}, endDate=${endDate})}">
                     All <span class="badge rounded-pill ms-1"
                               th:classappend="${selectedStatus == 'ALL'} ? 'bg-light text-dark' : 'bg-secondary'"
                               th:text="${counts['ALL']}">0</span>
@@ -56,7 +86,7 @@
             <li class="nav-item">
                 <a class="nav-link fw-semibold px-3 py-2"
                    th:classappend="${selectedStatus == 'PENDING'} ? 'active btn-cobalt' : 'text-secondary'"
-                   th:href="@{/admin/bookings(status='PENDING')}">
+                   th:href="@{/admin/bookings(status='PENDING', query=${query}, startDate=${startDate}, endDate=${endDate})}">
                     Pending <span class="badge rounded-pill ms-1"
                                   th:classappend="${selectedStatus == 'PENDING'} ? 'bg-light text-dark' : 'bg-warning text-dark'"
                                   th:text="${counts['PENDING']}">0</span>
@@ -65,7 +95,7 @@
             <li class="nav-item">
                 <a class="nav-link fw-semibold px-3 py-2"
                    th:classappend="${selectedStatus == 'APPROVED'} ? 'active btn-cobalt' : 'text-secondary'"
-                   th:href="@{/admin/bookings(status='APPROVED')}">
+                   th:href="@{/admin/bookings(status='APPROVED', query=${query}, startDate=${startDate}, endDate=${endDate})}">
                     Approved <span class="badge rounded-pill ms-1"
                                    th:classappend="${selectedStatus == 'APPROVED'} ? 'bg-light text-dark' : 'bg-success'"
                                    th:text="${counts['APPROVED']}">0</span>
@@ -73,9 +103,37 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link fw-semibold px-3 py-2"
+                   th:classappend="${selectedStatus == 'CHECKED_IN'} ? 'active btn-primary' : 'text-secondary'"
+                   th:href="@{/admin/bookings(status='CHECKED_IN', query=${query}, startDate=${startDate}, endDate=${endDate})}">
+                    Checked In <span class="badge rounded-pill ms-1"
+                                     th:classappend="${selectedStatus == 'CHECKED_IN'} ? 'bg-light text-dark' : 'bg-primary'"
+                                     th:text="${counts['CHECKED_IN']}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold px-3 py-2"
+                   th:classappend="${selectedStatus == 'CHECKED_OUT'} ? 'active btn-secondary' : 'text-secondary'"
+                   th:href="@{/admin/bookings(status='CHECKED_OUT', query=${query}, startDate=${startDate}, endDate=${endDate})}">
+                    Checked Out <span class="badge rounded-pill ms-1"
+                                      th:classappend="${selectedStatus == 'CHECKED_OUT'} ? 'bg-light text-dark' : 'bg-secondary'"
+                                      th:text="${counts['CHECKED_OUT']}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold px-3 py-2"
+                   th:classappend="${selectedStatus == 'NO_SHOW'} ? 'active' : 'text-secondary'"
+                   th:style="${selectedStatus == 'NO_SHOW'} ? 'background: #dc3545; color: #fff;' : ''"
+                   th:href="@{/admin/bookings(status='NO_SHOW', query=${query}, startDate=${startDate}, endDate=${endDate})}">
+                    No-Show <span class="badge rounded-pill ms-1"
+                                  th:classappend="${selectedStatus == 'NO_SHOW'} ? 'bg-light text-dark' : 'bg-danger'"
+                                  th:text="${counts['NO_SHOW']}">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold px-3 py-2"
                    th:classappend="${selectedStatus == 'REJECTED'} ? 'active' : 'text-secondary'"
                    th:style="${selectedStatus == 'REJECTED'} ? 'background: var(--brand-oxblood); color: #fff;' : ''"
-                   th:href="@{/admin/bookings(status='REJECTED')}">
+                   th:href="@{/admin/bookings(status='REJECTED', query=${query}, startDate=${startDate}, endDate=${endDate})}">
                     Rejected <span class="badge rounded-pill ms-1"
                                    th:classappend="${selectedStatus == 'REJECTED'} ? 'bg-light text-dark' : 'bg-danger'"
                                    th:text="${counts['REJECTED']}">0</span>
@@ -84,7 +142,7 @@
             <li class="nav-item">
                 <a class="nav-link fw-semibold px-3 py-2"
                    th:classappend="${selectedStatus == 'CANCELLED'} ? 'active btn-secondary' : 'text-secondary'"
-                   th:href="@{/admin/bookings(status='CANCELLED')}">
+                   th:href="@{/admin/bookings(status='CANCELLED', query=${query}, startDate=${startDate}, endDate=${endDate})}">
                     Cancelled <span class="badge rounded-pill ms-1"
                                     th:classappend="${selectedStatus == 'CANCELLED'} ? 'bg-light text-dark' : 'bg-secondary'"
                                     th:text="${counts['CANCELLED']}">0</span>
@@ -102,19 +160,19 @@
                     <thead class="table-light border-bottom text-secondary small text-uppercase"
                            style="letter-spacing: 0.05em; background: var(--surface-page);">
                         <tr>
-                            <th scope="col" class="ps-4 py-3">Customer</th>
+                            <th scope="col" class="ps-4 py-3">Booking / Guest</th>
                             <th scope="col" class="py-3">Room</th>
                             <th scope="col" class="py-3">Dates</th>
                             <th scope="col" class="py-3 text-center">Guests</th>
                             <th scope="col" class="py-3 text-end">Total Price</th>
                             <th scope="col" class="py-3 text-center">Status</th>
-                            <th scope="col" class="py-3">Admin Remark</th>
+                            <th scope="col" class="py-3">Notes &amp; Remarks</th>
                             <th scope="col" class="pe-4 py-3 text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="b : ${bookings}">
-                            <!-- Customer Info -->
+                            <!-- Customer & Ref Info -->
                             <td class="ps-4 py-3">
                                 <div class="fw-bold" style="color: var(--text-primary);"
                                      th:text="${b.user != null ? b.user.fullName : 'Unknown User'}">
@@ -123,6 +181,9 @@
                                 <div class="small text-secondary"
                                      th:text="${b.user != null ? b.user.email : ''}">
                                     customer@example.com
+                                </div>
+                                <div class="small font-monospace text-muted mt-1" th:text="${b.bookingReference}">
+                                    SE-20261011-ABCD
                                 </div>
                             </td>
 
@@ -162,57 +223,92 @@
                                 </span>
                             </td>
 
-                            <!-- Status Badge (Phase 14 Fragment) -->
+                            <!-- Status Badge -->
                             <td class="py-3 text-center">
                                 <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
                             </td>
 
-                            <!-- Admin Remark -->
-                            <td class="py-3">
-                                <span th:if="${b.adminRemark != null and !b.adminRemark.isEmpty()}"
-                                      class="small text-secondary"
-                                      th:text="${b.adminRemark}">Remark here</span>
-                                <span th:if="${b.adminRemark == null or b.adminRemark.isEmpty()}"
-                                      class="text-muted small">&mdash;</span>
+                            <!-- Notes & Remark -->
+                            <td class="py-3" style="max-width: 240px;">
+                                <div th:if="${b.operationalNotes != null and !b.operationalNotes.isEmpty()}" class="small mb-1">
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-sticky me-1"></i>Note:</span>
+                                    <span class="text-dark" th:text="${b.operationalNotes}">Notes</span>
+                                </div>
+                                <div th:if="${b.adminRemark != null and !b.adminRemark.isEmpty()}" class="small text-danger">
+                                    <span class="fw-semibold">Remark:</span> <span th:text="${b.adminRemark}">Remark</span>
+                                </div>
+                                <!-- Inline operational notes updater -->
+                                <details class="small mt-1">
+                                    <summary class="text-muted cursor-pointer">Edit Note</summary>
+                                    <form th:action="@{/admin/bookings/{id}/notes(id=${b.id})}" method="post" class="mt-1">
+                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="notes" class="form-control form-control-sm"
+                                                   th:value="${b.operationalNotes}" placeholder="Internal notes" maxlength="1000"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Save</button>
+                                        </div>
+                                    </form>
+                                </details>
                             </td>
 
-                            <!-- Actions (Approve & Reject only for PENDING) -->
+                            <!-- Actions -->
                             <td class="pe-4 py-3 text-end">
-                                <div th:if="${b.status.name() == 'PENDING'}"
-                                     class="d-inline-flex flex-column flex-xl-row gap-2 align-items-end">
+                                <div class="d-inline-flex flex-column gap-1 align-items-end">
 
-                                    <!-- Approve Button Form -->
-                                    <form th:action="@{/admin/bookings/{id}/approve(id=${b.id})}"
-                                          method="post"
-                                          class="d-inline m-0">
-                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                        <button type="submit" class="btn btn-sm btn-success fw-semibold text-nowrap">
-                                            <i class="bi bi-check-lg me-1"></i>Approve
-                                        </button>
-                                    </form>
+                                    <!-- If PENDING: Approve or Reject -->
+                                    <div th:if="${b.status.name() == 'PENDING'}" class="d-flex gap-1">
+                                        <form th:action="@{/admin/bookings/{id}/approve(id=${b.id})}" method="post" class="d-inline m-0">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-success fw-semibold text-nowrap">
+                                                <i class="bi bi-check-lg me-1"></i>Approve
+                                            </button>
+                                        </form>
 
-                                    <!-- Reject Inline Form with Remark & Confirm Dialog (Phase 14) -->
-                                    <form th:action="@{/admin/bookings/{id}/reject(id=${b.id})}"
-                                          method="post"
-                                          class="d-inline-flex gap-1 m-0"
-                                          onsubmit="return confirm('Are you sure you want to reject this booking?');">
-                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                        <input type="text"
-                                               name="remark"
-                                               class="form-control form-control-sm"
-                                               placeholder="Rejection remark"
-                                               maxlength="500"
-                                               required
-                                               style="min-width: 150px; max-width: 220px;"/>
-                                        <button type="submit" class="btn btn-sm btn-danger fw-semibold text-nowrap">
-                                            <i class="bi bi-x-lg me-1"></i>Reject
-                                        </button>
-                                    </form>
+                                        <form th:action="@{/admin/bookings/{id}/reject(id=${b.id})}" method="post" class="d-inline-flex gap-1 m-0"
+                                              onsubmit="return confirm('Are you sure you want to reject this booking?');">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <input type="text" name="remark" class="form-control form-control-sm"
+                                                   placeholder="Remark" maxlength="500" required style="width: 110px;"/>
+                                            <button type="submit" class="btn btn-sm btn-danger fw-semibold text-nowrap">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+                                    </div>
 
-                                </div>
+                                    <!-- If APPROVED: Check-In or No-Show -->
+                                    <div th:if="${b.status.name() == 'APPROVED'}" class="d-flex gap-1">
+                                        <form th:action="@{/admin/bookings/{id}/check-in(id=${b.id})}" method="post" class="d-inline m-0">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-primary fw-semibold text-nowrap">
+                                                <i class="bi bi-box-arrow-in-right me-1"></i>Check-In
+                                            </button>
+                                        </form>
 
-                                <div th:if="${b.status.name() != 'PENDING'}" class="text-muted small">
-                                    &mdash;
+                                        <form th:action="@{/admin/bookings/{id}/no-show(id=${b.id})}" method="post" class="d-inline m-0"
+                                              onsubmit="return confirm('Mark this booking as No-Show?');">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold text-nowrap">
+                                                No-Show
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- If CHECKED_IN: Check-Out -->
+                                    <div th:if="${b.status.name() == 'CHECKED_IN'}" class="d-inline">
+                                        <form th:action="@{/admin/bookings/{id}/check-out(id=${b.id})}" method="post" class="d-inline m-0">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-secondary fw-semibold text-nowrap">
+                                                <i class="bi bi-box-arrow-right me-1"></i>Check-Out
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- If Final: Status text -->
+                                    <div th:if="${b.status.name() == 'CHECKED_OUT' or b.status.name() == 'REJECTED' or b.status.name() == 'CANCELLED' or b.status.name() == 'NO_SHOW'}"
+                                         class="text-muted small">
+                                        Completed
+                                    </div>
+
                                 </div>
                             </td>
                         </tr>

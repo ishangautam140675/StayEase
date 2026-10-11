@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Seasonal Pricing Rules')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+            <div>
+                <span class="text-uppercase fw-bold small tracking-wider"
+                      style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                    Revenue Strategy
+                </span>
+                <h1 class="display-6 fw-bold mt-1 mb-1"
+                    style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                    Configurable Seasonal Pricing
+                </h1>
+                <p class="text-secondary mb-0">
+                    Define high-season multipliers, holiday fixed pricing, and rate rules. Past bookings preserve their historical rates.
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-door-closed me-1"></i>Rooms
+                </a>
+                <a th:href="@{/admin/bookings}" class="btn btn-outline-se px-3">
+                    <i class="bi bi-calendar-check me-1"></i>Bookings
+                </a>
+                <a th:href="@{/admin/dashboard}" class="btn btn-cobalt px-3">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Create Pricing Rule Form Card -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4 h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important;">
+                    <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary);">
+                        <i class="bi bi-tag me-2" style="color: var(--brand-oxblood);"></i>New Seasonal Rule
+                    </h2>
+                    <p class="small text-secondary mb-4">
+                        Rules apply dynamically to future reservations during the date range. Existing reservations remain unchanged.
+                    </p>
+
+                    <form th:action="@{/admin/operations/pricing/create}" method="post">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Rule Name</label>
+                            <input type="text" name="ruleName" class="form-control form-control-sm"
+                                   placeholder="e.g. Winter Holiday Peak, Summer Festival" maxlength="120" required/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Target Room Type (Optional)</label>
+                            <select name="roomType" class="form-select form-select-sm">
+                                <option value="">All Room Types</option>
+                                <option th:each="t : ${roomTypes}" th:value="${t}" th:text="${t}">SINGLE</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Specific Room (Optional)</label>
+                            <select name="roomId" class="form-select form-select-sm">
+                                <option value="">All Rooms of Type</option>
+                                <option th:each="r : ${rooms}" th:value="${r.id}"
+                                        th:text="'Room ' + ${r.roomNumber} + ' (' + ${r.type} + ')'">Room 101</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-secondary">Start Date</label>
+                                <input type="date" name="startDate" class="form-control form-control-sm" required/>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-secondary">End Date</label>
+                                <input type="date" name="endDate" class="form-control form-control-sm" required/>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Fixed Nightly Rate (₹)</label>
+                            <input type="number" step="0.01" min="1" name="pricePerNight" class="form-control form-control-sm"
+                                   placeholder="e.g. 4500.00"/>
+                            <div class="form-text" style="font-size: 0.75rem;">Overrides base rate with this exact amount.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-secondary">Rate Multiplier (Alternative)</label>
+                            <input type="number" step="0.05" min="0.1" max="5.0" name="multiplier" class="form-control form-control-sm"
+                                   placeholder="e.g. 1.25 for +25% surge"/>
+                            <div class="form-text" style="font-size: 0.75rem;">Used if fixed nightly price is left blank.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-cobalt w-100 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i>Activate Pricing Rule
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Existing Seasonal Rules Table -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+                    <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                         style="background: var(--surface-page);">
+                        <div>
+                            <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                                <i class="bi bi-sliders me-2" style="color: var(--brand-cobalt);"></i>Configured Seasonal Pricing Rules
+                            </h2>
+                            <p class="small text-secondary mb-0">Dynamic pricing strategies applied during stay dates</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${rules != null and !rules.isEmpty()}" class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase text-secondary">
+                                <tr>
+                                    <th class="ps-4 py-3">Rule Name</th>
+                                    <th class="py-3">Target</th>
+                                    <th class="py-3">Window</th>
+                                    <th class="py-3 text-end">Rate Adjustment</th>
+                                    <th class="pe-4 py-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${rules.content}">
+                                    <td class="ps-4 py-3 fw-bold" th:text="${r.ruleName}">Winter Peak</td>
+                                    <td class="py-3">
+                                        <span th:if="${r.room != null}" class="badge bg-light text-dark border">
+                                            Room <span th:text="${r.room.roomNumber}">101</span>
+                                        </span>
+                                        <span th:if="${r.room == null and r.roomType != null}" class="badge bg-light text-primary border" th:text="${r.roomType}">
+                                            DELUXE
+                                        </span>
+                                        <span th:if="${r.room == null and r.roomType == null}" class="badge bg-secondary text-white">
+                                            All Rooms
+                                        </span>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="fw-medium" th:text="${#temporals.format(r.startDate, 'dd MMM yyyy')}">01 Nov</span>
+                                        &rarr;
+                                        <span class="fw-medium" th:text="${#temporals.format(r.endDate, 'dd MMM yyyy')}">05 Nov</span>
+                                    </td>
+                                    <td class="py-3 text-end">
+                                        <span th:if="${r.pricePerNight != null}" class="fw-bold text-success">
+                                            ₹<span th:text="${#numbers.formatDecimal(r.pricePerNight, 1, 2)}">5,000.00</span> / night
+                                        </span>
+                                        <span th:if="${r.pricePerNight == null and r.priceMultiplier != null}" class="fw-bold text-primary">
+                                            <span th:text="${r.priceMultiplier}">1.25</span>x multiplier
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 py-3 text-end">
+                                        <form th:action="@{/admin/operations/pricing/{id}/delete(id=${r.id})}" method="post"
+                                              class="d-inline m-0"
+                                              onsubmit="return confirm('Remove this seasonal pricing rule?');">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash me-1"></i>Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div th:if="${rules == null or rules.isEmpty()}" class="text-center py-5 px-4">
+                        <i class="bi bi-tag fs-1 text-muted mb-2 d-block"></i>
+                        <h3 class="h6 fw-bold mb-1">No seasonal rules defined</h3>
+                        <p class="small text-secondary mb-0">Base room rates are being applied to all reservations.</p>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${rules != null and rules.totalPages > 1}" class="p-3 border-top">
+                        <div th:replace="~{fragments/pagination :: pagination(page=${rules}, baseUrl='/admin/operations/pricing')}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

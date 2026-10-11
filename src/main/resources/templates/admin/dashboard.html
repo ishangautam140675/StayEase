@@ -29,13 +29,110 @@
                     Welcome back, <span class="fw-semibold text-dark" th:text="${userName}">Admin</span>! Live overview of operations and inventory.
                 </p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/admin/operations/maintenance}" class="btn btn-outline-secondary fw-medium px-3">
+                    <i class="bi bi-tools me-1"></i>Maintenance
+                </a>
+                <a th:href="@{/admin/operations/pricing}" class="btn btn-outline-secondary fw-medium px-3">
+                    <i class="bi bi-tag me-1"></i>Seasonal Rates
+                </a>
                 <a th:href="@{/admin/rooms}" class="btn btn-outline-se fw-medium px-3">
                     <i class="bi bi-door-closed me-1"></i>Manage Rooms
                 </a>
                 <a th:href="@{/admin/bookings}" class="btn btn-cobalt fw-medium px-3">
                     <i class="bi bi-calendar-check me-1"></i>Review Bookings
                 </a>
+            </div>
+        </div>
+
+        <!-- ── Date-Range Analytics Filter Form ───────────────────────────── -->
+        <div class="card border-0 shadow-sm p-3 mb-4"
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+            <form th:action="@{/admin/dashboard}" method="get" class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <span class="text-uppercase fw-bold small tracking-wider" style="color: var(--brand-oxblood);">
+                        <i class="bi bi-graph-up-arrow me-1"></i>Operational &amp; Financial Analytics
+                    </span>
+                    <p class="small text-secondary mb-0">Calculated strictly from actual persisted database bookings.</p>
+                </div>
+                <div class="col-sm-5 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">From Date</label>
+                    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}"/>
+                </div>
+                <div class="col-sm-5 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">To Date</label>
+                    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}"/>
+                </div>
+                <div class="col-sm-2 col-md-1 d-grid">
+                    <button type="submit" class="btn btn-cobalt btn-sm">Filter</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Financial & Operations Reporting KPI Grid (Date Window) ───── -->
+        <div class="row g-3 mb-4" th:if="${report != null}">
+            <!-- Total Revenue -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">Window Revenue</span>
+                        <i class="bi bi-currency-rupee fs-5 text-success"></i>
+                    </div>
+                    <div class="h3 fw-bold mb-1" style="color: #198754;">
+                        ₹<span th:text="${#numbers.formatDecimal(report.totalRevenue, 1, 2)}">0.00</span>
+                    </div>
+                    <div class="small text-secondary">
+                        Completed: ₹<span th:text="${#numbers.formatDecimal(report.completedRevenue, 1, 2)}">0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Volume -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">Bookings in Window</span>
+                        <i class="bi bi-calendar-range fs-5 text-primary"></i>
+                    </div>
+                    <div class="h3 fw-bold mb-1" style="color: var(--text-primary);" th:text="${report.totalBookings}">0</div>
+                    <div class="small text-secondary">
+                        <span class="fw-semibold text-success" th:text="${report.approvedBookings + report.checkedInBookings + report.checkedOutBookings}">0</span> active / completed
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancellation Rate -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">Cancellation Rate</span>
+                        <i class="bi bi-slash-circle fs-5" style="color: var(--brand-oxblood);"></i>
+                    </div>
+                    <div class="h3 fw-bold mb-1" style="color: var(--brand-oxblood);">
+                        <span th:text="${report.cancellationRate}">0.0</span>%
+                    </div>
+                    <div class="small text-secondary">
+                        <span class="fw-semibold text-danger" th:text="${report.cancelledBookings}">0</span> cancelled / <span th:text="${report.noShowBookings}">0</span> no-show
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Occupancy -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">Avg Occupancy</span>
+                        <i class="bi bi-pie-chart fs-5" style="color: var(--brand-cobalt);"></i>
+                    </div>
+                    <div class="h3 fw-bold mb-1" style="color: var(--brand-cobalt);">
+                        <span th:text="${report.averageOccupancyRate}">0.0</span>%
+                    </div>
+                    <div class="small text-secondary">Across entire window period</div>
+                </div>
             </div>
         </div>
 
@@ -98,12 +195,12 @@
                 </div>
             </div>
 
-            <!-- Occupancy Rate -->
+            <!-- Occupancy Rate Today -->
             <div class="col-sm-6 col-lg-3">
                 <div class="card border-0 shadow-sm p-4 h-100"
                      style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Occupancy Rate</span>
+                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Today's Occupancy</span>
                         <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
                               style="width: 36px; height: 36px; background: var(--brand-oxblood-soft); color: var(--brand-oxblood);">
                             <i class="bi bi-pie-chart fs-5"></i>
@@ -116,6 +213,53 @@
                         Based on active room inventory
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- ── Room Utilization Breakdown (Phase 5) ───────────────────────── -->
+        <div class="card border-0 shadow-sm mb-4" th:if="${report != null and report.roomUtilizations != null and !report.roomUtilizations.isEmpty()}"
+             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                 style="background: var(--surface-page);">
+                <div>
+                    <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                        <i class="bi bi-pie-chart me-2" style="color: var(--brand-cobalt);"></i>Room Utilization &amp; Revenue Breakdown
+                    </h2>
+                    <p class="small text-secondary mb-0">Calculated across selected dates: <span class="fw-semibold text-dark" th:text="${report.startDate}">Start</span> to <span class="fw-semibold text-dark" th:text="${report.endDate}">End</span></p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-secondary">
+                        <tr>
+                            <th class="ps-4 py-3">Room</th>
+                            <th class="py-3">Type</th>
+                            <th class="py-3 text-center">Nights Occupied</th>
+                            <th class="py-3" style="min-width: 200px;">Utilization Rate</th>
+                            <th class="pe-4 py-3 text-end">Room Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ru : ${report.roomUtilizations}">
+                            <td class="ps-4 py-3 fw-bold">Room <span th:text="${ru.roomNumber}">101</span></td>
+                            <td class="py-3"><span class="badge bg-light text-dark border" th:text="${ru.roomType}">SINGLE</span></td>
+                            <td class="py-3 text-center"><span class="fw-semibold" th:text="${ru.nightsOccupied}">0</span> nights</td>
+                            <td class="py-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" role="progressbar"
+                                             th:style="'width: ' + ${ru.utilizationRate} + '%'"
+                                             th:aria-valuenow="${ru.utilizationRate}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <span class="small fw-semibold" style="width: 45px;" th:text="${ru.utilizationRate} + '%'">0%</span>
+                                </div>
+                            </td>
+                            <td class="pe-4 py-3 text-end fw-bold" style="color: var(--brand-oxblood);">
+                                ₹<span th:text="${#numbers.formatDecimal(ru.revenue, 1, 2)}">0.00</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 

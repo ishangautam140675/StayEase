@@ -93,7 +93,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT COUNT(DISTINCT b.room.id) FROM Booking b " +
            "WHERE b.room.active = true " +
-           "AND b.status = com.stayease.model.BookingStatus.APPROVED " +
+           "AND b.status IN (com.stayease.model.BookingStatus.APPROVED, com.stayease.model.BookingStatus.CHECKED_IN) " +
            "AND b.checkIn <= :today AND :today < b.checkOut")
     long countOccupiedRoomsOnDate(@Param("today") java.time.LocalDate today);
 
@@ -102,4 +102,49 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.status = :status ORDER BY b.createdAt DESC")
     List<Booking> findRecentByStatus(@Param("status") com.stayease.model.BookingStatus status, org.springframework.data.domain.Pageable pageable);
+
+    @Query(value = "SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room " +
+           "WHERE (:status IS NULL OR b.status = :status) " +
+           "AND (:query IS NULL OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "     OR LOWER(b.user.fullName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "     OR LOWER(b.user.email) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "     OR LOWER(b.room.roomNumber) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "AND (:startDate IS NULL OR b.checkIn >= :startDate) " +
+           "AND (:endDate IS NULL OR b.checkOut <= :endDate) " +
+           "ORDER BY b.createdAt DESC",
+           countQuery = "SELECT count(b) FROM Booking b " +
+           "WHERE (:status IS NULL OR b.status = :status) " +
+           "AND (:query IS NULL OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "     OR LOWER(b.user.fullName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "     OR LOWER(b.user.email) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "     OR LOWER(b.room.roomNumber) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "AND (:startDate IS NULL OR b.checkIn >= :startDate) " +
+           "AND (:endDate IS NULL OR b.checkOut <= :endDate)")
+    Page<Booking> searchAdminBookings(
+            @Param("status") com.stayease.model.BookingStatus status,
+            @Param("query") String query,
+            @Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room " +
+           "WHERE (:status IS NULL OR b.status = :status) " +
+           "AND (:startDate IS NULL OR b.checkIn >= :startDate) " +
+           "AND (:endDate IS NULL OR b.checkOut <= :endDate) " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findBookingsForExport(
+            @Param("status") com.stayease.model.BookingStatus status,
+            @Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate
+    );
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.room " +
+           "WHERE b.checkIn <= :endDate AND b.checkOut >= :startDate " +
+           "ORDER BY b.checkIn ASC")
+    List<Booking> findBookingsInDateRange(
+            @Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate
+    );
 }
+

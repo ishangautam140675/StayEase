@@ -59,6 +59,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("select r from Room r where r.id = :id")
     Optional<Room> findByIdForUpdate(@Param("id") Long id);
 
+
     @Query("SELECT r FROM Room r WHERE r.active = true AND r.underMaintenance = false " +
            "AND r.capacity >= :guests " +
            "AND NOT EXISTS (" +
@@ -67,6 +68,12 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "    AND b.status IN :statuses " +
            "    AND :checkIn < b.checkOut " +
            "    AND :checkOut > b.checkIn" +
+           ") " +
+           "AND NOT EXISTS (" +
+           "    SELECT m FROM RoomMaintenanceSchedule m " +
+           "    WHERE m.room = r " +
+           "    AND :checkIn < m.endDate " +
+           "    AND :checkOut > m.startDate" +
            ") " +
            "ORDER BY r.roomNumber")
     List<Room> findAvailableRooms(
@@ -82,12 +89,19 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
            "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
            "AND (:amenity IS NULL OR LOWER(r.amenities) LIKE LOWER(CONCAT('%', :amenity, '%'))) " +
-           "AND (:checkIn IS NULL OR :checkOut IS NULL OR NOT EXISTS (" +
-           "    SELECT b FROM Booking b " +
-           "    WHERE b.room = r " +
-           "    AND b.status IN :statuses " +
-           "    AND :checkIn < b.checkOut " +
-           "    AND :checkOut > b.checkIn" +
+           "AND (:checkIn IS NULL OR :checkOut IS NULL OR (" +
+           "    NOT EXISTS (" +
+           "        SELECT b FROM Booking b " +
+           "        WHERE b.room = r " +
+           "        AND b.status IN :statuses " +
+           "        AND :checkIn < b.checkOut " +
+           "        AND :checkOut > b.checkIn" +
+           "    ) AND NOT EXISTS (" +
+           "        SELECT m FROM RoomMaintenanceSchedule m " +
+           "        WHERE m.room = r " +
+           "        AND :checkIn < m.endDate " +
+           "        AND :checkOut > m.startDate" +
+           "    )" +
            ")) " +
            "ORDER BY r.roomNumber")
     List<Room> searchRoomsAdvanced(
@@ -107,12 +121,19 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
            "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
            "AND (:amenity IS NULL OR LOWER(r.amenities) LIKE LOWER(CONCAT('%', :amenity, '%'))) " +
-           "AND (:checkIn IS NULL OR :checkOut IS NULL OR NOT EXISTS (" +
-           "    SELECT b FROM Booking b " +
-           "    WHERE b.room = r " +
-           "    AND b.status IN :statuses " +
-           "    AND :checkIn < b.checkOut " +
-           "    AND :checkOut > b.checkIn" +
+           "AND (:checkIn IS NULL OR :checkOut IS NULL OR (" +
+           "    NOT EXISTS (" +
+           "        SELECT b FROM Booking b " +
+           "        WHERE b.room = r " +
+           "        AND b.status IN :statuses " +
+           "        AND :checkIn < b.checkOut " +
+           "        AND :checkOut > b.checkIn" +
+           "    ) AND NOT EXISTS (" +
+           "        SELECT m FROM RoomMaintenanceSchedule m " +
+           "        WHERE m.room = r " +
+           "        AND :checkIn < m.endDate " +
+           "        AND :checkOut > m.startDate" +
+           "    )" +
            ")) " +
            "ORDER BY r.roomNumber",
            countQuery = "SELECT count(r) FROM Room r WHERE r.active = true AND r.underMaintenance = false " +
@@ -121,12 +142,19 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
            "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
            "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
            "AND (:amenity IS NULL OR LOWER(r.amenities) LIKE LOWER(CONCAT('%', :amenity, '%'))) " +
-           "AND (:checkIn IS NULL OR :checkOut IS NULL OR NOT EXISTS (" +
-           "    SELECT b FROM Booking b " +
-           "    WHERE b.room = r " +
-           "    AND b.status IN :statuses " +
-           "    AND :checkIn < b.checkOut " +
-           "    AND :checkOut > b.checkIn" +
+           "AND (:checkIn IS NULL OR :checkOut IS NULL OR (" +
+           "    NOT EXISTS (" +
+           "        SELECT b FROM Booking b " +
+           "        WHERE b.room = r " +
+           "        AND b.status IN :statuses " +
+           "        AND :checkIn < b.checkOut " +
+           "        AND :checkOut > b.checkIn" +
+           "    ) AND NOT EXISTS (" +
+           "        SELECT m FROM RoomMaintenanceSchedule m " +
+           "        WHERE m.room = r " +
+           "        AND :checkIn < m.endDate " +
+           "        AND :checkOut > m.startDate" +
+           "    )" +
            "))")
     Page<Room> searchRoomsAdvanced(
             @Param("type") RoomType type,

@@ -108,14 +108,17 @@ class RepositoryTests {
     }
 
     @Test
-    @DisplayName("BookingStatus.isBlocking() is true for PENDING and APPROVED and false for REJECTED and CANCELLED")
+    @DisplayName("BookingStatus.isBlocking() is true for PENDING, APPROVED, and CHECKED_IN; false for CHECKED_OUT, NO_SHOW, REJECTED, CANCELLED")
     void bookingStatusIsBlocking() {
         assertThat(BookingStatus.PENDING.isBlocking()).isTrue();
         assertThat(BookingStatus.APPROVED.isBlocking()).isTrue();
+        assertThat(BookingStatus.CHECKED_IN.isBlocking()).isTrue();
+        assertThat(BookingStatus.CHECKED_OUT.isBlocking()).isFalse();
+        assertThat(BookingStatus.NO_SHOW.isBlocking()).isFalse();
         assertThat(BookingStatus.REJECTED.isBlocking()).isFalse();
         assertThat(BookingStatus.CANCELLED.isBlocking()).isFalse();
 
         assertThat(BookingStatus.BLOCKING)
-                .containsExactlyInAnyOrder(BookingStatus.PENDING, BookingStatus.APPROVED);
+                .containsExactlyInAnyOrder(BookingStatus.PENDING, BookingStatus.APPROVED, BookingStatus.CHECKED_IN);
     }
 }

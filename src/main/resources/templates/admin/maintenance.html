@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Room Maintenance Schedules')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+            <div>
+                <span class="text-uppercase fw-bold small tracking-wider"
+                      style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                    Property Operations
+                </span>
+                <h1 class="display-6 fw-bold mt-1 mb-1"
+                    style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                    Room Maintenance Scheduling
+                </h1>
+                <p class="text-secondary mb-0">
+                    Schedule preventive maintenance, repairs, or deep cleans with booking-safe inventory blocking.
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-door-closed me-1"></i>Rooms
+                </a>
+                <a th:href="@{/admin/bookings}" class="btn btn-outline-se px-3">
+                    <i class="bi bi-calendar-check me-1"></i>Bookings
+                </a>
+                <a th:href="@{/admin/dashboard}" class="btn btn-cobalt px-3">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Schedule Maintenance Form Card -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4 h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important;">
+                    <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary);">
+                        <i class="bi bi-calendar-plus me-2" style="color: var(--brand-oxblood);"></i>Schedule Maintenance Block
+                    </h2>
+                    <p class="small text-secondary mb-4">
+                        Blocking dates will prevent customer bookings during the window. Cannot overlap with existing confirmed reservations.
+                    </p>
+
+                    <form th:action="@{/admin/operations/maintenance/schedule}" method="post">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Room</label>
+                            <select name="roomId" class="form-select form-select-sm" required>
+                                <option value="" disabled selected>Select a room...</option>
+                                <option th:each="r : ${rooms}" th:value="${r.id}"
+                                        th:text="'Room ' + ${r.roomNumber} + ' (' + ${r.type} + ')'">Room 101</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Start Date</label>
+                            <input type="date" name="startDate" class="form-control form-control-sm" required/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">End Date</label>
+                            <input type="date" name="endDate" class="form-control form-control-sm" required/>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-secondary">Reason / Scope</label>
+                            <textarea name="reason" class="form-control form-control-sm" rows="3"
+                                      placeholder="e.g. AC replacement, painting, deep sanitize..." maxlength="500" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-cobalt w-100 fw-semibold">
+                            <i class="bi bi-shield-lock me-1"></i>Schedule &amp; Block Room
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Existing Maintenance Schedules Table -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+                    <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                         style="background: var(--surface-page);">
+                        <div>
+                            <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
+                                <i class="bi bi-tools me-2" style="color: var(--brand-cobalt);"></i>Active &amp; Upcoming Maintenance
+                            </h2>
+                            <p class="small text-secondary mb-0">Inventory blocking periods for maintenance and inspections</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${schedules != null and !schedules.isEmpty()}" class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase text-secondary">
+                                <tr>
+                                    <th class="ps-4 py-3">Room</th>
+                                    <th class="py-3">Period</th>
+                                    <th class="py-3">Reason</th>
+                                    <th class="py-3">Scheduled By</th>
+                                    <th class="pe-4 py-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${schedules.content}">
+                                    <td class="ps-4 py-3 fw-bold">
+                                        Room <span th:text="${s.room != null ? s.room.roomNumber : 'N/A'}">101</span>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="fw-medium" th:text="${#temporals.format(s.startDate, 'dd MMM yyyy')}">01 Nov</span>
+                                        &rarr;
+                                        <span class="fw-medium" th:text="${#temporals.format(s.endDate, 'dd MMM yyyy')}">05 Nov</span>
+                                    </td>
+                                    <td class="py-3 small text-secondary" th:text="${s.reason}">Routine checkup</td>
+                                    <td class="py-3 small text-muted" th:text="${s.scheduledBy}">admin@example.com</td>
+                                    <td class="pe-4 py-3 text-end">
+                                        <form th:action="@{/admin/operations/maintenance/{id}/delete(id=${s.id})}" method="post"
+                                              class="d-inline m-0"
+                                              onsubmit="return confirm('Remove this maintenance schedule and unblock inventory?');">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash me-1"></i>Remove
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div th:if="${schedules == null or schedules.isEmpty()}" class="text-center py-5 px-4">
+                        <i class="bi bi-check-circle fs-1 text-success mb-2 d-block"></i>
+                        <h3 class="h6 fw-bold mb-1">No maintenance blocks scheduled</h3>
+                        <p class="small text-secondary mb-0">All rooms are available according to standard inventory.</p>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div th:if="${schedules != null and schedules.totalPages > 1}" class="p-3 border-top">
+                        <div th:replace="~{fragments/pagination :: pagination(page=${schedules}, baseUrl='/admin/operations/maintenance')}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>
