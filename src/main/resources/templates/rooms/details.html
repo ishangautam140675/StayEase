@@ -184,9 +184,20 @@
 
                     <!-- Actions depending on User Identity & Maintenance -->
                     <div class="pt-3 border-top" style="border-color: var(--border-default) !important;">
-                        <!-- Maintenance Warning -->
+                        <!-- Scheduled Maintenance Periods Warning -->
+                        <div th:if="${maintenanceSchedules != null and !maintenanceSchedules.isEmpty()}" class="alert alert-warning border small text-dark mb-3 rounded-3">
+                            <div class="fw-semibold mb-1"><i class="bi bi-calendar-x me-1 text-warning"></i>Scheduled Maintenance:</div>
+                            <ul class="mb-0 ps-3">
+                                <li th:each="m : ${maintenanceSchedules}">
+                                    <strong th:text="${#temporals.format(m.startDate, 'dd MMM')} + ' to ' + ${#temporals.format(m.endDate, 'dd MMM yyyy')}">01 Nov to 05 Nov</strong>
+                                    <span th:if="${m.reason != null and !m.reason.isEmpty()}" th:text="' (' + ${m.reason} + ')'" class="text-muted"></span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Permanent Room Maintenance Warning -->
                         <div th:if="${room.underMaintenance}" class="alert alert-warning border small text-dark mb-0">
-                            <i class="bi bi-tools me-1 text-warning"></i>This room is currently under scheduled maintenance and cannot be booked.
+                            <i class="bi bi-tools me-1 text-warning"></i>This room is currently under maintenance and cannot be booked.
                         </div>
 
                         <!-- CUSTOMER sees "Request booking" button when NOT under maintenance -->

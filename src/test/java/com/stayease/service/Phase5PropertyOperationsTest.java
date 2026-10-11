@@ -249,6 +249,29 @@ public class Phase5PropertyOperationsTest {
         assertThat(availableAfter).anyMatch(r -> r.getId().equals(testRoom.getId()));
     }
 
+    @Test
+    @DisplayName("Booking creation fails with clear notification when stay dates overlap scheduled maintenance")
+    void bookingCreationFailsWhenOverlappingScheduledMaintenance() {
+        LocalDate maintStart = LocalDate.of(2026, 12, 10);
+        LocalDate maintEnd = LocalDate.of(2026, 12, 15);
+
+        maintenanceService.scheduleMaintenance(
+                testRoom.getId(), maintStart, maintEnd, "HVAC overhaul", "admin@stayease.com");
+
+        com.stayease.dto.BookingForm form = new com.stayease.dto.BookingForm(
+                testRoom.getId(),
+                LocalDate.of(2026, 12, 12),
+                LocalDate.of(2026, 12, 16),
+                2,
+                "Special request"
+        );
+
+        assertThatThrownBy(() -> bookingService.createBooking(testCustomer.getEmail(), form))
+                .isInstanceOf(com.stayease.exception.BookingValidationException.class)
+                .hasMessageContaining("under scheduled maintenance")
+                .hasMessageContaining("HVAC overhaul");
+    }
+
     // ── 4. Configurable Seasonal Pricing and Historical Preservation ───────
 
     @Test

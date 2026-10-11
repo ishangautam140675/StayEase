@@ -125,7 +125,7 @@
                 <div class="card border-0 shadow-sm p-3 h-100"
                      style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
                     <div class="d-flex justify-content-between align-items-start mb-1">
-                        <span class="text-secondary small fw-medium text-uppercase">Avg Occupancy</span>
+                        <span class="text-secondary small fw-medium text-uppercase">Occupancy Rate (Avg)</span>
                         <i class="bi bi-pie-chart fs-5" style="color: var(--brand-cobalt);"></i>
                     </div>
                     <div class="h3 fw-bold mb-1" style="color: var(--brand-cobalt);">
@@ -136,81 +136,48 @@
             </div>
         </div>
 
-        <!-- ── 1. Stat Cards Grid ─────────────────────────────────────────── -->
-        <div class="row g-3 mb-4">
-            <!-- Total Rooms -->
-            <div class="col-sm-6 col-lg-3">
-                <div class="card border-0 shadow-sm p-4 h-100"
-                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Total Rooms</span>
-                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
-                              style="width: 36px; height: 36px; background: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
-                            <i class="bi bi-door-open fs-5"></i>
-                        </span>
-                    </div>
-                    <div class="display-6 fw-bold mb-1" style="color: var(--text-primary);"
-                         th:text="${stats.totalRooms}">10</div>
-                    <div class="small text-secondary">
-                        <span class="fw-semibold text-dark" th:text="${stats.activeRooms}">8</span> active for reservation
+        <!-- ── Live Inventory & Daily Operations Ribbon ──────────────────── -->
+        <div class="card border-0 shadow-sm p-3 mb-4 rounded-3"
+             style="background: var(--surface-card); border: 1px solid var(--border-default) !important;">
+            <div class="row g-3 align-items-center">
+                <div class="col-6 col-md-3 d-flex align-items-center gap-3 ps-md-3 border-end">
+                    <span class="rounded-circle d-inline-flex align-items-center justify-content-center p-2 flex-shrink-0"
+                          style="width: 42px; height: 42px; background: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
+                        <i class="bi bi-door-open fs-5"></i>
+                    </span>
+                    <div>
+                        <div class="small text-secondary fw-semibold text-uppercase" style="font-size: 0.72rem;">Total Rooms</div>
+                        <div class="h6 fw-bold mb-0 text-dark"><span th:text="${stats.totalRooms}">10</span> <span class="small text-muted fw-normal">(<span th:text="${stats.activeRooms}">8</span> active)</span></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Available Today -->
-            <div class="col-sm-6 col-lg-3">
-                <div class="card border-0 shadow-sm p-4 h-100"
-                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Available Today</span>
-                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
-                              style="width: 36px; height: 36px; background: rgba(25, 135, 84, 0.12); color: #198754;">
-                            <i class="bi bi-check2-circle fs-5"></i>
-                        </span>
-                    </div>
-                    <div class="display-6 fw-bold mb-1" style="color: #198754;"
-                         th:text="${stats.availableToday}">6</div>
-                    <div class="small text-secondary">
-                        <span class="fw-semibold text-dark" th:text="${stats.occupiedToday}">2</span> occupied today
+                <div class="col-6 col-md-3 d-flex align-items-center gap-3 ps-md-3 border-end">
+                    <span class="rounded-circle d-inline-flex align-items-center justify-content-center p-2 flex-shrink-0"
+                          style="width: 42px; height: 42px; background: rgba(25, 135, 84, 0.12); color: #198754;">
+                        <i class="bi bi-check2-circle fs-5"></i>
+                    </span>
+                    <div>
+                        <div class="small text-secondary fw-semibold text-uppercase" style="font-size: 0.72rem;">Available Today</div>
+                        <div class="h6 fw-bold mb-0 text-success"><span th:text="${stats.availableToday}">6</span> <span class="small text-muted fw-normal">(<span th:text="${stats.occupiedToday}">2</span> busy)</span></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Pending Requests -->
-            <div class="col-sm-6 col-lg-3">
-                <div class="card border-0 shadow-sm p-4 h-100"
-                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Pending Requests</span>
-                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
-                              style="width: 36px; height: 36px; background: rgba(255, 193, 7, 0.15); color: #b78103;">
-                            <i class="bi bi-hourglass-split fs-5"></i>
-                        </span>
-                    </div>
-                    <div class="display-6 fw-bold mb-1" style="color: #b78103;"
-                         th:text="${stats.pendingRequests}">3</div>
-                    <div class="small text-secondary">
-                        Awaiting your review &amp; approval
+                <div class="col-6 col-md-3 d-flex align-items-center gap-3 ps-md-3 border-end">
+                    <span class="rounded-circle d-inline-flex align-items-center justify-content-center p-2 flex-shrink-0"
+                          style="width: 42px; height: 42px; background: rgba(255, 193, 7, 0.15); color: #b78103;">
+                        <i class="bi bi-hourglass-split fs-5"></i>
+                    </span>
+                    <div>
+                        <div class="small text-secondary fw-semibold text-uppercase" style="font-size: 0.72rem;">Pending Requests</div>
+                        <div class="h6 fw-bold mb-0" style="color: #b78103;"><span th:text="${stats.pendingRequests}">3</span> <span class="small text-muted fw-normal">review</span></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Occupancy Rate Today -->
-            <div class="col-sm-6 col-lg-3">
-                <div class="card border-0 shadow-sm p-4 h-100"
-                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="text-secondary small fw-medium text-uppercase tracking-wider">Today's Occupancy</span>
-                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
-                              style="width: 36px; height: 36px; background: var(--brand-oxblood-soft); color: var(--brand-oxblood);">
-                            <i class="bi bi-pie-chart fs-5"></i>
-                        </span>
-                    </div>
-                    <div class="display-6 fw-bold mb-1" style="color: var(--brand-oxblood);">
-                        <span th:text="${stats.occupancyRate}">25.0</span>%
-                    </div>
-                    <div class="small text-secondary">
-                        Based on active room inventory
+                <div class="col-6 col-md-3 d-flex align-items-center gap-3 ps-md-3">
+                    <span class="rounded-circle d-inline-flex align-items-center justify-content-center p-2 flex-shrink-0"
+                          style="width: 42px; height: 42px; background: var(--brand-oxblood-soft); color: var(--brand-oxblood);">
+                        <i class="bi bi-pie-chart fs-5"></i>
+                    </span>
+                    <div>
+                        <div class="small text-secondary fw-semibold text-uppercase" style="font-size: 0.72rem;">Occupancy Rate</div>
+                        <div class="h6 fw-bold mb-0" style="color: var(--brand-oxblood);"><span th:text="${stats.occupancyRate}">25.0</span>%</div>
                     </div>
                 </div>
             </div>

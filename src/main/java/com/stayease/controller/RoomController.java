@@ -23,9 +23,17 @@ import java.util.List;
 public class RoomController {
 
     private final RoomService roomService;
+    private final com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository;
 
     public RoomController(RoomService roomService) {
+        this(roomService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public RoomController(RoomService roomService,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository) {
         this.roomService = roomService;
+        this.maintenanceScheduleRepository = maintenanceScheduleRepository;
     }
 
     /**
@@ -72,6 +80,10 @@ public class RoomController {
     public String roomDetails(@PathVariable Long id, Model model) {
         Room room = roomService.getActiveRoom(id);
         model.addAttribute("room", room);
+        if (maintenanceScheduleRepository != null) {
+            model.addAttribute("maintenanceSchedules",
+                    maintenanceScheduleRepository.findUpcomingByRoomId(room.getId(), java.time.LocalDate.now()));
+        }
         model.addAttribute("activePage", "rooms");
         return "rooms/details";
     }

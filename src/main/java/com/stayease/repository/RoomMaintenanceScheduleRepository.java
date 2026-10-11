@@ -39,4 +39,7 @@ public interface RoomMaintenanceScheduleRepository extends JpaRepository<RoomMai
 
     @Query("SELECT s FROM RoomMaintenanceSchedule s WHERE s.room.id = :roomId AND s.startDate <= :date AND :date < s.endDate")
     List<RoomMaintenanceSchedule> findActiveMaintenanceOnDate(@Param("roomId") Long roomId, @Param("date") LocalDate date);
+
+    @Query("SELECT s FROM RoomMaintenanceSchedule s WHERE s.room.id = :roomId AND s.endDate >= :today ORDER BY s.startDate ASC")
+    List<RoomMaintenanceSchedule> findUpcomingByRoomId(@Param("roomId") Long roomId, @Param("today") LocalDate today);
 }

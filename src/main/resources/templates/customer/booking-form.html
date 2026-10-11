@@ -104,19 +104,49 @@
                         <input type="hidden" th:field="*{roomId}"/>
                         <input type="hidden" th:field="*{idempotencyKey}"/>
 
-                        <!-- Maintenance Notice if Room Under Maintenance -->
-                        <div class="alert alert-warning py-3 mb-4" th:if="${room != null and room.underMaintenance}">
+                        <!-- Maintenance Notice if Room Marked Under Maintenance -->
+                        <div class="alert alert-warning py-3 mb-4 rounded-3" th:if="${room != null and room.underMaintenance}">
                             <div class="d-flex align-items-center">
-                                <i class="bi bi-tools fs-5 me-2 text-warning"></i>
+                                <i class="bi bi-tools fs-4 me-3 text-warning"></i>
                                 <div>
                                     <strong class="d-block">Room Under Maintenance</strong>
-                                    <span class="small">This accommodation is currently undergoing scheduled maintenance and cannot be booked at this time.</span>
+                                    <span class="small">This accommodation is currently undergoing maintenance and cannot be booked at this time.</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Date Conflict Messages (Phase 10) -->
-                        <div class="alert alert-danger py-3 mb-4" th:if="${conflictMessages != null and !conflictMessages.isEmpty()}">
+                        <!-- Scheduled Maintenance Time Periods Notice -->
+                        <div class="alert alert-warning py-3 mb-4 rounded-3" th:if="${maintenanceSchedules != null and !maintenanceSchedules.isEmpty()}">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-calendar-x fs-4 me-3 text-warning flex-shrink-0 mt-1"></i>
+                                <div>
+                                    <strong class="d-block text-warning-emphasis">Scheduled Maintenance Periods for Room <span th:text="${room.roomNumber}"></span></strong>
+                                    <p class="small text-muted mb-2">This room cannot be booked during the following scheduled service windows:</p>
+                                    <ul class="mb-0 small ps-3">
+                                        <li th:each="m : ${maintenanceSchedules}">
+                                            <strong th:text="${#temporals.format(m.startDate, 'MMM d, yyyy')} + ' to ' + ${#temporals.format(m.endDate, 'MMM d, yyyy')}">Nov 1 to Nov 5</strong>
+                                            <span th:if="${m.reason != null and !m.reason.isEmpty()}" th:text="' — ' + ${m.reason}" class="text-secondary"> — Plumbing overhaul</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prominent Validation / Conflict Alert -->
+                        <div class="alert alert-danger py-3 mb-4 rounded-3"
+                             th:if="${#fields.hasErrors('checkIn') or #fields.hasErrors('roomId')}">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-octagon-fill fs-4 me-3 text-danger flex-shrink-0"></i>
+                                <div>
+                                    <strong class="d-block">Cannot Reserve Selected Dates</strong>
+                                    <span class="small" th:if="${#fields.hasErrors('checkIn')}" th:errors="*{checkIn}">Check-in date error</span>
+                                    <span class="small" th:if="${#fields.hasErrors('roomId')}" th:errors="*{roomId}">Room selection error</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Conflict Messages (Phase 3) -->
+                        <div class="alert alert-danger py-3 mb-4 rounded-3" th:if="${conflictMessages != null and !conflictMessages.isEmpty()}">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-calendar-x-fill fs-5 me-2"></i>
                                 <span class="fw-bold">Dates Not Available</span>
@@ -124,13 +154,6 @@
                             <ul class="mb-0 ps-3">
                                 <li th:each="msg : ${conflictMessages}" th:text="${msg}">Room 204 is already booked from Oct 12 to Oct 16</li>
                             </ul>
-                        </div>
-
-                        <!-- Room Selection Error if any -->
-                        <div class="alert alert-danger py-2 small mb-3"
-                             th:if="${#fields.hasErrors('roomId')}"
-                             th:errors="*{roomId}">
-                            Invalid room selected.
                         </div>
 
                         <!-- Date Inputs: Check-in and Check-out -->

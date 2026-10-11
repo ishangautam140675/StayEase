@@ -7,7 +7,9 @@ import com.stayease.model.Booking;
 import com.stayease.model.BookingStatus;
 import com.stayease.model.Room;
 import com.stayease.model.User;
+import com.stayease.model.RoomMaintenanceSchedule;
 import com.stayease.repository.BookingRepository;
+import com.stayease.repository.RoomMaintenanceScheduleRepository;
 import com.stayease.repository.RoomRepository;
 import com.stayease.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -33,6 +35,7 @@ public class BookingService {
     private final EmailService emailService;
     private final AuditLogService auditLogService;
     private final SeasonalPricingService seasonalPricingService;
+    private final RoomMaintenanceScheduleRepository maintenanceScheduleRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.booking.cancellation-lead-hours:24}")
     private int cancellationLeadHours = 24;
@@ -40,7 +43,7 @@ public class BookingService {
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           UserRepository userRepository) {
-        this(bookingRepository, roomRepository, userRepository, null, null, null);
+        this(bookingRepository, roomRepository, userRepository, null, null, null, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -49,13 +52,15 @@ public class BookingService {
                           UserRepository userRepository,
                           @org.springframework.beans.factory.annotation.Autowired(required = false) EmailService emailService,
                           @org.springframework.beans.factory.annotation.Autowired(required = false) AuditLogService auditLogService,
-                          @org.springframework.beans.factory.annotation.Autowired(required = false) SeasonalPricingService seasonalPricingService) {
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) SeasonalPricingService seasonalPricingService,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) RoomMaintenanceScheduleRepository maintenanceScheduleRepository) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.auditLogService = auditLogService;
         this.seasonalPricingService = seasonalPricingService;
+        this.maintenanceScheduleRepository = maintenanceScheduleRepository;
     }
 
     /**
@@ -124,6 +129,30 @@ public class BookingService {
         if (form.getGuests() > room.getCapacity()) {
             throw new BookingValidationException("guests",
                     "Number of guests (" + form.getGuests() + ") exceeds the room capacity of " + room.getCapacity() + ".");
+        }
+
+        // Maintenance schedule overlap detection: scheduled room maintenance blocks customer reservations
+        if (maintenanceScheduleRepository != null) {
+            List<com.stayease.model.RoomMaintenanceSchedule> maintenanceConflicts = maintenanceScheduleRepository.findOverlapping(
+                    room.getId(),
+                    form.getCheckIn(),
+                    form.getCheckOut()
+            );
+            if (!maintenanceConflicts.isEmpty()) {
+                com.stayease.model.RoomMaintenanceSchedule ms = maintenanceConflicts.get(0);
+                java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy", java.util.Locale.ENGLISH);
+                String reasonStr = (ms.getReason() != null && !ms.getReason().trim().isEmpty())
+                        ? " (" + ms.getReason().trim() + ")"
+                        : "";
+                throw new BookingValidationException(
+                        "checkIn",
+                        String.format("Room %s is under scheduled maintenance from %s to %s%s and cannot be booked for these dates.",
+                                room.getRoomNumber(),
+                                ms.getStartDate().format(dtf),
+                                ms.getEndDate().format(dtf),
+                                reasonStr)
+                );
+            }
         }
 
         // Overlap detection: only PENDING or APPROVED bookings actively block room inventory
@@ -293,6 +322,26 @@ public class BookingService {
                     "Cannot approve booking #" + bookingId + " due to date conflicts with another booking.",
                     conflicts
             );
+        }
+
+        if (maintenanceScheduleRepository != null) {
+            List<com.stayease.model.RoomMaintenanceSchedule> maintenanceConflicts = maintenanceScheduleRepository.findOverlapping(
+                    booking.getRoom().getId(),
+                    booking.getCheckIn(),
+                    booking.getCheckOut()
+            );
+            if (!maintenanceConflicts.isEmpty()) {
+                com.stayease.model.RoomMaintenanceSchedule ms = maintenanceConflicts.get(0);
+                java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy", java.util.Locale.ENGLISH);
+                throw new com.stayease.exception.BookingConflictException(
+                        String.format("Cannot approve booking #%d because Room %s is scheduled for maintenance from %s to %s.",
+                                bookingId,
+                                booking.getRoom().getRoomNumber(),
+                                ms.getStartDate().format(dtf),
+                                ms.getEndDate().format(dtf)),
+                        List.of()
+                );
+            }
         }
 
         booking.setStatus(BookingStatus.APPROVED);

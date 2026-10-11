@@ -43,6 +43,7 @@ public class CustomerController {
     private final BookingService bookingService;
     private final DashboardService dashboardService;
     private final com.stayease.service.CustomerAccountService customerAccountService;
+    private final com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository;
 
     public CustomerController(UserRepository userRepository,
                               RoomRepository roomRepository,
@@ -50,12 +51,24 @@ public class CustomerController {
                               BookingService bookingService,
                               DashboardService dashboardService,
                               com.stayease.service.CustomerAccountService customerAccountService) {
+        this(userRepository, roomRepository, roomService, bookingService, dashboardService, customerAccountService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public CustomerController(UserRepository userRepository,
+                              RoomRepository roomRepository,
+                              RoomService roomService,
+                              BookingService bookingService,
+                              DashboardService dashboardService,
+                              com.stayease.service.CustomerAccountService customerAccountService,
+                              @org.springframework.beans.factory.annotation.Autowired(required = false) com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository) {
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.roomService = roomService;
         this.bookingService = bookingService;
         this.dashboardService = dashboardService;
         this.customerAccountService = customerAccountService;
+        this.maintenanceScheduleRepository = maintenanceScheduleRepository;
     }
 
     @GetMapping("/customer/dashboard")
@@ -145,6 +158,10 @@ public class CustomerController {
         }
 
         model.addAttribute("room", room);
+        if (room != null && maintenanceScheduleRepository != null) {
+            model.addAttribute("maintenanceSchedules",
+                    maintenanceScheduleRepository.findUpcomingByRoomId(room.getId(), LocalDate.now()));
+        }
         model.addAttribute("bookingForm", bookingForm);
         model.addAttribute("priceBreakdown", priceBreakdown);
         model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
@@ -394,6 +411,10 @@ public class CustomerController {
         if (roomId != null) {
             roomRepository.findById(roomId).ifPresent(r -> {
                 model.addAttribute("room", r);
+                if (maintenanceScheduleRepository != null) {
+                    model.addAttribute("maintenanceSchedules",
+                            maintenanceScheduleRepository.findUpcomingByRoomId(r.getId(), LocalDate.now()));
+                }
                 if (form != null && form.getCheckIn() != null && form.getCheckOut() != null && form.getCheckOut().isAfter(form.getCheckIn())) {
                     model.addAttribute("priceBreakdown", bookingService.calculatePriceBreakdown(r, form.getCheckIn(), form.getCheckOut()));
                 }
