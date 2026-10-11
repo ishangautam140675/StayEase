@@ -64,7 +64,7 @@ public class AdminBookingController {
         String filename = "bookings-" + LocalDate.now() + ".csv";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
 
         return ResponseEntity.ok()
                 .headers(headers)

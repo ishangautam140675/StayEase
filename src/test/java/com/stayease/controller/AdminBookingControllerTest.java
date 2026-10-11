@@ -222,7 +222,7 @@ class AdminBookingControllerTest {
                         .with(user(admin.getEmail()).roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
-                .andExpect(header().string("Content-Disposition", "attachment; filename=" + expectedFilename))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + expectedFilename + "\""))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Booking ID,Customer name")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("PENDING")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("APPROVED")));
@@ -233,7 +233,7 @@ class AdminBookingControllerTest {
                         .with(user(admin.getEmail()).roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
-                .andExpect(header().string("Content-Disposition", "attachment; filename=" + expectedFilename))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + expectedFilename + "\""))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("PENDING")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("APPROVED"))));
 

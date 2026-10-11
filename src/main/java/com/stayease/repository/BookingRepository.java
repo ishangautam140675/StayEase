@@ -64,14 +64,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("excludeId") Long excludeId
     );
 
-    @Query("select b from Booking b where b.room.id = :roomId and b.status in :statuses and :checkIn < b.checkOut and :checkOut > b.checkIn and b.id <> :excludeId")
-    List<Booking> findOverlappingExcluding(
-            @Param("roomId") Long roomId,
-            @Param("checkIn") java.time.LocalDate checkIn,
-            @Param("checkOut") java.time.LocalDate checkOut,
-            @Param("statuses") java.util.Collection<com.stayease.model.BookingStatus> statuses,
-            @Param("excludeId") Long excludeId
-    );
 
     boolean existsByRoomId(Long roomId);
 

@@ -5,19 +5,19 @@
 <!-- Reusable Booking Status Badge Fragment -->
 <th:block th:fragment="badge(status)" th:if="${status != null}">
     <span th:if="${status.name() == 'PENDING' or status == 'PENDING'}"
-          class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
+          class="se-badge se-badge-pending">
         <i class="bi bi-hourglass-split me-1"></i>PENDING
     </span>
     <span th:if="${status.name() == 'APPROVED' or status == 'APPROVED'}"
-          class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
+          class="se-badge se-badge-approved">
         <i class="bi bi-check-circle-fill me-1"></i>APPROVED
     </span>
     <span th:if="${status.name() == 'REJECTED' or status == 'REJECTED'}"
-          class="badge bg-danger px-3 py-2 rounded-pill fw-semibold">
+          class="se-badge se-badge-rejected">
         <i class="bi bi-x-circle-fill me-1"></i>REJECTED
     </span>
     <span th:if="${status.name() == 'CANCELLED' or status == 'CANCELLED'}"
-          class="badge bg-secondary px-3 py-2 rounded-pill fw-semibold">
+          class="se-badge se-badge-cancelled">
         <i class="bi bi-slash-circle me-1"></i>CANCELLED
     </span>
 </th:block>

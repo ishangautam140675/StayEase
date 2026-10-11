@@ -27,13 +27,13 @@
 <!-- ── Fragment: navbar ────────────────────────────────────────────────── -->
 <th:block th:fragment="navbar">
     <!-- Dark navbar for ADMIN -->
-    <nav sec:authorize="hasRole('ADMIN')" class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom py-3" style="background-color: #1a1014 !important; border-bottom: 2px solid #3d1b26 !important;">
+    <nav sec:authorize="hasRole('ADMIN')" class="navbar navbar-expand-lg navbar-dark border-bottom py-3" style="background-color: #1a0e14 !important; border-bottom: 2px solid #3d1b26 !important;">
         <div class="container se-container">
             <!-- Brand with Admin label -->
             <a class="navbar-brand text-white fw-bold d-inline-flex align-items-center" th:href="@{/}">
-                <i class="bi bi-building-fill me-2" style="color: var(--brand-tangerine);"></i>
-                <span>StayEase</span>
-                <span class="badge ms-2 px-2 py-1 text-uppercase fw-bold" style="background-color: var(--brand-tangerine); color: #FFFFFF; font-size: 0.65rem; letter-spacing: 0.08em; vertical-align: middle;">Admin</span>
+                <i class="bi bi-building-fill me-2 fs-5" style="color: var(--brand-tangerine);"></i>
+                <span class="fs-4" style="font-family: var(--font-heading); letter-spacing: -0.02em;">StayEase</span>
+                <span class="badge ms-2 px-2 py-1 text-uppercase fw-bold" style="background-color: var(--brand-tangerine); color: #FFFFFF; font-size: 0.65rem; letter-spacing: 0.1em; border-radius: 4px;">Admin</span>
             </a>
 
             <!-- Mobile Toggler -->
@@ -45,25 +45,35 @@
 
             <!-- Collapsible Content -->
             <div class="collapse navbar-collapse" id="adminNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-1">
                     <li class="nav-item">
-                        <a class="nav-link text-white-50" th:href="@{/rooms}">Rooms</a>
+                        <a class="nav-link px-3 py-2 rounded text-white-50" th:href="@{/rooms}">
+                            <i class="bi bi-compass me-1"></i>Rooms Catalog
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/admin/dashboard}">Admin dashboard</a>
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/dashboard}">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/admin/rooms}">Manage rooms</a>
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/rooms}">
+                            <i class="bi bi-door-closed me-1"></i>Manage Rooms
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/admin/bookings}">Manage bookings</a>
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/bookings}">
+                            <i class="bi bi-calendar-check me-1"></i>Manage Bookings
+                        </a>
                     </li>
                 </ul>
 
                 <div class="d-flex align-items-lg-center gap-2 mt-3 mt-lg-0">
                     <form th:action="@{/logout}" method="post" class="d-inline m-0">
                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn btn-outline-light btn-sm px-3">Logout</button>
+                        <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-medium">
+                            <i class="bi bi-box-arrow-right me-1"></i>Logout
+                        </button>
                     </form>
                 </div>
             </div>
@@ -75,8 +85,8 @@
         <div class="container se-container">
             <!-- Brand -->
             <a class="navbar-brand text-white fw-bold d-inline-flex align-items-center" th:href="@{/}">
-                <i class="bi bi-building-fill me-2" style="color: #FFF8ED;"></i>
-                <span>StayEase</span>
+                <i class="bi bi-building-fill me-2 fs-5" style="color: var(--brand-tangerine);"></i>
+                <span class="fs-4" style="font-family: var(--font-heading); letter-spacing: -0.02em;">StayEase</span>
             </a>
 
             <!-- Mobile Toggler -->
@@ -88,27 +98,45 @@
 
             <!-- Collapsible Content -->
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-1">
                     <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/rooms}">Rooms</a>
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/}">
+                            <i class="bi bi-house me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/rooms}">
+                            <i class="bi bi-compass me-1"></i>Explore Rooms
+                        </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link text-white" th:href="@{/customer/dashboard}">Dashboard</a>
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/dashboard}">
+                            <i class="bi bi-speedometer2 me-1"></i>My Portal
+                        </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link text-white" th:href="@{/customer/bookings}">My bookings</a>
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/bookings}">
+                            <i class="bi bi-calendar2-heart me-1"></i>My Bookings
+                        </a>
                     </li>
                 </ul>
 
                 <div class="d-flex align-items-lg-center gap-2 mt-3 mt-lg-0">
                     <div sec:authorize="isAnonymous()" class="d-flex align-items-center gap-2">
-                        <a class="btn btn-outline-light btn-sm px-3" th:href="@{/login}">Login</a>
-                        <a class="btn btn-light btn-sm px-3 fw-medium" style="color: var(--brand-cobalt);" th:href="@{/register}">Register</a>
+                        <a class="btn btn-outline-light btn-sm px-3 fw-medium" th:href="@{/login}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </a>
+                        <a class="btn btn-light btn-sm px-3 fw-semibold" style="color: var(--brand-cobalt);" th:href="@{/register}">
+                            <i class="bi bi-person-plus me-1"></i>Register
+                        </a>
                     </div>
                     <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
+                        <span class="text-white-50 small d-none d-lg-inline me-1" sec:authentication="name">User</span>
                         <form th:action="@{/logout}" method="post" class="d-inline m-0">
                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button type="submit" class="btn btn-outline-light btn-sm px-3">Logout</button>
+                            <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-medium">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -119,34 +147,87 @@
 
 <!-- ── Fragment: flash ─────────────────────────────────────────────────── -->
 <div th:fragment="flash" class="container se-container my-3">
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        <span th:text="${successMessage}">Operation successful!</span>
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm border d-flex align-items-center" role="alert" style="border-radius: var(--radius-control); background-color: var(--success-bg); border-color: var(--success-border); color: var(--success);">
+        <i class="bi bi-check-circle-fill fs-5 me-2 flex-shrink-0"></i>
+        <div class="flex-grow-1 fw-medium" th:text="${successMessage}">Operation successful!</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <span th:text="${errorMessage}">An error occurred.</span>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm border d-flex align-items-center" role="alert" style="border-radius: var(--radius-control); background-color: var(--danger-bg); border-color: var(--danger-border); color: var(--danger);">
+        <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0"></i>
+        <div class="flex-grow-1 fw-medium" th:text="${errorMessage}">An error occurred.</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 </div>
 
 <!-- ── Fragment: footer ────────────────────────────────────────────────── -->
-<footer th:fragment="footer" class="se-footer mt-auto py-4">
+<footer th:fragment="footer" class="se-footer mt-auto pt-5 pb-4">
     <div class="container se-container">
-        <div class="row g-3 align-items-center">
-            <div class="col-md-6 text-center text-md-start">
-                <span class="se-footer-brand d-inline-flex align-items-center gap-2 mb-1">
-                    <i class="bi bi-building"></i> StayEase
+        <div class="row g-4 mb-4">
+            <!-- Brand Column -->
+            <div class="col-lg-4 col-md-6">
+                <span class="se-footer-brand d-inline-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-building-fill" style="color: var(--brand-tangerine);"></i> StayEase
                 </span>
+                <p class="small text-secondary mb-3" style="color: #E6D9DC !important; max-width: 320px; line-height: 1.6;">
+                    Curated hostel and PG accommodations for students and young professionals. Editorial hospitality, physically verified spaces, and zero broker commissions.
+                </p>
+                <div class="d-flex align-items-center gap-2 text-secondary small" style="color: #E6D9DC !important;">
+                    <span class="badge" style="background-color: rgba(255, 122, 48, 0.2); color: var(--brand-tangerine); border: 1px solid var(--brand-tangerine);">
+                        <i class="bi bi-patch-check-fill me-1"></i>Verified Hostels
+                    </span>
+                    <span class="badge" style="background-color: rgba(255, 255, 255, 0.1); color: #FFFFFF;">
+                        <i class="bi bi-shield-check me-1"></i>Zero Commission
+                    </span>
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="col-lg-2 col-md-6 col-6">
+                <h6 class="text-uppercase fw-bold text-white small tracking-wider mb-3" style="letter-spacing: 0.08em;">Navigation</h6>
+                <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                    <li><a th:href="@{/}" class="text-decoration-none">Home</a></li>
+                    <li><a th:href="@{/rooms}" class="text-decoration-none">Explore Rooms</a></li>
+                    <li><a th:href="@{/customer/dashboard}" class="text-decoration-none">Customer Portal</a></li>
+                    <li><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin Console</a></li>
+                </ul>
+            </div>
+
+            <!-- Stays & Room Categories -->
+            <div class="col-lg-3 col-md-6 col-6">
+                <h6 class="text-uppercase fw-bold text-white small tracking-wider mb-3" style="letter-spacing: 0.08em;">Stay Categories</h6>
+                <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                    <li><a th:href="@{/rooms(type='SINGLE')}" class="text-decoration-none">Single Executive Suites</a></li>
+                    <li><a th:href="@{/rooms(type='DOUBLE')}" class="text-decoration-none">Double Sharing Rooms</a></li>
+                    <li><a th:href="@{/rooms(type='TRIPLE')}" class="text-decoration-none">Triple Sharing Units</a></li>
+                    <li><a th:href="@{/rooms(type='DORMITORY')}" class="text-decoration-none">Modern Dormitories</a></li>
+                </ul>
+            </div>
+
+            <!-- Amenities & Hospitality -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="text-uppercase fw-bold text-white small tracking-wider mb-3" style="letter-spacing: 0.08em;">Hospitality Standards</h6>
+                <ul class="list-unstyled small mb-0 d-flex flex-column gap-2" style="color: #E6D9DC !important;">
+                    <li><i class="bi bi-wifi text-warning me-2"></i>High-Speed Fiber Wi-Fi</li>
+                    <li><i class="bi bi-shield-lock-fill text-warning me-2"></i>Biometric &amp; CCTV Security</li>
+                    <li><i class="bi bi-stars text-warning me-2"></i>Daily Professional Cleaning</li>
+                    <li><i class="bi bi-lightning-charge-fill text-warning me-2"></i>24/7 Power Backup</li>
+                </ul>
+            </div>
+        </div>
+
+        <hr class="se-footer-divider">
+
+        <!-- Bottom bar -->
+        <div class="row align-items-center g-2">
+            <div class="col-md-6 text-center text-md-start">
                 <p class="small text-secondary mb-0" style="color: #E6D9DC !important;">
-                    Hostel &amp; PG Booking System &mdash; Editorial Hospitality.
+                    &copy; 2026 StayEase. Editorial Hospitality &times; Bold Color Blocking. All rights reserved.
                 </p>
             </div>
             <div class="col-md-6 text-center text-md-end">
-                <p class="small text-secondary mb-0" style="color: #E6D9DC !important;">
-                    &copy; 2026 StayEase. All rights reserved.
-                </p>
+                <span class="small text-secondary" style="color: #E6D9DC !important;">
+                    Safe, Transparent, &amp; Community-First Accommodations
+                </span>
             </div>
         </div>
     </div>

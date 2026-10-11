@@ -185,6 +185,20 @@
                             </div>
                         </div>
 
+                        <!-- Live Price Calculation Box -->
+                        <div id="priceEstimateBox" class="p-3 rounded-3 mb-4 d-none" th:if="${room != null}"
+                             style="background: var(--brand-cobalt-soft); border: 1px solid var(--brand-cobalt-border);">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="small fw-semibold" style="color: var(--brand-cobalt);"><i class="bi bi-calculator me-1"></i>Estimated Total Tariff</span>
+                                    <div class="small text-secondary" id="nightsCountText">0 nights × ₹<span th:text="${#numbers.formatDecimal(room.pricePerNight, 1, 2)}">0.00</span></div>
+                                </div>
+                                <div class="fs-4 fw-bold" style="color: var(--brand-oxblood);" id="totalEstimatePrice">
+                                    ₹0.00
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Actions -->
                         <div class="d-flex align-items-center gap-3 pt-3 border-top"
                              style="border-color: var(--border-default) !important;">
@@ -192,12 +206,48 @@
                                 <i class="bi bi-send-check me-2"></i>Submit booking request
                             </button>
                             <a th:href="${room != null} ? @{/rooms/{id}(id=${room.id})} : @{/rooms}"
-                               class="btn btn-outline-secondary px-3">
+                                class="btn btn-outline-secondary px-3">
                                 Cancel
                             </a>
                         </div>
 
                     </form>
+
+                    <!-- Client-side Calculation Script -->
+                    <script th:if="${room != null}" th:inline="javascript">
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const checkInInput = document.getElementById('checkIn');
+                            const checkOutInput = document.getElementById('checkOut');
+                            const priceBox = document.getElementById('priceEstimateBox');
+                            const nightsText = document.getElementById('nightsCountText');
+                            const totalText = document.getElementById('totalEstimatePrice');
+                            const pricePerNight = /*[[${room.pricePerNight}]]*/ 0;
+
+                            function updateCalculation() {
+                                if (!checkInInput.value || !checkOutInput.value) {
+                                    priceBox.classList.add('d-none');
+                                    return;
+                                }
+                                const d1 = new Date(checkInInput.value);
+                                const d2 = new Date(checkOutInput.value);
+                                const diffTime = d2 - d1;
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                                if (diffDays > 0) {
+                                    const total = (diffDays * pricePerNight).toFixed(2);
+                                    nightsText.textContent = diffDays + ' night(s) × ₹' + pricePerNight.toFixed(2);
+                                    totalText.textContent = '₹' + Number(total).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                    priceBox.classList.remove('d-none');
+                                } else {
+                                    priceBox.classList.add('d-none');
+                                }
+                            }
+
+                            checkInInput.addEventListener('change', updateCalculation);
+                            checkOutInput.addEventListener('change', updateCalculation);
+                            updateCalculation();
+                        });
+                    </script>
 
                     <!-- Alternative Available Rooms (Phase 10) -->
                     <div class="mt-4 pt-4 border-top"

@@ -161,13 +161,6 @@ public class BookingService {
         return bookingRepository.findByUserEmailOrderByCreatedAtDesc(userEmail, pageable);
     }
 
-    /**
-     * Alias for {@link #getBookingsForUser(String)}.
-     */
-    public List<Booking> findCustomerBookings(String userEmail) {
-        return getBookingsForUser(userEmail);
-    }
-
     // ── Admin Management Methods (Phase 11) ────────────────────────────────
 
     /**
@@ -227,7 +220,7 @@ public class BookingService {
         // Lock room row to serialize concurrent approvals/bookings
         roomRepository.findByIdForUpdate(booking.getRoom().getId());
 
-        List<Booking> conflicts = bookingRepository.findOverlappingExcluding(
+        List<Booking> conflicts = bookingRepository.findOverlapping(
                 booking.getRoom().getId(),
                 booking.getCheckIn(),
                 booking.getCheckOut(),

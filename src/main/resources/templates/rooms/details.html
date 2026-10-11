@@ -15,84 +15,165 @@
     <div class="container se-container">
 
         <!-- Breadcrumb / Back Link -->
-        <div class="mb-4">
-            <a th:href="@{/rooms}" class="text-decoration-none small fw-medium" style="color: var(--brand-cobalt);">
+        <div class="mb-4 d-flex align-items-center gap-2">
+            <a th:href="@{/rooms}" class="btn btn-outline-se btn-sm px-3 fw-medium">
                 <i class="bi bi-arrow-left me-1"></i>Back to all rooms
             </a>
+            <span class="text-secondary small d-none d-sm-inline">/</span>
+            <span class="text-secondary small d-none d-sm-inline" th:text="'Room ' + ${room.roomNumber}">Room 101</span>
         </div>
 
-        <div class="row g-4 justify-content-center">
+        <div class="row g-4">
+            <!-- Left / Main Column: Details, Specifications, Amenities, Policies -->
             <div class="col-12 col-lg-8">
 
                 <!-- Room Detail Card -->
-                <div class="card border-0 shadow-sm p-4 p-md-5" style="background: var(--surface-card); border-radius: 16px;">
+                <div class="card border-0 shadow-sm" style="background: var(--surface-card); border-radius: var(--radius-card); overflow: hidden; border: 1px solid var(--border-default) !important;">
 
-                    <!-- Header -->
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom"
-                         style="border-color: var(--border-default) !important;">
-                        <div>
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <span class="badge px-3 py-1 rounded-pill"
-                                      style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.85rem;"
-                                      th:text="${room.type}">SINGLE</span>
-                                <span class="badge px-3 py-1 rounded-pill"
-                                      th:if="${room.active}"
-                                      style="background: #E5F2E8; color: #21633E; font-size: 0.85rem;">Available</span>
-                            </div>
-                            <h1 class="display-6 fw-bold mb-0" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
-                                Room <span th:text="${room.roomNumber}">101</span>
-                            </h1>
-                        </div>
-
-                        <!-- Price Tag -->
-                        <div class="text-md-end">
-                            <span class="small text-secondary">Price per night</span>
-                            <div class="display-6 fw-bold" style="color: var(--brand-oxblood);">
-                                ₹<span th:text="${#numbers.formatDecimal(room.pricePerNight, 1, 2)}">750.00</span>
-                            </div>
+                    <!-- Photo Gallery Banner -->
+                    <div class="position-relative" style="height: 340px; background-color: var(--surface-muted);">
+                        <img th:if="${room.type.name() == 'DORMITORY'}" th:src="@{/images/dormitory_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover"/>
+                        <img th:if="${room.type.name() == 'DOUBLE' or room.type.name() == 'TRIPLE'}" th:src="@{/images/deluxe_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover"/>
+                        <img th:if="${room.type.name() == 'SINGLE'}" th:src="@{/images/hero_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover"/>
+                        
+                        <div class="position-absolute top-0 start-0 m-3 d-flex gap-2">
+                            <span class="badge px-3 py-2 text-white fw-bold shadow-sm"
+                                  th:style="${room.type.name() == 'SINGLE'} ? 'background-color: var(--brand-oxblood);' : (${room.type.name() == 'DORMITORY'} ? 'background-color: var(--brand-tangerine);' : 'background-color: var(--brand-cobalt);')"
+                                  th:text="${room.type}">SINGLE</span>
+                            <span class="badge px-3 py-2 fw-semibold shadow-sm"
+                                  th:if="${room.active}"
+                                  style="background: #E5F2E8; color: #166534; border: 1px solid #86EFAC;">
+                                <i class="bi bi-check-circle-fill me-1"></i>Available for Booking
+                            </span>
+                            <span class="badge px-3 py-2 fw-semibold shadow-sm"
+                                  th:unless="${room.active}"
+                                  style="background: #F3F4F6; color: #4B5563;">
+                                Under Maintenance
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Room Specifications -->
-                    <div class="row g-3 my-3">
-                        <div class="col-6 col-md-4">
-                            <div class="p-3 rounded" style="background: var(--surface-page);">
-                                <span class="small text-secondary d-block">Room Number</span>
-                                <span class="fw-bold" style="color: var(--text-primary);" th:text="${room.roomNumber}">101</span>
+                    <div class="p-4 p-md-5">
+                        <!-- Header -->
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom"
+                             style="border-color: var(--border-default) !important;">
+                            <div>
+                                <span class="eyebrow" style="color: var(--brand-oxblood);">HOSTEL ACCOMMODATION</span>
+                                <h1 class="display-6 fw-bold mb-0" style="color: var(--text-primary); font-family: var(--font-heading);">
+                                    Room <span th:text="${room.roomNumber}">101</span> &mdash; <span th:text="${room.type}">SINGLE</span>
+                                </h1>
+                            </div>
+                            <div class="text-md-end">
+                                <span class="small text-secondary d-block">Nightly Tariff</span>
+                                <div class="display-6 fw-bold" style="color: var(--brand-oxblood);">
+                                    ₹<span th:text="${#numbers.formatDecimal(room.pricePerNight, 1, 2)}">750.00</span>
+                                    <span class="small fw-normal text-muted" style="font-size: 0.85rem;">/ night</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-4">
-                            <div class="p-3 rounded" style="background: var(--surface-page);">
-                                <span class="small text-secondary d-block">Accommodates</span>
-                                <span class="fw-bold" style="color: var(--text-primary);">
-                                    <span th:text="${room.capacity}">1</span> Guests
-                                </span>
+
+                        <!-- Room Specifications Grid -->
+                        <div class="row g-3 my-3">
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 rounded-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
+                                    <span class="small text-secondary d-block"><i class="bi bi-door-closed me-1"></i>Room Unit</span>
+                                    <span class="fw-bold fs-6" style="color: var(--text-primary);" th:text="${room.roomNumber}">101</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 rounded-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
+                                    <span class="small text-secondary d-block"><i class="bi bi-people me-1"></i>Max Occupancy</span>
+                                    <span class="fw-bold fs-6" style="color: var(--text-primary);">
+                                        <span th:text="${room.capacity}">1</span> Guest(s)
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="p-3 rounded-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
+                                    <span class="small text-secondary d-block"><i class="bi bi-tag me-1"></i>Classification</span>
+                                    <span class="fw-bold fs-6" style="color: var(--text-primary);" th:text="${room.type}">SINGLE</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-4">
-                            <div class="p-3 rounded" style="background: var(--surface-page);">
-                                <span class="small text-secondary d-block">Category</span>
-                                <span class="fw-bold" style="color: var(--text-primary);" th:text="${room.type}">SINGLE</span>
+
+                        <!-- Description -->
+                        <div class="my-4">
+                            <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary); font-family: var(--font-heading);">About This Room</h2>
+                            <p class="text-secondary" style="line-height: 1.7;"
+                               th:text="${room.description != null ? room.description : 'A thoughtfully designed accommodation providing high-speed internet, premium bedding, and a peaceful environment for studying and relaxation.'}">
+                                Description text here...
+                            </p>
+                        </div>
+
+                        <!-- Curated Amenities -->
+                        <div class="my-4 pt-3 border-top" style="border-color: var(--border-default) !important;">
+                            <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary); font-family: var(--font-heading);">Stay Features &amp; Amenities</h2>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="amenity-chip"><i class="bi bi-wifi"></i>High-Speed Wi-Fi</span>
+                                <span class="amenity-chip"><i class="bi bi-laptop"></i>Dedicated Study Desk</span>
+                                <span class="amenity-chip"><i class="bi bi-stars"></i>Daily Housekeeping</span>
+                                <span class="amenity-chip"><i class="bi bi-lightning-charge-fill"></i>24/7 Power Backup</span>
+                                <span class="amenity-chip"><i class="bi bi-shield-lock-fill"></i>Secure Biometric Entry</span>
+                                <span class="amenity-chip"><i class="bi bi-droplet-fill"></i>RO Drinking Water</span>
                             </div>
+                        </div>
+
+                        <!-- House Policies -->
+                        <div class="my-4 pt-3 border-top" style="border-color: var(--border-default) !important;">
+                            <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary); font-family: var(--font-heading);">Hostel Guidelines &amp; Policies</h2>
+                            <div class="row g-2 text-secondary small">
+                                <div class="col-sm-6">
+                                    <i class="bi bi-clock me-1 text-primary"></i>Check-in: 12:00 PM | Check-out: 11:00 AM
+                                </div>
+                                <div class="col-sm-6">
+                                    <i class="bi bi-person-badge me-1 text-primary"></i>Valid Government / Student ID required
+                                </div>
+                                <div class="col-sm-6">
+                                    <i class="bi bi-volume-mute me-1 text-primary"></i>Quiet hours observed: 10:00 PM – 6:00 AM
+                                </div>
+                                <div class="col-sm-6">
+                                    <i class="bi bi-check2-circle me-1 text-success"></i>Zero brokerage commissions
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Sticky Booking & Reservation Card -->
+            <div class="col-12 col-lg-4">
+                <div class="card border-0 shadow-sm p-4 sticky-lg-top"
+                     style="top: 24px; background: var(--surface-card); border-radius: var(--radius-card); border: 1px solid var(--border-default) !important;">
+                    
+                    <span class="eyebrow" style="color: var(--brand-oxblood);">RESERVATION OVERVIEW</span>
+                    <h3 class="h4 fw-bold mb-3" style="color: var(--text-primary); font-family: var(--font-heading);">Book Your Stay</h3>
+
+                    <div class="p-3 rounded-3 mb-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
+                        <span class="small text-secondary d-block">Starting Tariff</span>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="fs-3 fw-bold" style="color: var(--brand-oxblood);">₹<span th:text="${#numbers.formatDecimal(room.pricePerNight, 1, 2)}">750.00</span></span>
+                            <span class="text-secondary small">/ night</span>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            Includes electricity, Wi-Fi, and amenities.
                         </div>
                     </div>
 
-                    <!-- Description -->
-                    <div class="my-4">
-                        <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary);">Room Description</h2>
-                        <p class="text-secondary" style="line-height: 1.7;"
-                           th:text="${room.description != null ? room.description : 'A thoughtfully designed accommodation providing high-speed internet, premium bedding, and a peaceful environment for studying and relaxation.'}">
-                            Description text here...
-                        </p>
+                    <div class="mb-4">
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-success me-2 fw-bold"></i>Instant booking submission</li>
+                            <li><i class="bi bi-check2 text-success me-2 fw-bold"></i>Reviewed directly by admin</li>
+                            <li><i class="bi bi-check2 text-success me-2 fw-bold"></i>Free cancellation before check-in</li>
+                        </ul>
                     </div>
 
                     <!-- Actions depending on User Identity -->
-                    <div class="pt-4 border-top mt-4" style="border-color: var(--border-default) !important;">
-
+                    <div class="pt-3 border-top" style="border-color: var(--border-default) !important;">
                         <!-- CUSTOMER sees "Request booking" button -->
                         <div sec:authorize="hasRole('CUSTOMER')">
                             <a th:href="@{/customer/bookings/new(roomId=${room.id})}"
-                               class="btn btn-cobalt btn-lg px-4 fw-semibold">
+                               class="btn btn-cobalt btn-lg w-100 fw-semibold">
                                 <i class="bi bi-calendar-check me-2"></i>Request booking
                             </a>
                         </div>
@@ -100,16 +181,18 @@
                         <!-- Anonymous visitor sees "Log in to book" button -->
                         <div sec:authorize="isAnonymous()">
                             <a th:href="@{/login}"
-                               class="btn btn-outline-se btn-lg px-4 fw-semibold">
+                               class="btn btn-cobalt btn-lg w-100 fw-semibold mb-2">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>Log in to book
                             </a>
+                            <p class="small text-center text-secondary mb-0">
+                                Don't have an account? <a th:href="@{/register}" style="color: var(--brand-cobalt);">Register now</a>
+                            </p>
                         </div>
 
-                        <!-- ADMIN sees neither button -->
-                        <div sec:authorize="hasRole('ADMIN')" class="text-muted small fst-italic">
-                            <i class="bi bi-info-circle me-1"></i>Logged in as Administrator (booking requests are made from customer accounts).
+                        <!-- ADMIN sees notice -->
+                        <div sec:authorize="hasRole('ADMIN')" class="alert alert-light border small text-muted mb-0">
+                            <i class="bi bi-info-circle me-1"></i>Logged in as Administrator. Bookings are submitted by customer accounts.
                         </div>
-
                     </div>
 
                 </div>

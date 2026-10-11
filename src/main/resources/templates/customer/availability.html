@@ -91,18 +91,29 @@
 
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4" th:each="r : ${rooms}">
-                    <div class="card h-100 border-0 shadow-sm"
+                    <div class="card h-100 border-0 shadow-sm room-card"
                          style="background: var(--surface-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-default) !important;">
+                        
+                        <!-- Room Image Banner -->
+                        <div class="room-card-img-wrap position-relative" style="height: 180px; overflow: hidden; background: #2A1520;">
+                            <img th:if="${r.type.name() == 'SINGLE'}" th:src="@{/images/hero_room.jpg}" class="w-100 h-100 object-fit-cover" alt="Single Suite" />
+                            <img th:if="${r.type.name() == 'DOUBLE' or r.type.name() == 'TRIPLE'}" th:src="@{/images/deluxe_room.jpg}" class="w-100 h-100 object-fit-cover" alt="Deluxe Room" />
+                            <img th:if="${r.type.name() == 'DORMITORY'}" th:src="@{/images/dormitory_room.jpg}" class="w-100 h-100 object-fit-cover" alt="Dormitory Room" />
+                            
+                            <span class="position-absolute top-0 end-0 m-3 badge px-3 py-1 shadow-sm"
+                                  style="background: var(--brand-oxblood); color: #FFFFFF; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px;">
+                                <span th:text="${r.type}">SINGLE</span>
+                            </span>
+                        </div>
+
                         <!-- Room Card Header -->
-                        <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center"
                              style="background: var(--surface-page);">
                             <div>
                                 <h3 class="h5 fw-bold mb-0" style="color: var(--text-primary);">
                                     Room <span th:text="${r.roomNumber}">101</span>
                                 </h3>
-                                <span class="badge px-2 py-0 small text-uppercase"
-                                      style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.75rem;"
-                                      th:text="${r.type}">SINGLE</span>
+                                <span class="small text-secondary"><i class="bi bi-people me-1"></i>Max <span class="fw-semibold text-dark" th:text="${r.capacity}">2</span> guests</span>
                             </div>
                             <span class="fs-5 fw-bold" style="color: var(--brand-oxblood);">
                                 ₹<span th:text="${#numbers.formatDecimal(r.pricePerNight, 1, 2)}">550.00</span>
@@ -113,26 +124,23 @@
                         <!-- Room Card Body -->
                         <div class="p-4 d-flex flex-column justify-content-between flex-grow-1">
                             <div>
-                                <div class="d-flex align-items-center gap-3 text-secondary small mb-3">
-                                    <span>
-                                        <i class="bi bi-people me-1"></i>Max <span class="fw-semibold text-dark" th:text="${r.capacity}">2</span> guests
-                                    </span>
-                                    <span>
-                                        <i class="bi bi-shield-check text-success me-1"></i>Active
-                                    </span>
-                                </div>
-                                <p class="text-secondary small mb-4"
-                                   style="line-height: 1.5; min-height: 48px;"
-                                   th:text="${r.description != null and !r.description.isEmpty() ? r.description : 'Comfortable accommodation with modern amenities.'}">
+                                <p class="text-secondary small mb-3 text-truncate-2"
+                                   style="line-height: 1.5; min-height: 42px;"
+                                   th:text="${r.description != null and !r.description.isEmpty() ? r.description : 'Comfortable accommodation with high-speed Wi-Fi and modern amenities.'}">
                                     Room description
                                 </p>
+                                <div class="d-flex flex-wrap gap-1 mb-4">
+                                    <span class="amenity-chip"><i class="bi bi-wifi"></i> WiFi</span>
+                                    <span class="amenity-chip"><i class="bi bi-shield-check"></i> 24/7 Security</span>
+                                    <span class="amenity-chip"><i class="bi bi-cup-hot"></i> Housekeeping</span>
+                                </div>
                             </div>
 
                             <!-- Book Button Pre-filling the booking form -->
                             <div>
                                 <a th:href="@{/customer/bookings/new(roomId=${r.id}, checkIn=${checkIn}, checkOut=${checkOut}, guests=${guests})}"
                                    class="btn btn-cobalt w-100 fw-medium py-2">
-                                    <i class="bi bi-calendar-plus me-1"></i>Book Room
+                                    <i class="bi bi-calendar-plus me-1"></i>Reserve This Room
                                 </a>
                             </div>
                         </div>

@@ -64,22 +64,20 @@
             </div>
 
             <!-- ── Search & Filter Panel ───────────────────────────────── -->
-            <div class="mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm border">
-                <h5 class="fw-bold mb-3 text-dark">
-                    <i class="bi bi-sliders text-cobalt me-2"></i>
-                    Check Availability &amp; Find Your Room
-                </h5>
+            <div class="mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm border" style="border-radius: var(--radius-card); border-color: var(--border-default) !important;">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-sliders text-primary me-2" style="color: var(--brand-cobalt) !important;"></i>
+                        Check Availability &amp; Find Your Room
+                    </h5>
+                    <span class="badge px-3 py-1 rounded-pill" style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.8rem;">
+                        Instant Search
+                    </span>
+                </div>
                 <form th:action="@{/rooms}" method="GET" class="row g-3 align-items-end">
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label">Location / Landmark</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
-                            <input type="text" class="form-control border-start-0" placeholder="e.g. University Campus, Tech Park"/>
-                        </div>
-                    </div>
                     <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Room Type</label>
-                        <select class="form-select">
+                        <label for="searchType" class="form-label small fw-semibold">Room Category</label>
+                        <select id="searchType" name="type" class="form-select">
                             <option value="">All Types (Any)</option>
                             <option value="SINGLE">Single Room (Private)</option>
                             <option value="DOUBLE">Double Sharing</option>
@@ -88,12 +86,23 @@
                         </select>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <label class="form-label">Check-in Date</label>
-                        <input type="date" class="form-control"/>
+                        <label for="searchCapacity" class="form-label small fw-semibold">Min Capacity (Guests)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-people"></i></span>
+                            <input type="number" id="searchCapacity" name="capacity" min="1" max="10" class="form-control border-start-0" placeholder="e.g. 1, 2"/>
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-6">
+                        <label for="searchMinPrice" class="form-label small fw-semibold">Min Price (₹)</label>
+                        <input type="number" step="50" id="searchMinPrice" name="minPrice" min="0" class="form-control" placeholder="0"/>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label for="searchMaxPrice" class="form-label small fw-semibold">Max Price (₹)</label>
+                        <input type="number" step="50" id="searchMaxPrice" name="maxPrice" min="0" class="form-control" placeholder="Max"/>
+                    </div>
+                    <div class="col-lg-2 col-md-12">
                         <button type="submit" class="btn btn-cobalt w-100">
-                            <i class="bi bi-search"></i> Search
+                            <i class="bi bi-search me-1"></i>Search
                         </button>
                     </div>
                 </form>
@@ -101,53 +110,97 @@
         </div>
     </section>
 
-    <!-- ── Benefits Section ────────────────────────────────────────────── -->
+    <!-- ── Hospitality Pillars & Bold Color Blocking ───────────────────── -->
     <section class="py-5" style="background-color: var(--surface-muted);" id="features">
         <div class="container se-container">
-            <div class="text-center mx-auto mb-5" style="max-width: 580px;">
-                <span class="eyebrow">WHY CHOOSE STAYEASE</span>
-                <h2 class="display-6 fw-bold">Designed for Comfort and Peace of Mind</h2>
-                <p class="text-muted">A modern approach to hostel and PG living without complications.</p>
+            <div class="text-center mx-auto mb-5" style="max-width: 620px;">
+                <span class="eyebrow" style="color: var(--brand-oxblood);">WHY CHOOSE STAYEASE</span>
+                <h2 class="display-6 fw-bold" style="font-family: var(--font-heading);">Designed for Comfort &amp; Peace of Mind</h2>
+                <p class="text-secondary">A modern, curated approach to student and executive hostel living with zero hidden surprises.</p>
             </div>
 
             <div class="row g-4">
+                <!-- Card 1: Oxblood block -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
-                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--surface-muted); color: var(--brand-oxblood);">
-                            <i class="bi bi-shield-check fs-4"></i>
+                    <div class="p-4 rounded-4 shadow-sm h-100 color-block-oxblood d-flex flex-column justify-content-between" style="border-radius: var(--radius-card);">
+                        <div>
+                            <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: rgba(255, 255, 255, 0.15); color: #FFFFFF;">
+                                <i class="bi bi-shield-check fs-4"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2 text-white">Physically Verified</h5>
+                            <p class="small text-white-50 mb-0">Every property is inspected for hygiene, structural safety, and true-to-photo conditions.</p>
                         </div>
-                        <h5 class="fw-bold mb-2">Verified Properties</h5>
-                        <p class="small text-muted mb-0">Every property is inspected for hygiene, safety, and true-to-photo conditions.</p>
+                        <div class="mt-4 pt-3 border-top border-white-50 small text-white-50">
+                            100% Quality Audited
+                        </div>
                     </div>
                 </div>
 
+                <!-- Card 2: Cobalt block -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
-                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
-                            <i class="bi bi-currency-rupee fs-4"></i>
+                    <div class="p-4 rounded-4 shadow-sm h-100 color-block-cobalt d-flex flex-column justify-content-between" style="border-radius: var(--radius-card);">
+                        <div>
+                            <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: rgba(255, 255, 255, 0.15); color: #FFFFFF;">
+                                <i class="bi bi-currency-rupee fs-4"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2 text-white">Zero Brokerage</h5>
+                            <p class="small text-white-50 mb-0">Direct hostel reservations with zero agent commissions, transparent tariffs, and utility inclusions.</p>
                         </div>
-                        <h5 class="fw-bold mb-2">Transparent Pricing</h5>
-                        <p class="small text-muted mb-0">Clear per-night and monthly billing with electricity and amenities included.</p>
+                        <div class="mt-4 pt-3 border-top border-white-50 small text-white-50">
+                            Fair &amp; Honest Rates
+                        </div>
                     </div>
                 </div>
 
+                <!-- Card 3: Tangerine block -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
-                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--surface-muted); color: var(--brand-oxblood);">
-                            <i class="bi bi-lightning-charge fs-4"></i>
+                    <div class="p-4 rounded-4 shadow-sm h-100 color-block-tangerine d-flex flex-column justify-content-between" style="border-radius: var(--radius-card);">
+                        <div>
+                            <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: rgba(255, 255, 255, 0.2); color: #FFFFFF;">
+                                <i class="bi bi-lightning-charge fs-4"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2 text-white">Rapid Confirmation</h5>
+                            <p class="small text-white-50 mb-0">Direct management portal with verified room reservations and automated status tracking.</p>
                         </div>
-                        <h5 class="fw-bold mb-2">Fast Approvals</h5>
-                        <p class="small text-muted mb-0">Direct hostel manager approvals with automated status notifications.</p>
+                        <div class="mt-4 pt-3 border-top border-white-50 small text-white-50">
+                            Seamless Booking
+                        </div>
                     </div>
                 </div>
 
+                <!-- Card 4: Cream block -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-4 bg-white rounded-3 shadow-sm h-100 border">
-                        <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
-                            <i class="bi bi-people fs-4"></i>
+                    <div class="p-4 bg-white rounded-4 shadow-sm h-100 border d-flex flex-column justify-content-between" style="border-radius: var(--radius-card); border-color: var(--border-default) !important;">
+                        <div>
+                            <div class="d-inline-flex p-3 rounded-3 mb-3" style="background-color: var(--brand-cobalt-soft); color: var(--brand-cobalt);">
+                                <i class="bi bi-people fs-4"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2" style="color: var(--text-primary);">Curated Community</h5>
+                            <p class="small text-secondary mb-0">Live alongside verified peers in an environment that fosters study, productivity, and safety.</p>
                         </div>
-                        <h5 class="fw-bold mb-2">Community Living</h5>
-                        <p class="small text-muted mb-0">Live alongside verified peers in an environment that fosters study and friendship.</p>
+                        <div class="mt-4 pt-3 border-top small text-secondary">
+                            Vibrant Student &amp; Pro Stays
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Curated Amenities Row -->
+            <div class="mt-5 p-4 bg-white rounded-4 border shadow-sm" style="border-color: var(--border-default) !important;">
+                <div class="row g-3 align-items-center">
+                    <div class="col-lg-3">
+                        <span class="eyebrow" style="color: var(--brand-oxblood);">STANDARD AMENITIES</span>
+                        <h6 class="fw-bold mb-0 text-dark">Every Stay Includes:</h6>
+                    </div>
+                    <div class="col-lg-9">
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="amenity-chip"><i class="bi bi-wifi"></i>High-Speed Fiber Wi-Fi</span>
+                            <span class="amenity-chip"><i class="bi bi-shield-lock-fill"></i>24/7 CCTV &amp; Security</span>
+                            <span class="amenity-chip"><i class="bi bi-stars"></i>Daily Housekeeping</span>
+                            <span class="amenity-chip"><i class="bi bi-lightning-charge-fill"></i>Power Backup</span>
+                            <span class="amenity-chip"><i class="bi bi-droplet-fill"></i>RO Purified Drinking Water</span>
+                            <span class="amenity-chip"><i class="bi bi-laptop"></i>Dedicated Study Pods</span>
+                        </div>
                     </div>
                 </div>
             </div>
