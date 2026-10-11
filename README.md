@@ -1,217 +1,199 @@
-# StayEase
+# StayEase — Production-Grade Hospitality & Reservation Management Platform
 
-A modern, production-grade **Hostel & PG Booking Management System** engineered with Java 21, Spring Boot 3, Spring Data JPA, Spring Security, Thymeleaf, and MySQL. StayEase delivers a seamless self-service booking journey for guests and an end-to-end administration portal for property managers, featuring pessimistic locking concurrency control, mathematical date overlap detection, and responsive design.
+[![Java 21](https://img.shields.io/badge/Java-21%20LTS-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Tests](https://img.shields.io/badge/Tests-295%20Passing-success.svg)](file:///d:/Projects/StayEase/src/test/)
+[![License](https://img.shields.io/badge/License-Proprietary-blue.svg)]()
 
----
+**StayEase** is a comprehensive, production-grade **Hostel, PG & Boutique Hotel Reservation Management Platform** engineered with modern Java 21, Spring Boot 3, Spring Security 6, Spring Data JPA / Hibernate 6, Thymeleaf, and MySQL 8.
 
-## 1. Overview & Key Highlights
-
-* **Role-Differentiated Portals**: Completely isolated experiences and tailored navigation bars for `CUSTOMER` vs `ADMIN` roles.
-* **Concurrency-Hardened Reservations**: Prevents double-bookings under concurrent requests using `PESSIMISTIC_WRITE` database row locks (`SELECT ... FOR UPDATE`).
-* **Strict Date Overlap Rule**: Employs the canonical mathematical booking overlap condition `(existing.checkIn < new.checkOut) AND (existing.checkOut > new.checkIn)`, permitting zero-waste back-to-back stays where one guest departs on the exact check-in day of the next guest.
-* **Intelligent Alternative Suggestions**: Automatically suggests up to 3 non-conflicting rooms of the same capacity if a desired room is unavailable.
-* **Spring Data Pageable Pagination**: Zero-crash pagination (9 rooms/page, 10 bookings/page) preserving active filters across pages.
-* **CSV Reporting with Formula Injection Mitigation**: Generates administrative booking reports with RFC-4180 escaping and formula sanitization.
-* **Robust Test Coverage**: 178 unit, integration, and security matrix tests passing with zero failures.
+Designed from the ground up for high concurrency, zero-overbooking guarantees, and multi-tenant operational resilience, StayEase provides an editorial self-service booking portal for guests alongside an administrative management console for property operators.
 
 ---
 
-## 2. Features by Role
+## 1. Key Architectural Highlights
+
+* **Pessimistic Concurrency & Zero-Overbooking**: Enforces `PESSIMISTIC_WRITE` database row locks (`SELECT ... FOR UPDATE`) during room availability checks and reservation creation, completely preventing double-bookings even under concurrent flash-booking traffic.
+* **Mathematical Date Overlap Validation**: Employs the canonical booking interval overlap condition `(existing.checkIn < new.checkOut) AND (existing.checkOut > new.checkIn)`. Back-to-back stays are natively supported (a new guest checks in at 2:00 PM on the same date a departing guest checks out at 11:00 AM).
+* **Role-Differentiated Portals**: Strict separation of concerns between `ROLE_CUSTOMER` and `ROLE_ADMIN` with dedicated navigation, controller pipelines, and layout templates.
+* **Real-Time In-App & Asynchronous Notifications**: Background task execution configured via dedicated `ThreadPoolTaskExecutor` (`stayease-async-`, 5 core, 20 max threads, 500 capacity queue) ensuring non-blocking delivery for transactional emails and in-app alerts.
+* **Scheduled Reminders Engine**: Automated `@Scheduled` cron job (`BookingReminderService`) dispatching personalized check-in alerts to guests whose stays begin the next day.
+* **Payment Gateway Architecture**: Pluggable payment provider abstraction supporting Razorpay (HMAC SHA-256 webhook cryptographic verification) and zero-friction Sandbox mode with idempotency keys.
+* **Hospitality Industry Financial Analytics**: Built-in calculation of **ADR (Average Daily Rate)**, **RevPAR (Revenue Per Available Room)**, **Average Booking Lead Time**, and room-by-room utilization rates.
+* **Compliance Audit Trail**: Immutable logging of all administrative operations (approvals, rejections, check-ins, check-outs, no-shows, rate updates, and maintenance schedules) with CSV export.
+* **Production Hardening**: Security response headers (HSTS, CSP, X-Frame-Options: DENY, nosniff), Spring Boot Actuator health probes, HikariCP connection pooling, size-and-time based log rotation, and strict production environment pre-flight validation.
+* **100% Test Pass Rate**: **295 automated tests** across unit, integration, concurrency, security, and UI regression suites with 0 failures.
+
+---
+
+## 2. Technology Stack
+
+| Layer | Technology | Description |
+|---|---|---|
+| **Runtime & Language** | Java 21 LTS | Record classes, pattern matching, text blocks |
+| **Framework** | Spring Boot 3.3.4 | Core framework, dependency injection, auto-configuration |
+| **Security** | Spring Security 6 | BCrypt hashing, CSRF tokens, session fixation protection, RBAC |
+| **Persistence & ORM** | Spring Data JPA / Hibernate 6 | Repositories, pessimistic locking, transactions, JPQL |
+| **Database** | MySQL 8.0+ | Relational schema, ACID compliance, UTF-8 (utf8mb4) |
+| **Connection Pool** | HikariCP | High-performance pooled database connections |
+| **View Layer** | Thymeleaf 3 | Server-side template engine, fragment composition |
+| **Frontend Styling** | Bootstrap 5.3.3 + Bootstrap Icons | Mobile-responsive layout, editorial hospitality typography |
+| **Monitoring** | Spring Boot Actuator | Production health probes (`/actuator/health`, `/actuator/info`) |
+| **Task Execution** | Spring `@EnableAsync` + `@EnableScheduling` | ThreadPoolTaskExecutor, background reminders |
+| **Testing** | JUnit 5, MockMvc, AssertJ, H2 | Comprehensive automated testing (295 tests) |
+
+---
+
+## 3. System Architecture & Entity Model
+
+```
+                    ┌───────────────────────────┐
+                    │           User            │
+                    │  (Customer / Admin Roles) │
+                    └─────────────┬─────────────┘
+                                  │ 1:N
+        ┌─────────────────────────┼─────────────────────────┐
+        ▼                         ▼                         ▼
+┌──────────────┐          ┌──────────────┐          ┌──────────────┐
+│ InAppNotif   │          │   Booking    │          │ AdminAuditLog│
+└──────────────┘          └───────┬──────┘          └──────────────┘
+                                  │ N:1
+                                  ▼
+                          ┌──────────────┐
+                          │     Room     │
+                          └───────┬──────┘
+                                  │ 1:N
+        ┌─────────────────────────┴─────────────────────────┐
+        ▼                                                   ▼
+┌─────────────────────────┐               ┌─────────────────────────┐
+│ RoomMaintenanceSchedule │               │    SeasonalPriceRule    │
+└─────────────────────────┘               └─────────────────────────┘
+```
+
+---
+
+## 4. Features by Persona
 
 ### 🌐 Public & Anonymous Guests
-* **Landing Page**: Editorial hospitality design with brand aesthetics, hero search widget, and room showcases.
-* **Public Room Catalog (`/rooms`)**: Filterable by room type, guest capacity, and price range with paginated 9-room grid view.
-* **Room Details (`/rooms/{id}`)**: Full amenity inspection, pricing breakdown, and direct booking CTA.
-* **Authentication**: Self-service user registration with strong password policies and form login with role-aware redirection.
+* **Landing Page (`/`)**: Hero destination search, amenities showcase, community reviews, and real-time room availability preview.
+* **Room Catalog (`/rooms`)**: Filter by room type (`SINGLE`, `DOUBLE`, `TRIPLE`, `DORMITORY`), capacity, price range, and date availability.
+* **Room Details (`/rooms/{id}`)**: High-resolution imagery, amenity badges, price breakdowns, and one-click booking CTA.
+* **Self-Service Authentication**: User registration with strong password rules and form-based login with role-aware routing.
 
-### 👤 Customer Features (`ROLE_CUSTOMER`)
-* **Customer Dashboard (`/customer/dashboard`)**:
-  * Personal stay metrics (upcoming, pending, past stays).
-  * Prominent hero spotlight for the next upcoming stay with nights countdown.
-  * Real-time Room Availability Search widget (`/customer/availability`).
-* **Booking Reservation (`/customer/book/{roomId}`)**:
-  * Real-time price calculation (`pricePerNight * nights`).
-  * Instant date overlap detection with friendly error notices and alternative room recommendations.
-* **Booking Management (`/customer/bookings`)**:
-  * Paginated table (10 bookings/page) with unified status badges (`PENDING`, `APPROVED`, `REJECTED`, `CANCELLED`).
-  * Rejection remarks visibility for transparency.
-  * Self-service cancellation with confirmation dialogs for pending and future approved stays.
+### 👤 Customer Experience (`ROLE_CUSTOMER`)
+* **Personalized Dashboard (`/customer/dashboard`)**: Key stay metrics, spotlight card for the next upcoming stay, and quick links.
+* **Reservation Booking (`/customer/book/{id}`)**: Live dynamic price computation, date overlap checks, and smart fallback suggestions if full.
+* **Booking Registry (`/customer/bookings`)**: Paginated booking history with status badges (`PENDING`, `APPROVED`, `CHECKED_IN`, `CHECKED_OUT`, `CANCELLED`, `NO_SHOW`).
+* **Web Check-In**: Customers can self-confirm arrival on the check-in day directly from the web portal.
+* **Digital Receipts (`/customer/bookings/{id}/receipt`)**: Formal printable guest booking vouchers with verification stamps.
+* **Account Settings (`/customer/profile`)**: Profile editing, password change, and email verification status.
+* **Real-Time Notification Bell**: Unread counter badge and dropdown alerts with periodic background polling.
 
-### 🛡️ Admin Features (`ROLE_ADMIN`)
-* **Admin Dashboard (`/admin/dashboard`)**:
-  * Real-time capacity stats: Total rooms, active rooms, occupied rooms today, vacant rooms today, and occupancy percentage.
-  * 6-Month booking trend chart and metrics.
-  * Urgent pending approvals queue with quick review actions.
-* **Room Management (`/admin/rooms`)**:
-  * Full CRUD control (add, edit, toggle active status, soft delete).
-  * Delete confirmation modal preventing accidental removal.
-* **Booking Review & Approvals (`/admin/bookings`)**:
-  * Tabbed status filters (`All`, `Pending`, `Approved`, `Rejected`, `Cancelled`) with live counts.
-  * Paginated table (10 per page) with status badges and table responsiveness.
-  * Inline single-click booking approvals with transactional overlap re-verification.
-  * Inline rejections with mandatory administrative reason remarks and confirmation modal.
-  * **Export CSV**: One-click download (`bookings-YYYY-MM-DD.csv`) honoring active status filters with formula injection protection.
-
----
-
-## 3. Technology Stack
-
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Language** | Java 21 (LTS) | Modern Java language features, virtual threads ready |
-| **Framework** | Spring Boot 3.3.4 | Core enterprise runtime, auto-configuration, dependency injection |
-| **Web & Templates**| Spring MVC + Thymeleaf 3 | Server-side HTML rendering with fragment composition |
-| **Styling & Icons** | Bootstrap 5.3.3 + Bootstrap Icons + Custom CSS | Responsive layout, mobile-first design, Editorial hospitality theme |
-| **Database** | MySQL 8.0+ | Relational persistence with ACID transactions and row locking |
-| **ORM / Persistence**| Spring Data JPA / Hibernate 6 | Repository abstractions, custom JPQL queries, eager joins |
-| **Security** | Spring Security 6 | BCrypt password hashing, session management, CSRF tokens, RBAC |
-| **Validation** | Jakarta Bean Validation | Comprehensive DTO constraint validation |
-| **Testing** | JUnit 5 + MockMvc + AssertJ + H2 | Comprehensive automated testing (178 tests) |
+### 🛡️ Property Operations & Administration (`ROLE_ADMIN`)
+* **Administrative Console (`/admin/dashboard`)**:
+  * Live inventory ribbon: Total rooms, active rooms, occupied rooms today, vacant rooms today.
+  * Hospitality financial KPIs: **ADR**, **RevPAR**, **Average Lead Time**, **Occupancy Rate**, and **Window Revenue**.
+  * Dynamic date-range filter for historical performance review.
+  * **Export Analytics CSV**: Download financial and room utilization breakdown reports.
+* **Reservation Review & Management (`/admin/bookings`)**:
+  * Unified status tabs with live counters.
+  * Single-click approval with transactional date verification.
+  * Rejection with mandatory remark dialog and notification dispatch.
+  * Operational check-in, check-out, and no-show actions with audit log recording.
+* **Room Inventory Control (`/admin/rooms`)**:
+  * Full CRUD operations, active status toggling, and soft-delete safeguards.
+* **Maintenance Blackouts (`/admin/operations/maintenance`)**:
+  * Schedule room maintenance intervals to block booking availability; prevents blackout scheduling over active bookings.
+* **Dynamic Pricing Engine (`/admin/operations/pricing`)**:
+  * Seasonal pricing rules with custom date ranges, fixed night prices, or percentage multipliers.
+* **Compliance Audit Trail (`/admin/operations/audit-logs`)**:
+  * Complete activity log with email, action, and timestamp filters.
+  * **Export Audit CSV**: One-click download of compliance history.
 
 ---
 
-## 4. Prerequisites
+## 5. Quick Start Guide
 
-Before running StayEase locally, ensure you have:
-* **Java Development Kit (JDK)**: Version 21 or later installed (`java -version`).
-* **MySQL Database Server**: Version 8.0 or later running locally (`mysqladmin ping`).
-* **Git**: Installed and available in your shell.
+### Prerequisites
+* **Java Development Kit (JDK)**: Version 21 LTS installed (`java -version`).
+* **MySQL Database Server**: Version 8.0+ running locally (`mysqladmin ping`).
+* **Maven**: Version 3.8+ (or use bundled `./mvnw` wrapper).
 
----
-
-## 5. MySQL Database Setup
-
-1. Start your local MySQL service (e.g. `net start MySQL80` on Windows, or `sudo systemctl start mysql` on Linux/macOS).
-2. Log into MySQL client and create the database (or allow Spring Boot's JDBC flag `createDatabaseIfNotExist=true` to create it):
-```sql
-CREATE DATABASE IF NOT EXISTS stayease CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
----
-
-## 6. Environment Variables
-
-StayEase strictly adheres to 12-factor application design: **no passwords or secrets are hardcoded in the codebase**. Configure the following environment variables:
-
-| Variable | Description | Required | Default / Example Value |
-|---|---|---|---|
-| `DB_URL` | JDBC Connection URL for MySQL | Optional | `jdbc:mysql://localhost:3306/stayease?createDatabaseIfNotExist=true&serverTimezone=UTC` |
-| `DB_USERNAME` | MySQL database user | Optional | `root` |
-| `DB_PASSWORD` | MySQL user password | **Yes** | `your_mysql_password` |
-| `ADMIN_EMAIL` | Email for bootstrap Admin seed user | Optional | `admin@stayease.com` |
-| `ADMIN_PASSWORD` | Password for bootstrap Admin seed user | Optional | `Admin@1234` |
-
----
-
-## 7. How to Run the App and the Tests
-
-### Setting Environment Variables & Starting Application
-
-#### On Windows (PowerShell):
-```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/stayease?createDatabaseIfNotExist=true&serverTimezone=UTC"
-$env:DB_USERNAME="root"
-$env:DB_PASSWORD="your_mysql_password"
-$env:ADMIN_EMAIL="admin@stayease.com"
-$env:ADMIN_PASSWORD="Admin@1234"
-
-./mvnw.cmd spring-boot:run
-```
-
-#### On Linux / macOS (Bash):
+### Step 1: Clone & Configure Database
 ```bash
-export DB_URL="jdbc:mysql://localhost:3306/stayease?createDatabaseIfNotExist=true&serverTimezone=UTC"
-export DB_USERNAME="root"
-export DB_PASSWORD="your_mysql_password"
-export ADMIN_EMAIL="admin@stayease.com"
-export ADMIN_PASSWORD="Admin@1234"
+git clone https://github.com/ishangautam140675/StayEase.git
+cd StayEase
 
-./mvnw spring-boot:run
+# Create the MySQL database
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS stayease CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-Once started, open your web browser at:
-👉 **[http://localhost:8080](http://localhost:8080)**
+### Step 2: Run Automated Tests
+Verify all 295 tests execute and pass:
+```bash
+mvn clean test
+```
 
-* If `ADMIN_EMAIL` and `ADMIN_PASSWORD` are provided, the `DataSeeder` automatically initializes the admin account and populates 8 sample curated rooms.
-* You can log in immediately as Admin (`admin@stayease.com` / `Admin@1234`) or register a customer account at `/register`.
+### Step 3: Run the Application Locally
+```bash
+# Using Spring Boot Maven plugin
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.password=your_mysql_password"
 
-### Running Automated Tests
-The automated test suite runs against an isolated, in-memory H2 database with MySQL compatibility mode (`MODE=MySQL`). **No local MySQL server is required to run tests.**
+# Or package and execute the JAR
+mvn clean package -DskipTests
+java -jar target/stayease-0.0.1-SNAPSHOT.jar --spring.datasource.password=your_mysql_password
+```
+
+Access the application in your browser:
+* Web Portal: `http://localhost:8080`
+* Actuator Health: `http://localhost:8080/actuator/health`
+
+### Seed Credentials
+StayEase automatically provisions default seed accounts upon first launch:
+* **Administrator**: `admin@stayease.com` / `Admin@1234`
+* **Sample Guest**: `customer@stayease.com` / `Customer@1234`
+
+---
+
+## 6. Docker Containerization
+
+StayEase includes multi-stage containerization with Docker and Docker Compose:
 
 ```bash
-# Windows
-./mvnw.cmd clean test
-
-# Linux / macOS
-./mvnw clean test
+# Build and start StayEase with dedicated MySQL container
+docker-compose up --build -d
 ```
 
----
-
-## 8. Package Structure
-
-```
-com.stayease
-├── config/                  # SecurityConfig, DataSeeder, Authentication handlers
-├── controller/              # Spring MVC Controllers (Auth, Room, Customer, Admin, etc.)
-├── dto/                     # Form backing DTOs (RegisterForm, RoomForm, BookingForm)
-├── exception/               # Custom domain exceptions & GlobalExceptionHandler
-├── model/                   # JPA Entities (User, Room, Booking) & Enums (Role, RoomType, BookingStatus)
-├── repository/              # Spring Data JPA Repositories with custom JPQL queries
-└── service/                 # Core business services (AuthService, RoomService, BookingService,
-                             # DashboardService, BookingExportService)
-```
+Services started:
+* `stayease-app`: Spring Boot application on port `8080`
+* `stayease-db`: MySQL 8.0 on port `3306` with persistent volume `stayease-mysql-data`
 
 ---
 
-## 9. Security Design
+## 7. Configuration Reference (12-Factor Variables)
 
-* **BCrypt Hashing**: All passwords (customer registrations and admin seeds) are securely hashed using BCrypt with automatic salting before persistence. Plaintext passwords never enter logs or database tables.
-* **Role-Based Access Control (RBAC)**:
-  * Public routes: `/`, `/rooms/**`, `/register`, `/login`, static assets, and `/error/**`.
-  * Customer-only routes: `/customer/**` (`hasRole('CUSTOMER')`).
-  * Admin-only routes: `/admin/**` (`hasRole('ADMIN')`).
-* **CSRF Protection**: Synchronizer Token Pattern is enabled across all state-changing HTTP `POST` requests. Form fragments inject `<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />`.
-* **Session Security**: Session fixation mitigation (`changeSessionId()`), 30-minute inactivity timeout, and `HttpOnly` cookie flags preventing client-side script inspection.
-* **Double-Submit Prevention**: Client-side form handlers disable submit buttons immediately upon submission dispatch to eliminate duplicate double clicks.
-
----
-
-## 10. Booking Rules & Overlap Formula
-
-### Date Overlap Logic
-Two bookings for the same room overlap if and only if:
-$$\text{Existing.CheckIn} < \text{New.CheckOut} \quad \text{AND} \quad \text{Existing.CheckOut} > \text{New.CheckIn}$$
-
-Only bookings in **blocking statuses** (`PENDING` or `APPROVED`) cause conflicts. Rejected or cancelled bookings do not block dates.
-
-#### Why Touching Dates Are Allowed
-If Guest A departs on **2026-11-05** (`checkOut = 2026-11-05`) and Guest B arrives on **2026-11-05** (`checkIn = 2026-11-05`):
-* `Existing.CheckOut (2026-11-05) > New.CheckIn (2026-11-05)` evaluates to **false**.
-* Therefore, the condition is false, meaning **no conflict exists**.
-* This matches hotel and PG industry standard: check-out occurs at midday and check-in occurs in the afternoon on the same date.
-
-### Transactional Concurrency Control
-When creating a booking or approving a pending reservation:
-1. The transaction acquires a **pessimistic write lock** on the target room row:
-   ```sql
-   SELECT r FROM Room r WHERE r.id = :id FOR UPDATE
-   ```
-2. The overlap check executes inside the locked transaction.
-3. If valid, the new booking is saved, and the lock is released upon commit.
-4. Concurrent transactions attempting to book the same room are forced to queue, preventing race conditions.
+| Variable | Description | Default (Dev) | Production Required |
+|---|---|---|:---:|
+| `SPRING_DATASOURCE_URL` | JDBC URL for MySQL | `jdbc:mysql://localhost:3306/stayease?...` | Yes |
+| `SPRING_DATASOURCE_USERNAME` | Database username | `root` | Yes |
+| `SPRING_DATASOURCE_PASSWORD` | Database password | — | **Yes** |
+| `SPRING_PROFILES_ACTIVE` | Active Spring profile | `dev` | Recommended (`prod`) |
+| `APP_ADMIN_EMAIL` | Default admin email | `admin@stayease.com` | Yes |
+| `APP_ADMIN_PASSWORD` | Default admin password | `Admin@1234` | **Yes (min 8 chars, strong)** |
+| `APP_BASE_URL` | Public application URL | `http://localhost:8080` | Yes |
+| `APP_MAIL_ENABLED` | Enable outbound SMTP | `false` (simulation mode) | Optional |
+| `APP_PAYMENT_PROVIDER` | Payment provider | `sandbox` | Optional (`razorpay`) |
 
 ---
 
-## 11. Screenshots
+## 8. Documentation & Runbooks
 
-| Section | Preview |
-|---|---|
-| **Landing Page** | *Editorial hospitality hero section with bold color accents and quick search* |
-| **Accommodations Catalog** | *Responsive 9-room grid with badge amenities, price tags, and pagination* |
-| **Customer Dashboard** | *Next stay spotlight, upcoming bookings table, and quick availability search* |
-| **Booking Reservation Form** | *Live price calculation, date range picker, and instant alternative room suggestions* |
-| **Admin Dashboard** | *Room capacity metrics, 6-month booking trends, and pending approval queue* |
-| **Manage Bookings** | *Status tabs, responsive bookings table, approval buttons, and CSV export* |
+* [**Operations Runbook (`docs/RUNBOOK.md`)**](file:///d:/Projects/StayEase/docs/RUNBOOK.md): Pre-flight verification, database migrations, backup/restore scripts, logging rotation, and incident response procedures.
+* [**API & Integration Guide (`docs/API_GUIDE.md`)**](file:///d:/Projects/StayEase/docs/API_GUIDE.md): Catalog of notification polling, webhook callbacks, actuator endpoints, and CSV export specifications.
+* [**Testing Checklist (`docs/TEST-CHECKLIST.md`)**](file:///d:/Projects/StayEase/docs/TEST-CHECKLIST.md): Verification matrices across authentication, booking flows, and concurrency.
 
-*(Screenshots can be added to the `/docs/screenshots/` directory for visual reference).*
+---
+
+## 9. License
+
+Proprietary — Developed for StayEase Hospitality Management. All rights reserved.
