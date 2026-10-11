@@ -77,6 +77,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/", "/rooms", "/rooms/**",
                     "/register", "/login",
+                    "/forgot-password", "/reset-password", "/verify-email",
                     "/css/**", "/js/**", "/images/**",
                     "/error", "/error/**"
                 ).permitAll()

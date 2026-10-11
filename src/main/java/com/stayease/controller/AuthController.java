@@ -19,9 +19,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private final AuthService authService;
+    private final com.stayease.service.CustomerAccountService customerAccountService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, com.stayease.service.CustomerAccountService customerAccountService) {
         this.authService = authService;
+        this.customerAccountService = customerAccountService;
     }
 
     // ── GET /login ─────────────────────────────────────────────────────────
@@ -103,4 +105,105 @@ public class AuthController {
                 "Account created. Please log in.");
         return "redirect:/login?registered";
     }
+
+    // ── GET & POST /forgot-password ────────────────────────────────────────
+
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordForm(Model model) {
+        if (!model.containsAttribute("forgotPasswordForm")) {
+            model.addAttribute("forgotPasswordForm", new com.stayease.dto.ForgotPasswordForm());
+        }
+        return "auth/forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(
+            @Valid com.stayease.dto.ForgotPasswordForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            return "auth/forgot-password";
+        }
+
+        // Safe execution: always show neutral success notice to avoid account enumeration
+        customerAccountService.requestPasswordReset(form.getEmail());
+
+        redirectAttributes.addFlashAttribute("infoMessage",
+                "If an account with that email address exists in our system, we have sent instructions to reset your password.");
+        return "redirect:/login";
+    }
+
+    // ── GET & POST /reset-password ─────────────────────────────────────────
+
+    @GetMapping("/reset-password")
+    public String showResetPasswordForm(
+            @org.springframework.web.bind.annotation.RequestParam(value = "token", required = false) String token,
+            RedirectAttributes redirectAttributes,
+            Model model) {
+
+        if (token == null || !customerAccountService.isPasswordResetTokenValid(token)) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "This password reset link is invalid or has expired. Please request a new one.");
+            return "redirect:/forgot-password";
+        }
+
+        if (!model.containsAttribute("resetPasswordForm")) {
+            model.addAttribute("resetPasswordForm", new com.stayease.dto.ResetPasswordForm(token));
+        }
+        return "auth/reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(
+            @Valid com.stayease.dto.ResetPasswordForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        if (!customerAccountService.isPasswordResetTokenValid(form.getToken())) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "This password reset link is invalid or has expired. Please request a new one.");
+            return "redirect:/forgot-password";
+        }
+
+        if (!bindingResult.hasFieldErrors("newPassword")
+                && !bindingResult.hasFieldErrors("confirmPassword")
+                && form.getNewPassword() != null
+                && !form.getNewPassword().equals(form.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "resetPasswordForm.confirmPassword.mismatch", "Passwords do not match");
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "auth/reset-password";
+        }
+
+        try {
+            customerAccountService.resetPassword(form.getToken(), form.getNewPassword());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Your password has been successfully reset. Please log in with your new password.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/forgot-password";
+        }
+    }
+
+    // ── GET /verify-email ──────────────────────────────────────────────────
+
+    @GetMapping("/verify-email")
+    public String verifyEmail(
+            @org.springframework.web.bind.annotation.RequestParam(value = "token", required = false) String token,
+            RedirectAttributes redirectAttributes) {
+
+        if (token == null || !customerAccountService.verifyEmail(token)) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "This email verification link is invalid or has expired.");
+            return "redirect:/login";
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Your email address has been successfully verified! Thank you.");
+        return "redirect:/login";
+    }
 }
+

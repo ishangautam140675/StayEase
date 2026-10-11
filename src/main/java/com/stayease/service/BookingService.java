@@ -30,6 +30,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @org.springframework.beans.factory.annotation.Value("${app.booking.cancellation-lead-hours:24}")
     private int cancellationLeadHours = 24;
@@ -37,9 +38,18 @@ public class BookingService {
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           UserRepository userRepository) {
+        this(bookingRepository, roomRepository, userRepository, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public BookingService(BookingRepository bookingRepository,
+                          RoomRepository roomRepository,
+                          UserRepository userRepository,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) EmailService emailService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     /**
@@ -141,7 +151,11 @@ public class BookingService {
         }
         booking.addStatusHistory(null, BookingStatus.PENDING, user.getEmail(), "Booking requested by guest");
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        if (emailService != null) {
+            emailService.sendBookingCreated(saved);
+        }
+        return saved;
     }
 
     /**
@@ -276,7 +290,11 @@ public class BookingService {
         booking.setStatus(BookingStatus.APPROVED);
         booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.APPROVED,
                 adminEmail != null ? adminEmail : "ADMIN", "Booking approved by administrator");
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        if (emailService != null) {
+            emailService.sendBookingApproved(saved);
+        }
+        return saved;
     }
 
     /**
@@ -316,7 +334,11 @@ public class BookingService {
         booking.setAdminRemark(trimmedRemark);
         booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.REJECTED,
                 adminEmail != null ? adminEmail : "ADMIN", trimmedRemark);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        if (emailService != null) {
+            emailService.sendBookingRejected(saved, trimmedRemark);
+        }
+        return saved;
     }
 
     /**
@@ -366,7 +388,19 @@ public class BookingService {
         BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(BookingStatus.CANCELLED);
         booking.addStatusHistory(oldStatus, BookingStatus.CANCELLED, userEmail, "Cancelled by guest");
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        if (emailService != null) {
+            emailService.sendBookingCancelled(saved);
+        }
+        return saved;
+    }
+
+    /**
+     * Retrieves paginated bookings for a customer filtered by status and optional search term.
+     */
+    public Page<Booking> getBookingsForUser(String userEmail, BookingStatus status, String query, Pageable pageable) {
+        String trimmedQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        return bookingRepository.searchUserBookings(userEmail, status, trimmedQuery, pageable);
     }
 
     /**

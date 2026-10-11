@@ -40,6 +40,17 @@ public class User {
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @jakarta.persistence.ManyToMany(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinTable(
+            name = "user_favorite_rooms",
+            joinColumns = @jakarta.persistence.JoinColumn(name = "user_id"),
+            inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "room_id")
+    )
+    private java.util.Set<Room> favoriteRooms = new java.util.HashSet<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -113,8 +124,37 @@ public class User {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public java.util.Set<Room> getFavoriteRooms() {
+        return favoriteRooms;
+    }
+
+    public void setFavoriteRooms(java.util.Set<Room> favoriteRooms) {
+        this.favoriteRooms = favoriteRooms;
+    }
+
+    public boolean hasFavorite(Long roomId) {
+        if (roomId == null || favoriteRooms == null) return false;
+        return favoriteRooms.stream().anyMatch(r -> r.getId() != null && r.getId().equals(roomId));
+    }
+
+    public void addFavorite(Room room) {
+        if (room != null && favoriteRooms != null) {
+            favoriteRooms.add(room);
+        }
+    }
+
+    public void removeFavorite(Room room) {
+        if (room != null && favoriteRooms != null) {
+            favoriteRooms.removeIf(r -> r.getId() != null && r.getId().equals(room.getId()));
+        }
     }
 
     @Override

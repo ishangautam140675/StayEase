@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('StayEase | My Profile')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background-color: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="flex-grow-1 py-5">
+    <div class="container se-container" style="max-width: 960px;">
+
+        <!-- Profile Header -->
+        <div class="card border-0 shadow-sm p-4 mb-4"
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-4"
+                         style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--brand-cobalt), var(--brand-tangerine));">
+                        <span th:text="${user.fullName != null && !user.fullName.isEmpty() ? user.fullName.substring(0, 1).toUpperCase() : 'U'}">U</span>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h1 class="h4 fw-bold mb-0" style="color: var(--text-primary); font-family: var(--font-heading);"
+                                th:text="${user.fullName}">Customer Name</h1>
+                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1 small" th:text="${user.role}">CUSTOMER</span>
+                        </div>
+                        <div class="text-secondary small mt-1">
+                            <i class="bi bi-envelope me-1"></i><span th:text="${user.email}">user@example.com</span>
+                            <span class="mx-2">&bull;</span>
+                            <i class="bi bi-calendar3 me-1"></i>Joined <span th:text="${#temporals.format(user.createdAt, 'MMM yyyy')}">Oct 2026</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Quick Links -->
+                <div class="d-flex gap-2">
+                    <a th:href="@{/customer/favorites}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-heart-fill text-danger me-1"></i>Saved Rooms (<span th:text="${favoriteCount}">0</span>)
+                    </a>
+                    <a th:href="@{/customer/bookings}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-calendar2-heart me-1"></i>My Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Banner if unverified -->
+        <div th:if="${!user.emailVerified}" class="alert alert-warning border-0 shadow-sm d-flex justify-content-between align-items-center mb-4 rounded-3 p-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
+                <div>
+                    <strong>Your email address is unverified.</strong>
+                    <div class="small">Verify your email to receive booking updates, receipts, and important stay reminders.</div>
+                </div>
+            </div>
+            <form th:action="@{/customer/resend-verification}" method="post" class="m-0">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3 fw-medium">
+                    <i class="bi bi-send me-1"></i>Resend Link
+                </button>
+            </form>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column: Personal Information Form -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="card-header bg-transparent border-bottom p-4">
+                        <h2 class="h5 fw-bold mb-1" style="color: var(--text-primary); font-family: var(--font-heading);">
+                            <i class="bi bi-person-lines-fill me-2" style="color: var(--brand-cobalt);"></i>Contact Details
+                        </h2>
+                        <p class="text-secondary small mb-0">Update your legal name and contact phone number.</p>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form th:action="@{/customer/profile}" th:object="${profileUpdateForm}" method="post" novalidate>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                            <!-- Email (Read-only) -->
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small text-secondary">Email Address (Registered)</label>
+                                <div class="input-group">
+                                    <input type="email" class="form-control bg-light" th:value="${user.email}" disabled readonly/>
+                                    <span class="input-group-text bg-light border-start-0" th:if="${user.emailVerified}">
+                                        <i class="bi bi-patch-check-fill text-success" title="Verified"></i>
+                                    </span>
+                                </div>
+                                <div class="form-text small">Your email is tied to your account identity and login credentials.</div>
+                            </div>
+
+                            <!-- Full Name -->
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label fw-medium small" style="color: var(--text-primary);">Full Name</label>
+                                <input type="text"
+                                       id="fullName"
+                                       th:field="*{fullName}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'"
+                                       required/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('fullName')}">
+                                    <span th:errors="*{fullName}"></span>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="mb-4">
+                                <label for="phone" class="form-label fw-medium small" style="color: var(--text-primary);">Phone Number</label>
+                                <input type="tel"
+                                       id="phone"
+                                       th:field="*{phone}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                                       placeholder="+91 9876543210"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}">
+                                    <span th:errors="*{phone}"></span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-cobalt fw-medium px-4">
+                                <i class="bi bi-save me-2"></i>Save Details
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Security & Password Form -->
+            <div class="col-lg-6" id="password-section">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="card-header bg-transparent border-bottom p-4">
+                        <h2 class="h5 fw-bold mb-1" style="color: var(--text-primary); font-family: var(--font-heading);">
+                            <i class="bi bi-shield-lock me-2" style="color: var(--brand-cobalt);"></i>Change Password
+                        </h2>
+                        <p class="text-secondary small mb-0">Ensure your account uses a strong, private password.</p>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form th:action="@{/customer/password}" th:object="${passwordChangeForm}" method="post" novalidate>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                            <!-- Current Password -->
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label fw-medium small" style="color: var(--text-primary);">Current Password</label>
+                                <input type="password"
+                                       id="currentPassword"
+                                       th:field="*{currentPassword}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('currentPassword')} ? 'is-invalid'"
+                                       required
+                                       autocomplete="current-password"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('currentPassword')}">
+                                    <span th:errors="*{currentPassword}"></span>
+                                </div>
+                            </div>
+
+                            <!-- New Password -->
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label fw-medium small" style="color: var(--text-primary);">New Password</label>
+                                <input type="password"
+                                       id="newPassword"
+                                       th:field="*{newPassword}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('newPassword')} ? 'is-invalid'"
+                                       required
+                                       autocomplete="new-password"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('newPassword')}">
+                                    <span th:errors="*{newPassword}"></span>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label fw-medium small" style="color: var(--text-primary);">Confirm New Password</label>
+                                <input type="password"
+                                       id="confirmPassword"
+                                       th:field="*{confirmPassword}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                                       required
+                                       autocomplete="new-password"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('confirmPassword')}">
+                                    <span th:errors="*{confirmPassword}"></span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-outline-dark fw-medium px-4">
+                                <i class="bi bi-key me-2"></i>Update Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

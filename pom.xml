@@ -61,6 +61,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Spring Mail (JavaMailSender, SMTP, MIME messaging) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- MySQL JDBC driver (runtime only; not needed at compile time) -->
         <dependency>
             <groupId>com.mysql</groupId>

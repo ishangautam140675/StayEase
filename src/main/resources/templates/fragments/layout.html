@@ -119,6 +119,16 @@
                             <i class="bi bi-calendar2-heart me-1"></i>My Bookings
                         </a>
                     </li>
+                    <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/favorites}">
+                            <i class="bi bi-heart me-1"></i>Saved Rooms
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
+                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/profile}">
+                            <i class="bi bi-person me-1"></i>Profile
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="d-flex align-items-lg-center gap-2 mt-3 mt-lg-0">

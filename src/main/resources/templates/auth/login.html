@@ -74,8 +74,12 @@
 
                             <!-- Password -->
                             <div class="mb-4">
-                                <label for="password" class="form-label fw-medium small"
-                                       style="color:var(--text-primary);">Password</label>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label for="password" class="form-label fw-medium small mb-0"
+                                           style="color:var(--text-primary);">Password</label>
+                                    <a th:href="@{/forgot-password}" class="small text-decoration-none fw-medium"
+                                       style="color:var(--brand-cobalt);">Forgot password?</a>
+                                </div>
                                 <input type="password"
                                        id="password"
                                        name="password"

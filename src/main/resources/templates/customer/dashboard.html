@@ -27,7 +27,13 @@
                 </h1>
                 <p class="text-secondary mb-0">Track your reservations, view upcoming stays, or plan your next trip.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/customer/profile}" class="btn btn-outline-se fw-medium px-3">
+                    <i class="bi bi-person-gear me-1"></i>My Profile
+                </a>
+                <a th:href="@{/customer/favorites}" class="btn btn-outline-se fw-medium px-3">
+                    <i class="bi bi-heart-fill text-danger me-1"></i>Saved Rooms
+                </a>
                 <a th:href="@{/customer/bookings}" class="btn btn-outline-se fw-medium px-3">
                     <i class="bi bi-clock-history me-1"></i>All Bookings
                 </a>

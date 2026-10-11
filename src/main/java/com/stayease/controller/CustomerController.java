@@ -29,6 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Controller for authenticated customer interactions: dashboard, booking requests, and history (Phase 13).
@@ -41,17 +42,20 @@ public class CustomerController {
     private final RoomService roomService;
     private final BookingService bookingService;
     private final DashboardService dashboardService;
+    private final com.stayease.service.CustomerAccountService customerAccountService;
 
     public CustomerController(UserRepository userRepository,
                               RoomRepository roomRepository,
                               RoomService roomService,
                               BookingService bookingService,
-                              DashboardService dashboardService) {
+                              DashboardService dashboardService,
+                              com.stayease.service.CustomerAccountService customerAccountService) {
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.roomService = roomService;
         this.bookingService = bookingService;
         this.dashboardService = dashboardService;
+        this.customerAccountService = customerAccountService;
     }
 
     @GetMapping("/customer/dashboard")
@@ -210,22 +214,134 @@ public class CustomerController {
     }
 
     /**
-     * Displays the customer's personal booking reservation history (10 per page).
+     * Displays the customer's personal booking reservation history with status filters and reference search.
      */
     @GetMapping("/customer/bookings")
     public String bookingHistory(@RequestParam(value = "page", defaultValue = "1") Integer page,
+                                 @RequestParam(value = "status", required = false) com.stayease.model.BookingStatus status,
+                                 @RequestParam(value = "query", required = false) String query,
                                  Principal principal,
                                  Model model) {
         int pageNum = (page != null && page > 0) ? page : 1;
         int pageIndex = pageNum - 1;
         Pageable pageable = PageRequest.of(pageIndex, 10);
-        Page<Booking> bookingPage = bookingService.getBookingsForUser(principal.getName(), pageable);
+        Page<Booking> bookingPage = bookingService.getBookingsForUser(principal.getName(), status, query, pageable);
 
         model.addAttribute("bookings", bookingPage.getContent());
         model.addAttribute("page", bookingPage);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("searchQuery", query);
         model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
         model.addAttribute("today", LocalDate.now());
         return "customer/bookings";
+    }
+
+    // ── Profile Management (Phase 4) ───────────────────────────────────────
+
+    @GetMapping("/customer/profile")
+    public String viewProfile(Principal principal, Model model) {
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!model.containsAttribute("profileUpdateForm")) {
+            model.addAttribute("profileUpdateForm", new com.stayease.dto.ProfileUpdateForm(user.getFullName(), user.getPhone()));
+        }
+        if (!model.containsAttribute("passwordChangeForm")) {
+            model.addAttribute("passwordChangeForm", new com.stayease.dto.PasswordChangeForm());
+        }
+
+        model.addAttribute("user", user);
+        model.addAttribute("favoriteCount", user.getFavoriteRooms().size());
+        return "customer/profile";
+    }
+
+    @PostMapping("/customer/profile")
+    public String updateProfile(@Valid @ModelAttribute("profileUpdateForm") com.stayease.dto.ProfileUpdateForm form,
+                                BindingResult bindingResult,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes,
+                                Model model) {
+        if (bindingResult.hasErrors()) {
+            User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+            model.addAttribute("user", user);
+            model.addAttribute("passwordChangeForm", new com.stayease.dto.PasswordChangeForm());
+            model.addAttribute("favoriteCount", user.getFavoriteRooms().size());
+            return "customer/profile";
+        }
+
+        customerAccountService.updateProfile(principal.getName(), form);
+        redirectAttributes.addFlashAttribute("successMessage", "Profile details updated successfully.");
+        return "redirect:/customer/profile";
+    }
+
+    @GetMapping("/customer/password")
+    public String viewPasswordForm() {
+        return "redirect:/customer/profile#password-section";
+    }
+
+    @PostMapping("/customer/password")
+    public String changePassword(@Valid @ModelAttribute("passwordChangeForm") com.stayease.dto.PasswordChangeForm form,
+                                 BindingResult bindingResult,
+                                 Principal principal,
+                                 RedirectAttributes redirectAttributes,
+                                 Model model) {
+        if (!bindingResult.hasFieldErrors("newPassword")
+                && !bindingResult.hasFieldErrors("confirmPassword")
+                && form.getNewPassword() != null
+                && !form.getNewPassword().equals(form.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "passwordChangeForm.confirmPassword.mismatch", "New passwords do not match");
+        }
+
+        if (bindingResult.hasErrors()) {
+            User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+            model.addAttribute("user", user);
+            model.addAttribute("profileUpdateForm", new com.stayease.dto.ProfileUpdateForm(user.getFullName(), user.getPhone()));
+            model.addAttribute("favoriteCount", user.getFavoriteRooms().size());
+            model.addAttribute("activeTab", "password");
+            return "customer/profile";
+        }
+
+        try {
+            customerAccountService.changePassword(principal.getName(), form);
+            redirectAttributes.addFlashAttribute("successMessage", "Password updated successfully.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/customer/profile";
+    }
+
+    @PostMapping("/customer/resend-verification")
+    public String resendVerification(Principal principal, RedirectAttributes redirectAttributes) {
+        customerAccountService.requestEmailVerification(principal.getName());
+        redirectAttributes.addFlashAttribute("infoMessage", "A fresh verification link has been dispatched to your email address.");
+        return "redirect:/customer/profile";
+    }
+
+    // ── Saved / Favorite Rooms (Phase 4) ───────────────────────────────────
+
+    @GetMapping("/customer/favorites")
+    public String viewFavorites(Principal principal, Model model) {
+        Set<Room> favorites = customerAccountService.getFavoriteRooms(principal.getName());
+        model.addAttribute("favorites", favorites);
+        return "customer/favorites";
+    }
+
+    @PostMapping("/customer/favorites/{roomId}/toggle")
+    public String toggleFavorite(@PathVariable("roomId") Long roomId,
+                                 @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+                                 Principal principal,
+                                 RedirectAttributes redirectAttributes) {
+        boolean isFav = customerAccountService.toggleFavoriteRoom(principal.getName(), roomId);
+        if (isFav) {
+            redirectAttributes.addFlashAttribute("successMessage", "Room added to your saved favorites.");
+        } else {
+            redirectAttributes.addFlashAttribute("infoMessage", "Room removed from your saved favorites.");
+        }
+
+        if (redirectUrl != null && !redirectUrl.isBlank() && redirectUrl.startsWith("/")) {
+            return "redirect:" + redirectUrl;
+        }
+        return "redirect:/customer/favorites";
     }
 
     /**

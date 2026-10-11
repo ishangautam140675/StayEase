@@ -36,6 +36,55 @@
         <div class="card border-0 shadow-sm"
              style="background: var(--surface-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-default) !important;">
 
+            <!-- Filter & Search Toolbar (Phase 4) -->
+            <div class="p-3 border-bottom bg-light d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="small fw-bold text-secondary text-uppercase me-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">Status:</span>
+                    <a th:href="@{/customer/bookings(query=${searchQuery})}"
+                       class="btn btn-sm rounded-pill px-3"
+                       th:classappend="${selectedStatus == null} ? 'btn-cobalt' : 'btn-outline-secondary'">
+                        All
+                    </a>
+                    <a th:href="@{/customer/bookings(status='PENDING', query=${searchQuery})}"
+                       class="btn btn-sm rounded-pill px-3"
+                       th:classappend="${selectedStatus != null and selectedStatus.name() == 'PENDING'} ? 'btn-warning text-dark' : 'btn-outline-secondary'">
+                        Pending
+                    </a>
+                    <a th:href="@{/customer/bookings(status='APPROVED', query=${searchQuery})}"
+                       class="btn btn-sm rounded-pill px-3"
+                       th:classappend="${selectedStatus != null and selectedStatus.name() == 'APPROVED'} ? 'btn-success' : 'btn-outline-secondary'">
+                        Approved
+                    </a>
+                    <a th:href="@{/customer/bookings(status='REJECTED', query=${searchQuery})}"
+                       class="btn btn-sm rounded-pill px-3"
+                       th:classappend="${selectedStatus != null and selectedStatus.name() == 'REJECTED'} ? 'btn-danger' : 'btn-outline-secondary'">
+                        Rejected
+                    </a>
+                    <a th:href="@{/customer/bookings(status='CANCELLED', query=${searchQuery})}"
+                       class="btn btn-sm rounded-pill px-3"
+                       th:classappend="${selectedStatus != null and selectedStatus.name() == 'CANCELLED'} ? 'btn-secondary' : 'btn-outline-secondary'">
+                        Cancelled
+                    </a>
+                </div>
+
+                <form th:action="@{/customer/bookings}" method="get" class="d-flex gap-2 m-0">
+                    <input type="hidden" name="status" th:if="${selectedStatus != null}" th:value="${selectedStatus}"/>
+                    <div class="input-group input-group-sm" style="max-width: 280px;">
+                        <input type="text" name="query" th:value="${searchQuery}" class="form-control"
+                               placeholder="Search reference or room..."/>
+                        <button type="submit" class="btn btn-cobalt">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <a th:if="${selectedStatus != null or (searchQuery != null and !searchQuery.isEmpty())}"
+                       th:href="@{/customer/bookings}"
+                       class="btn btn-sm btn-outline-danger"
+                       title="Clear Filters">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </form>
+            </div>
+
             <!-- When Bookings Exist -->
             <div th:if="${bookings != null and !bookings.isEmpty()}" class="table-responsive">
                 <table class="table table-hover align-middle mb-0">

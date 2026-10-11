@@ -52,9 +52,12 @@ public class Phase2UiUxVerificationTest {
     @BeforeEach
     void setUp() {
         bookingRepository.deleteAll();
+        bookingRepository.flush();
         roomRepository.deleteAll();
+        roomRepository.flush();
         userRepository.findByEmail("cust.ui@stayease.com").ifPresent(userRepository::delete);
         userRepository.findByEmail("admin.ui@stayease.com").ifPresent(userRepository::delete);
+        userRepository.flush();
 
         customer = userRepository.save(new User(
                 "UI Customer", "cust.ui@stayease.com", "$2a$10$7Zz4...dummy", "9876543210", Role.CUSTOMER

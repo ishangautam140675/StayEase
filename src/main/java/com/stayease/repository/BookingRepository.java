@@ -28,6 +28,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            countQuery = "SELECT count(b) FROM Booking b WHERE b.user.email = :email")
     Page<Booking> findByUserEmailOrderByCreatedAtDesc(@Param("email") String email, Pageable pageable);
 
+    @Query(value = "SELECT b FROM Booking b JOIN FETCH b.room WHERE b.user.email = :email " +
+           "AND (:status IS NULL OR b.status = :status) " +
+           "AND (:query IS NULL OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(b.room.roomNumber) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "ORDER BY b.createdAt DESC",
+           countQuery = "SELECT count(b) FROM Booking b WHERE b.user.email = :email " +
+           "AND (:status IS NULL OR b.status = :status) " +
+           "AND (:query IS NULL OR LOWER(b.bookingReference) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(b.room.roomNumber) LIKE LOWER(CONCAT('%', :query, '%')))")
+    Page<Booking> searchUserBookings(
+            @Param("email") String email,
+            @Param("status") com.stayease.model.BookingStatus status,
+            @Param("query") String query,
+            Pageable pageable
+    );
+
     @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room ORDER BY b.createdAt DESC")
     List<Booking> findAllWithUserAndRoomOrderByCreatedAtDesc();
 
