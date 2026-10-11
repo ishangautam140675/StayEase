@@ -141,15 +141,44 @@
                             </div>
                         </div>
 
+                        <!-- Amenities -->
+                        <div class="mb-3">
+                            <label for="amenities" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                Amenities <span class="text-secondary fw-normal">(comma-separated, e.g. Wi-Fi, AC, Balcony, Workspace)</span>
+                            </label>
+                            <input type="text"
+                                   id="amenities"
+                                   th:field="*{amenities}"
+                                   th:classappend="${#fields.hasErrors('amenities')} ? 'is-invalid'"
+                                   class="form-control"
+                                   placeholder="Wi-Fi, Air Conditioning, Balcony, Dedicated Desk"
+                                   maxlength="500"/>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('amenities')}">
+                                <span th:errors="*{amenities}"></span>
+                            </div>
+                        </div>
+
                         <!-- Active Toggle -->
-                        <div class="form-check form-switch mb-4">
+                        <div class="form-check form-switch mb-3">
                             <input class="form-check-input"
                                    type="checkbox"
                                    role="switch"
                                    id="active"
                                    th:field="*{active}"/>
                             <label class="form-check-label fw-medium small" for="active" style="color: var(--text-primary);">
-                                Active (available for customer search and booking)
+                                Active (available in public accommodation catalog)
+                            </label>
+                        </div>
+
+                        <!-- Under Maintenance Toggle (Phase 3) -->
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   role="switch"
+                                   id="underMaintenance"
+                                   th:field="*{underMaintenance}"/>
+                            <label class="form-check-label fw-medium small text-warning-emphasis" for="underMaintenance">
+                                <i class="bi bi-tools me-1 text-warning"></i>Under Maintenance (blocked from guest booking and availability searches)
                             </label>
                         </div>
 

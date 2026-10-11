@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Reservation Receipt — ' + (${booking != null ? booking.bookingReference : 'StayEase'}))}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Print CSS overrides ──────────────────────────────────────────────── -->
+<style>
+    @media print {
+        nav, footer, .no-print, .btn, .alert {
+            display: none !important;
+        }
+        body {
+            background: #ffffff !important;
+            color: #111827 !important;
+            padding: 0 !important;
+        }
+        .receipt-card {
+            border: 1px solid #e5e7eb !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 0 !important;
+        }
+        .container {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+    }
+    .timeline-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--brand-cobalt);
+        position: relative;
+        z-index: 2;
+    }
+    .timeline-line {
+        position: absolute;
+        left: 5px;
+        top: 14px;
+        bottom: -10px;
+        width: 2px;
+        background-color: var(--border-default);
+        z-index: 1;
+    }
+</style>
+
+<!-- ── Main Content ─────────────────────────────────────────────────────── -->
+<main class="flex-grow-1 py-5">
+    <div class="container se-container" style="max-width: 900px;">
+
+        <!-- Top Navigation / Actions Bar (No-print) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 no-print">
+            <div>
+                <a th:href="@{/customer/bookings}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-medium">
+                    <i class="bi bi-arrow-left me-1"></i>Back to My Bookings
+                </a>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-cobalt btn-sm rounded-pill px-4 fw-medium" onclick="window.print();">
+                    <i class="bi bi-printer me-2"></i>Print / Save as PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Receipt Card Container -->
+        <div class="card border-0 shadow-sm receipt-card"
+             style="background: var(--surface-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border-default) !important;">
+
+            <!-- Receipt Header -->
+            <div class="p-4 p-md-5 border-bottom" style="background: linear-gradient(135deg, var(--surface-page) 0%, var(--surface-card) 100%);">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="fs-4 fw-bold tracking-tight" style="color: var(--brand-cobalt); font-family: 'DM Sans', sans-serif;">
+                                <i class="bi bi-buildings me-1"></i>STAYEASE
+                            </span>
+                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1 small">Official Receipt</span>
+                        </div>
+                        <h1 class="h3 fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                            Booking Confirmation
+                        </h1>
+                        <p class="text-secondary small mb-0">
+                            Issued on <span th:text="${#temporals.format(booking.createdAt, 'dd MMMM yyyy, hh:mm a')}">11 Oct 2026, 04:30 PM</span>
+                        </p>
+                    </div>
+
+                    <div class="text-md-end">
+                        <div class="small text-uppercase fw-bold text-secondary mb-1" style="letter-spacing: 0.05em;">Booking Reference</div>
+                        <div class="d-inline-flex align-items-center gap-2 bg-light border px-3 py-2 rounded-3">
+                            <span class="fw-bold fs-5 font-monospace text-primary" th:text="${booking.bookingReference}">SE-20261011-8F3K9A</span>
+                        </div>
+                        <div class="mt-2">
+                            <th:block th:replace="~{fragments/status-badge :: badge(${booking.status})}"></th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Body -->
+            <div class="p-4 p-md-5">
+
+                <!-- Guest & Accommodation Summary Grid -->
+                <div class="row g-4 mb-5 pb-4 border-bottom">
+                    <div class="col-md-6">
+                        <h2 class="h6 text-uppercase fw-bold text-secondary mb-3" style="letter-spacing: 0.05em;">
+                            <i class="bi bi-person me-2" style="color: var(--brand-cobalt);"></i>Guest Information
+                        </h2>
+                        <div class="card bg-light border-0 p-3 rounded-3">
+                            <div class="fw-bold fs-6 mb-1" style="color: var(--text-primary);"
+                                 th:text="${booking.user != null ? booking.user.fullName : 'Guest'}">Jane Doe</div>
+                            <div class="text-secondary small mb-1">
+                                <i class="bi bi-envelope me-1"></i><span th:text="${booking.user != null ? booking.user.email : 'N/A'}">jane@example.com</span>
+                            </div>
+                            <div class="text-secondary small">
+                                <i class="bi bi-people me-1"></i>Party size: <span class="fw-medium text-dark" th:text="${booking.guests}">2</span> Guest(s)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h2 class="h6 text-uppercase fw-bold text-secondary mb-3" style="letter-spacing: 0.05em;">
+                            <i class="bi bi-door-open me-2" style="color: var(--brand-cobalt);"></i>Accommodation Details
+                        </h2>
+                        <div class="card bg-light border-0 p-3 rounded-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="fw-bold fs-6" style="color: var(--text-primary);">
+                                    Room <span th:text="${booking.room != null ? booking.room.roomNumber : 'N/A'}">101</span>
+                                </div>
+                                <span class="badge px-2 py-1 text-uppercase"
+                                      style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.75rem;"
+                                      th:text="${booking.room != null ? booking.room.type : 'STANDARD'}">DELUXE</span>
+                            </div>
+                            <div class="text-secondary small mb-1">
+                                Max Capacity: <span class="fw-medium text-dark" th:text="${booking.room != null ? booking.room.capacity : 2}">2</span> Guests
+                            </div>
+                            <div class="text-secondary small" th:if="${booking.room != null and booking.room.amenities != null}">
+                                <i class="bi bi-stars me-1 text-warning"></i>Amenities: <span th:text="${booking.room.amenities}">WiFi, AC, Breakfast</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stay Dates Block -->
+                <div class="row g-3 mb-5 p-3 rounded-3 text-center border" style="background: var(--surface-page);">
+                    <div class="col-sm-4 py-2 border-end border-sm-end">
+                        <div class="text-secondary small text-uppercase fw-semibold">Check-In</div>
+                        <div class="fs-5 fw-bold text-dark mt-1" th:text="${#temporals.format(booking.checkIn, 'EEE, dd MMM yyyy')}">Fri, 14 Nov 2026</div>
+                        <div class="small text-muted">From 2:00 PM</div>
+                    </div>
+                    <div class="col-sm-4 py-2 border-end border-sm-end">
+                        <div class="text-secondary small text-uppercase fw-semibold">Duration</div>
+                        <div class="fs-4 fw-bold mt-1" style="color: var(--brand-cobalt);" th:text="${booking.nights} + ' Nights'">3 Nights</div>
+                        <div class="small text-muted"><span th:text="${booking.guests}">2</span> Guest(s)</div>
+                    </div>
+                    <div class="col-sm-4 py-2">
+                        <div class="text-secondary small text-uppercase fw-semibold">Check-Out</div>
+                        <div class="fs-5 fw-bold text-dark mt-1" th:text="${#temporals.format(booking.checkOut, 'EEE, dd MMM yyyy')}">Mon, 17 Nov 2026</div>
+                        <div class="small text-muted">Until 11:00 AM</div>
+                    </div>
+                </div>
+
+                <!-- Transparent Price Breakdown Table -->
+                <div class="mb-5 pb-4 border-bottom">
+                    <h2 class="h6 text-uppercase fw-bold text-secondary mb-3" style="letter-spacing: 0.05em;">
+                        <i class="bi bi-receipt me-2" style="color: var(--brand-cobalt);"></i>Transparent Total Price Breakdown
+                    </h2>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-secondary">
+                                    <th scope="col" class="py-2">Item Description</th>
+                                    <th scope="col" class="py-2 text-center">Nights</th>
+                                    <th scope="col" class="py-2 text-end">Rate / Night</th>
+                                    <th scope="col" class="py-2 text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-3">
+                                        <div class="fw-semibold text-dark">
+                                            Room <span th:text="${booking.room != null ? booking.room.roomNumber : ''}">101</span>
+                                            (<span th:text="${booking.room != null ? booking.room.type : 'Room'}">Standard</span>)
+                                        </div>
+                                        <div class="small text-muted">
+                                            Stay from <span th:text="${#temporals.format(booking.checkIn, 'dd MMM yyyy')}">14 Nov 2026</span>
+                                            to <span th:text="${#temporals.format(booking.checkOut, 'dd MMM yyyy')}">17 Nov 2026</span>
+                                            <span class="badge bg-light text-muted border ms-1">Preserved Historical Rate</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 text-center align-middle fw-medium" th:text="${booking.nights}">3</td>
+                                    <td class="py-3 text-end align-middle font-monospace"
+                                        th:text="'₹' + ${#numbers.formatDecimal(booking.effectivePricePerNight, 1, 2)}">₹1,500.00</td>
+                                    <td class="py-3 text-end align-middle fw-semibold font-monospace"
+                                        th:text="'₹' + ${#numbers.formatDecimal(booking.totalPrice, 1, 2)}">₹4,500.00</td>
+                                </tr>
+                                <tr th:if="${priceBreakdown != null and priceBreakdown.taxesAndFees != null}">
+                                    <td colspan="3" class="text-end text-secondary small py-2">Taxes & Hospitality Surcharges</td>
+                                    <td class="text-end font-monospace py-2" th:text="'₹' + ${#numbers.formatDecimal(priceBreakdown.taxesAndFees, 1, 2)}">₹0.00</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="3" class="text-end py-3 fs-6">Grand Total</th>
+                                    <th class="text-end py-3 fs-5 fw-bold font-monospace" style="color: var(--brand-oxblood);"
+                                        th:text="'₹' + ${#numbers.formatDecimal(booking.totalPrice, 1, 2)}">₹4,500.00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Booking Lifecycle Audit Timeline -->
+                <div class="mb-5 pb-4 border-bottom">
+                    <h2 class="h6 text-uppercase fw-bold text-secondary mb-3" style="letter-spacing: 0.05em;">
+                        <i class="bi bi-clock-history me-2" style="color: var(--brand-cobalt);"></i>Booking Lifecycle & Audit Timeline
+                    </h2>
+
+                    <!-- If Status History Exists -->
+                    <div th:if="${booking.statusHistory != null and !booking.statusHistory.isEmpty()}" class="ps-2">
+                        <div class="position-relative ps-4 mb-3" th:each="hist, iterStat : ${booking.statusHistory}">
+                            <div class="timeline-dot"
+                                 th:style="${hist.toStatus.name() == 'APPROVED' ? 'background-color: var(--brand-forest);' : (hist.toStatus.name() == 'REJECTED' or hist.toStatus.name() == 'CANCELLED' ? 'background-color: #dc3545;' : 'background-color: var(--brand-cobalt);')}"></div>
+                            <div class="timeline-line" th:unless="${iterStat.last}"></div>
+
+                            <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2">
+                                <div>
+                                    <span class="fw-bold small text-dark"
+                                          th:text="${hist.fromStatus != null ? hist.fromStatus + ' → ' + hist.toStatus : 'REQUEST CREATED (' + hist.toStatus + ')'}">
+                                        PENDING → APPROVED
+                                    </span>
+                                    <span class="badge bg-light text-muted border ms-2 small" th:text="'By: ' + ${hist.changedBy}">By: Guest</span>
+                                </div>
+                                <div class="small text-secondary font-monospace"
+                                     th:text="${#temporals.format(hist.changedAt, 'dd MMM yyyy, hh:mm a')}">
+                                    11 Oct 2026, 04:30 PM
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-1" th:if="${hist.reason != null and !hist.reason.isEmpty()}"
+                                 th:text="${hist.reason}">
+                                Booking requested by guest.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fallback if history list empty -->
+                    <div th:unless="${booking.statusHistory != null and !booking.statusHistory.isEmpty()}" class="ps-2">
+                        <div class="position-relative ps-4 mb-2">
+                            <div class="timeline-dot"></div>
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <span class="fw-bold small text-dark">Reservation Created (<span th:text="${booking.status}">PENDING</span>)</span>
+                                <span class="small text-secondary font-monospace" th:text="${#temporals.format(booking.createdAt, 'dd MMM yyyy, hh:mm a')}">11 Oct 2026</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancellation Policy & Terms -->
+                <div class="p-4 rounded-3 border" style="background: var(--surface-page);">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+                        <div>
+                            <h3 class="h6 fw-bold mb-1" style="color: var(--text-primary);">
+                                <i class="bi bi-shield-check me-2" style="color: var(--brand-forest);"></i>Cancellation Policy
+                            </h3>
+                            <p class="text-secondary small mb-0">
+                                Free cancellation up to <strong th:text="${cancellationLeadHours}">24</strong> hours before check-in time (2:00 PM on arrival date).
+                            </p>
+                        </div>
+
+                        <!-- Eligibility Badge -->
+                        <div>
+                            <span th:if="${booking.isCancellable(cancellationLeadHours)}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                                <i class="bi bi-check-circle me-1"></i>Eligible for Free Cancellation
+                            </span>
+                            <span th:unless="${booking.isCancellable(cancellationLeadHours)}" class="badge bg-secondary-subtle text-secondary border px-3 py-2">
+                                <i class="bi bi-lock me-1"></i>Non-Cancellable
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="small text-muted border-top pt-2">
+                        <span>Cancellation Deadline: </span>
+                        <strong class="text-dark"
+                                th:text="${booking.getCancellationDeadline(cancellationLeadHours) != null ? #temporals.format(booking.getCancellationDeadline(cancellationLeadHours), 'dd MMMM yyyy, hh:mm a') : '24 hours prior to check-in'}">
+                            13 Nov 2026, 02:00 PM
+                        </strong>
+                    </div>
+
+                    <!-- Cancel Action if eligible (No-print) -->
+                    <div th:if="${booking.isCancellable(cancellationLeadHours)}" class="mt-3 pt-3 border-top no-print">
+                        <form th:action="@{/customer/bookings/{id}/cancel(id=${booking.id})}"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('Are you sure you want to cancel this reservation? This cannot be undone.');">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-outline-danger btn-sm px-3 fw-medium">
+                                <i class="bi bi-x-circle me-1"></i>Cancel Reservation Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Receipt Footer Note -->
+            <div class="p-3 text-center bg-light border-top text-secondary small">
+                StayEase Hospitality &bull; Keep this confirmation reference for your records &bull; Questions? Contact support@stayease.com
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

@@ -54,7 +54,7 @@
                     </thead>
                     <tbody>
                         <tr th:each="b : ${bookings}">
-                            <!-- Room Number and Type -->
+                            <!-- Room Number, Type, and Booking Reference -->
                             <td class="ps-4 py-3">
                                 <div class="fw-bold" style="color: var(--text-primary);">
                                     Room <span th:text="${b.room != null ? b.room.roomNumber : 'N/A'}">101</span>
@@ -62,6 +62,10 @@
                                 <span class="badge px-2 py-0 small text-uppercase"
                                       style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.7rem;"
                                       th:text="${b.room != null ? b.room.type : ''}">SINGLE</span>
+                                <div class="font-monospace text-muted small mt-1" style="font-size: 0.75rem;"
+                                     th:if="${b.bookingReference != null}">
+                                    Ref: <span th:text="${b.bookingReference}">SE-123456</span>
+                                </div>
                             </td>
 
                             <!-- Check-in Date -->
@@ -105,19 +109,24 @@
                                 </div>
                             </td>
 
-                            <!-- Cancel Action (Phase 12) -->
-                            <td class="pe-4 py-3 text-end">
-                                <form th:if="${b.cancellable}"
+                            <!-- Receipt & Cancel Actions (Phase 3) -->
+                            <td class="pe-4 py-3 text-end text-nowrap">
+                                <a th:href="@{/customer/bookings/{id}/receipt(id=${b.id})}"
+                                   class="btn btn-outline-secondary btn-sm px-2 me-1 fw-medium"
+                                   title="View / Print Official Receipt">
+                                    <i class="bi bi-receipt me-1"></i>Receipt
+                                </a>
+
+                                <form th:if="${b.isCancellable(cancellationLeadHours)}"
                                       th:action="@{/customer/bookings/{id}/cancel(id=${b.id})}"
                                       method="post"
                                       class="d-inline"
                                       onsubmit="return confirm('Are you sure you want to cancel this booking?');">
                                     <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                    <button type="submit" class="btn btn-outline-danger btn-sm px-3 fw-medium">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm px-2 fw-medium">
                                         <i class="bi bi-x-circle me-1"></i>Cancel
                                     </button>
                                 </form>
-                                <span th:unless="${b.cancellable}" class="text-muted small">&mdash;</span>
                             </td>
                         </tr>
                     </tbody>

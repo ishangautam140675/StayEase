@@ -414,4 +414,54 @@ class CustomerBookingControllerTest {
                         .with(csrf()))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("Customer can view their own booking receipt")
+    void viewReceipt_asOwner_returnsReceiptPage() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7), 2, BookingStatus.PENDING, "Special request"
+        ));
+        booking.setBookingReference("SE-20261011-TEST01");
+        booking.setPricePerNightAtBooking(new BigDecimal("120.00"));
+        booking.setTotalPrice(new BigDecimal("240.00"));
+        bookingRepository.save(booking);
+
+        mockMvc.perform(get("/customer/bookings/{id}/receipt", booking.getId())
+                        .with(user(customerA.getEmail()).roles("CUSTOMER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("customer/booking-receipt"))
+                .andExpect(model().attributeExists("booking", "priceBreakdown", "cancellationLeadHours"))
+                .andExpect(content().string(containsString("SE-20261011-TEST01")))
+                .andExpect(content().string(containsString("Booking Confirmation")))
+                .andExpect(content().string(containsString("Official Receipt")));
+    }
+
+    @Test
+    @DisplayName("Viewing receipt of another customer's booking returns 403 Forbidden")
+    void viewReceipt_asOtherCustomer_returns403() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7), 2, BookingStatus.PENDING, null
+        ));
+
+        mockMvc.perform(get("/customer/bookings/{id}/receipt", booking.getId())
+                        .with(user(customerB.getEmail()).roles("CUSTOMER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Customer can view receipt via booking reference")
+    void viewReceipt_byReference_returnsReceiptPage() throws Exception {
+        Booking booking = bookingRepository.save(new Booking(
+                customerA, roomA, LocalDate.now().plusDays(5), LocalDate.now().plusDays(7), 2, BookingStatus.PENDING, null
+        ));
+        booking.setBookingReference("SE-REF-XYZ789");
+        bookingRepository.save(booking);
+
+        mockMvc.perform(get("/customer/bookings/reference/{ref}/receipt", "SE-REF-XYZ789")
+                        .with(user(customerA.getEmail()).roles("CUSTOMER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("customer/booking-receipt"))
+                .andExpect(content().string(containsString("SE-REF-XYZ789")));
+    }
 }
+

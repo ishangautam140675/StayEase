@@ -100,8 +100,20 @@
                         <!-- CSRF Token -->
                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-                        <!-- Hidden Room ID -->
+                        <!-- Hidden Room ID & Idempotency Key (Phase 3) -->
                         <input type="hidden" th:field="*{roomId}"/>
+                        <input type="hidden" th:field="*{idempotencyKey}"/>
+
+                        <!-- Maintenance Notice if Room Under Maintenance -->
+                        <div class="alert alert-warning py-3 mb-4" th:if="${room != null and room.underMaintenance}">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-tools fs-5 me-2 text-warning"></i>
+                                <div>
+                                    <strong class="d-block">Room Under Maintenance</strong>
+                                    <span class="small">This accommodation is currently undergoing scheduled maintenance and cannot be booked at this time.</span>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Date Conflict Messages (Phase 10) -->
                         <div class="alert alert-danger py-3 mb-4" th:if="${conflictMessages != null and !conflictMessages.isEmpty()}">

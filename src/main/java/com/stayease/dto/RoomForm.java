@@ -37,16 +37,27 @@ public class RoomForm {
 
     private boolean active = true;
 
+    private boolean underMaintenance = false;
+
+    @Size(max = 500, message = "Amenities must not exceed 500 characters")
+    private String amenities;
+
     public RoomForm() {
     }
 
     public RoomForm(String roomNumber, RoomType type, Integer capacity, BigDecimal pricePerNight, String description, boolean active) {
+        this(roomNumber, type, capacity, pricePerNight, description, active, false, null);
+    }
+
+    public RoomForm(String roomNumber, RoomType type, Integer capacity, BigDecimal pricePerNight, String description, boolean active, boolean underMaintenance, String amenities) {
         this.roomNumber = roomNumber;
         this.type = type;
         this.capacity = capacity;
         this.pricePerNight = pricePerNight;
         this.description = description;
         this.active = active;
+        this.underMaintenance = underMaintenance;
+        this.amenities = amenities;
     }
 
     public static RoomForm from(Room room) {
@@ -56,7 +67,9 @@ public class RoomForm {
                 room.getCapacity(),
                 room.getPricePerNight(),
                 room.getDescription(),
-                room.isActive()
+                room.isActive(),
+                room.isUnderMaintenance(),
+                room.getAmenities()
         );
     }
 
@@ -106,5 +119,21 @@ public class RoomForm {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isUnderMaintenance() {
+        return underMaintenance;
+    }
+
+    public void setUnderMaintenance(boolean underMaintenance) {
+        this.underMaintenance = underMaintenance;
+    }
+
+    public String getAmenities() {
+        return amenities;
+    }
+
+    public void setAmenities(String amenities) {
+        this.amenities = amenities;
     }
 }

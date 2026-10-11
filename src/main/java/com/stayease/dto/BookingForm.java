@@ -26,14 +26,21 @@ public class BookingForm {
     @Min(value = 1, message = "Number of guests must be at least 1")
     private Integer guests = 1;
 
+    private String idempotencyKey;
+
     public BookingForm() {
     }
 
     public BookingForm(Long roomId, LocalDate checkIn, LocalDate checkOut, Integer guests) {
+        this(roomId, checkIn, checkOut, guests, null);
+    }
+
+    public BookingForm(Long roomId, LocalDate checkIn, LocalDate checkOut, Integer guests, String idempotencyKey) {
         this.roomId = roomId;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.guests = guests;
+        this.idempotencyKey = idempotencyKey;
     }
 
     public Long getRoomId() {
@@ -66,5 +73,13 @@ public class BookingForm {
 
     public void setGuests(Integer guests) {
         this.guests = guests;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 }

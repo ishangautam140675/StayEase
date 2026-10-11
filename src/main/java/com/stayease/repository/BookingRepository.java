@@ -45,6 +45,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room WHERE b.id = :id")
     java.util.Optional<Booking> findByIdWithUserAndRoom(@Param("id") Long id);
 
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room LEFT JOIN FETCH b.statusHistory WHERE b.id = :id")
+    java.util.Optional<Booking> findByIdWithDetails(@Param("id") Long id);
+
+    java.util.Optional<Booking> findByBookingReference(String bookingReference);
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room LEFT JOIN FETCH b.statusHistory WHERE b.bookingReference = :reference")
+    java.util.Optional<Booking> findByBookingReferenceWithDetails(@Param("reference") String reference);
+
+    java.util.Optional<Booking> findByIdempotencyKey(String idempotencyKey);
+
     long countByStatus(com.stayease.model.BookingStatus status);
 
     @Query("select b from Booking b where b.room.id = :roomId and b.status in :statuses and :checkIn < b.checkOut and :checkOut > b.checkIn")

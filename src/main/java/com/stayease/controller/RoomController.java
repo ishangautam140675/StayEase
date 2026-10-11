@@ -30,6 +30,7 @@ public class RoomController {
 
     /**
      * GET /rooms — lists active rooms matching optional search criteria (9 per page).
+     * Supports advanced room search: room type, capacity, price range, amenity, and date availability.
      */
     @GetMapping("/rooms")
     public String listRooms(
@@ -37,13 +38,16 @@ public class RoomController {
             @RequestParam(required = false) Integer capacity,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String amenity,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkIn,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkOut,
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             Model model) {
 
         int pageNum = (page != null && page > 0) ? page : 1;
         int pageIndex = pageNum - 1;
         Pageable pageable = PageRequest.of(pageIndex, 9, Sort.by("roomNumber").ascending());
-        Page<Room> roomPage = roomService.searchActiveRooms(type, capacity, minPrice, maxPrice, pageable);
+        Page<Room> roomPage = roomService.searchRoomsAdvanced(type, capacity, minPrice, maxPrice, amenity, checkIn, checkOut, pageable);
 
         model.addAttribute("rooms", roomPage.getContent());
         model.addAttribute("page", roomPage);
@@ -52,6 +56,10 @@ public class RoomController {
         model.addAttribute("capacity", capacity);
         model.addAttribute("minPrice", minPrice);
         model.addAttribute("maxPrice", maxPrice);
+        model.addAttribute("amenity", amenity);
+        model.addAttribute("checkIn", checkIn);
+        model.addAttribute("checkOut", checkOut);
+        model.addAttribute("today", java.time.LocalDate.now());
         model.addAttribute("activePage", "rooms");
 
         return "rooms/list";

@@ -133,9 +133,17 @@ public class CustomerController {
         bookingForm.setGuests(guests != null ? guests : 1);
         bookingForm.setCheckIn(checkIn != null ? checkIn : LocalDate.now());
         bookingForm.setCheckOut(checkOut != null ? checkOut : LocalDate.now().plusDays(1));
+        bookingForm.setIdempotencyKey(java.util.UUID.randomUUID().toString());
+
+        com.stayease.dto.PriceBreakdown priceBreakdown = null;
+        if (room != null) {
+            priceBreakdown = bookingService.calculatePriceBreakdown(room, bookingForm.getCheckIn(), bookingForm.getCheckOut());
+        }
 
         model.addAttribute("room", room);
         model.addAttribute("bookingForm", bookingForm);
+        model.addAttribute("priceBreakdown", priceBreakdown);
+        model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
         model.addAttribute("today", LocalDate.now());
         return "customer/booking-form";
     }
@@ -151,7 +159,7 @@ public class CustomerController {
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            loadRoomForForm(bookingForm.getRoomId(), model);
+            loadRoomForForm(bookingForm.getRoomId(), bookingForm, model);
             model.addAttribute("today", LocalDate.now());
             return "customer/booking-form";
         }
@@ -190,12 +198,12 @@ public class CustomerController {
 
             model.addAttribute("conflictMessages", conflictMessages);
             model.addAttribute("alternativeRooms", alternativeRooms);
-            loadRoomForForm(bookingForm.getRoomId(), model);
+            loadRoomForForm(bookingForm.getRoomId(), bookingForm, model);
             model.addAttribute("today", LocalDate.now());
             return "customer/booking-form";
         } catch (BookingValidationException ex) {
             bindingResult.rejectValue(ex.getField(), "validation.booking", ex.getMessage());
-            loadRoomForForm(bookingForm.getRoomId(), model);
+            loadRoomForForm(bookingForm.getRoomId(), bookingForm, model);
             model.addAttribute("today", LocalDate.now());
             return "customer/booking-form";
         }
@@ -215,7 +223,39 @@ public class CustomerController {
 
         model.addAttribute("bookings", bookingPage.getContent());
         model.addAttribute("page", bookingPage);
+        model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+        model.addAttribute("today", LocalDate.now());
         return "customer/bookings";
+    }
+
+    /**
+     * Renders printable booking confirmation and receipt with lifecycle audit timeline (Phase 3).
+     */
+    @GetMapping("/customer/bookings/{id}/receipt")
+    public String bookingReceipt(@PathVariable("id") Long id,
+                                 Principal principal,
+                                 Model model) {
+        Booking booking = bookingService.getBookingWithDetails(id, principal.getName());
+        model.addAttribute("booking", booking);
+        model.addAttribute("priceBreakdown", booking.getPriceBreakdown());
+        model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+        model.addAttribute("today", LocalDate.now());
+        return "customer/booking-receipt";
+    }
+
+    /**
+     * Renders printable receipt looked up by booking reference (Phase 3).
+     */
+    @GetMapping("/customer/bookings/reference/{reference}/receipt")
+    public String bookingReceiptByReference(@PathVariable("reference") String reference,
+                                            Principal principal,
+                                            Model model) {
+        Booking booking = bookingService.getBookingByReferenceWithDetails(reference, principal.getName());
+        model.addAttribute("booking", booking);
+        model.addAttribute("priceBreakdown", booking.getPriceBreakdown());
+        model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+        model.addAttribute("today", LocalDate.now());
+        return "customer/booking-receipt";
     }
 
     /**
@@ -234,9 +274,15 @@ public class CustomerController {
         return "redirect:/customer/bookings";
     }
 
-    private void loadRoomForForm(Long roomId, Model model) {
+    private void loadRoomForForm(Long roomId, BookingForm form, Model model) {
         if (roomId != null) {
-            roomRepository.findById(roomId).ifPresent(r -> model.addAttribute("room", r));
+            roomRepository.findById(roomId).ifPresent(r -> {
+                model.addAttribute("room", r);
+                if (form != null && form.getCheckIn() != null && form.getCheckOut() != null && form.getCheckOut().isAfter(form.getCheckIn())) {
+                    model.addAttribute("priceBreakdown", bookingService.calculatePriceBreakdown(r, form.getCheckIn(), form.getCheckOut()));
+                }
+            });
         }
+        model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
     }
 }

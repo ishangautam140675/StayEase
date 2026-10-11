@@ -42,16 +42,28 @@ public class Room {
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "under_maintenance", nullable = false)
+    private boolean underMaintenance = false;
+
+    @Column(name = "amenities", length = 500)
+    private String amenities;
+
     public Room() {
     }
 
     public Room(String roomNumber, RoomType type, int capacity, BigDecimal pricePerNight, String description, boolean active) {
+        this(roomNumber, type, capacity, pricePerNight, description, active, false, null);
+    }
+
+    public Room(String roomNumber, RoomType type, int capacity, BigDecimal pricePerNight, String description, boolean active, boolean underMaintenance, String amenities) {
         this.roomNumber = roomNumber;
         this.type = type;
         this.capacity = capacity;
         this.pricePerNight = pricePerNight;
         this.description = description;
         this.active = active;
+        this.underMaintenance = underMaintenance;
+        this.amenities = amenities;
     }
 
     public Long getId() {
@@ -108,6 +120,40 @@ public class Room {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isUnderMaintenance() {
+        return underMaintenance;
+    }
+
+    public void setUnderMaintenance(boolean underMaintenance) {
+        this.underMaintenance = underMaintenance;
+    }
+
+    public String getAmenities() {
+        return amenities;
+    }
+
+    public void setAmenities(String amenities) {
+        this.amenities = amenities;
+    }
+
+    public java.util.List<String> getAmenityList() {
+        if (amenities == null || amenities.trim().isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return java.util.Arrays.stream(amenities.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
+    public boolean hasAmenity(String amenity) {
+        if (amenity == null || amenity.trim().isEmpty() || amenities == null) {
+            return false;
+        }
+        return getAmenityList().stream()
+                .anyMatch(a -> a.equalsIgnoreCase(amenity.trim()));
     }
 
     @Override

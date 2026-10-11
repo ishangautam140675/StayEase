@@ -59,7 +59,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("select r from Room r where r.id = :id")
     Optional<Room> findByIdForUpdate(@Param("id") Long id);
 
-    @Query("SELECT r FROM Room r WHERE r.active = true " +
+    @Query("SELECT r FROM Room r WHERE r.active = true AND r.underMaintenance = false " +
            "AND r.capacity >= :guests " +
            "AND NOT EXISTS (" +
            "    SELECT b FROM Booking b " +
@@ -74,6 +74,70 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             @Param("checkOut") LocalDate checkOut,
             @Param("guests") Integer guests,
             @Param("statuses") Collection<com.stayease.model.BookingStatus> statuses
+    );
+
+    @Query("SELECT r FROM Room r WHERE r.active = true AND r.underMaintenance = false " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:capacity IS NULL OR r.capacity >= :capacity) " +
+           "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
+           "AND (:amenity IS NULL OR LOWER(r.amenities) LIKE LOWER(CONCAT('%', :amenity, '%'))) " +
+           "AND (:checkIn IS NULL OR :checkOut IS NULL OR NOT EXISTS (" +
+           "    SELECT b FROM Booking b " +
+           "    WHERE b.room = r " +
+           "    AND b.status IN :statuses " +
+           "    AND :checkIn < b.checkOut " +
+           "    AND :checkOut > b.checkIn" +
+           ")) " +
+           "ORDER BY r.roomNumber")
+    List<Room> searchRoomsAdvanced(
+            @Param("type") RoomType type,
+            @Param("capacity") Integer capacity,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("amenity") String amenity,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            @Param("statuses") Collection<com.stayease.model.BookingStatus> statuses
+    );
+
+    @Query(value = "SELECT r FROM Room r WHERE r.active = true AND r.underMaintenance = false " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:capacity IS NULL OR r.capacity >= :capacity) " +
+           "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
+           "AND (:amenity IS NULL OR LOWER(r.amenities) LIKE LOWER(CONCAT('%', :amenity, '%'))) " +
+           "AND (:checkIn IS NULL OR :checkOut IS NULL OR NOT EXISTS (" +
+           "    SELECT b FROM Booking b " +
+           "    WHERE b.room = r " +
+           "    AND b.status IN :statuses " +
+           "    AND :checkIn < b.checkOut " +
+           "    AND :checkOut > b.checkIn" +
+           ")) " +
+           "ORDER BY r.roomNumber",
+           countQuery = "SELECT count(r) FROM Room r WHERE r.active = true AND r.underMaintenance = false " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:capacity IS NULL OR r.capacity >= :capacity) " +
+           "AND (:minPrice IS NULL OR r.pricePerNight >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR r.pricePerNight <= :maxPrice) " +
+           "AND (:amenity IS NULL OR LOWER(r.amenities) LIKE LOWER(CONCAT('%', :amenity, '%'))) " +
+           "AND (:checkIn IS NULL OR :checkOut IS NULL OR NOT EXISTS (" +
+           "    SELECT b FROM Booking b " +
+           "    WHERE b.room = r " +
+           "    AND b.status IN :statuses " +
+           "    AND :checkIn < b.checkOut " +
+           "    AND :checkOut > b.checkIn" +
+           "))")
+    Page<Room> searchRoomsAdvanced(
+            @Param("type") RoomType type,
+            @Param("capacity") Integer capacity,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("amenity") String amenity,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            @Param("statuses") Collection<com.stayease.model.BookingStatus> statuses,
+            Pageable pageable
     );
 
     Optional<Room> findByIdAndActiveTrue(Long id);

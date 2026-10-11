@@ -87,6 +87,27 @@ public class RoomService {
     }
 
     /**
+     * Finds active rooms matching advanced search criteria (type, capacity, price range, amenity, and date availability).
+     */
+    public List<Room> searchRoomsAdvanced(RoomType type, Integer capacity, BigDecimal minPrice, BigDecimal maxPrice,
+                                          String amenity, java.time.LocalDate checkIn, java.time.LocalDate checkOut) {
+        String cleanAmenity = (amenity != null && !amenity.trim().isEmpty()) ? amenity.trim() : null;
+        return roomRepository.searchRoomsAdvanced(type, capacity, minPrice, maxPrice, cleanAmenity,
+                checkIn, checkOut, com.stayease.model.BookingStatus.BLOCKING);
+    }
+
+    /**
+     * Finds active rooms matching advanced search criteria with pagination.
+     */
+    public Page<Room> searchRoomsAdvanced(RoomType type, Integer capacity, BigDecimal minPrice, BigDecimal maxPrice,
+                                          String amenity, java.time.LocalDate checkIn, java.time.LocalDate checkOut,
+                                          Pageable pageable) {
+        String cleanAmenity = (amenity != null && !amenity.trim().isEmpty()) ? amenity.trim() : null;
+        return roomRepository.searchRoomsAdvanced(type, capacity, minPrice, maxPrice, cleanAmenity,
+                checkIn, checkOut, com.stayease.model.BookingStatus.BLOCKING, pageable);
+    }
+
+    /**
      * Creates a new room. Room numbers are trimmed and checked case-insensitively.
      *
      * @throws DuplicateRoomNumberException if the room number already exists
@@ -105,7 +126,9 @@ public class RoomService {
                 form.getCapacity(),
                 form.getPricePerNight(),
                 form.getDescription(),
-                form.isActive()
+                form.isActive(),
+                form.isUnderMaintenance(),
+                form.getAmenities() != null ? form.getAmenities().trim() : null
         );
 
         return roomRepository.save(room);
@@ -133,6 +156,8 @@ public class RoomService {
         room.setPricePerNight(form.getPricePerNight());
         room.setDescription(form.getDescription());
         room.setActive(form.isActive());
+        room.setUnderMaintenance(form.isUnderMaintenance());
+        room.setAmenities(form.getAmenities() != null ? form.getAmenities().trim() : null);
 
         return roomRepository.save(room);
     }

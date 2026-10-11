@@ -109,9 +109,11 @@ public class AdminBookingController {
      */
     @PostMapping("/{id}/approve")
     public String approveBooking(@PathVariable("id") Long id,
+                                 java.security.Principal principal,
                                  RedirectAttributes redirectAttributes) {
         try {
-            bookingService.approve(id);
+            String adminEmail = principal != null ? principal.getName() : "ADMIN";
+            bookingService.approve(id, adminEmail);
             redirectAttributes.addFlashAttribute("successMessage", "Booking #" + id + " has been approved.");
         } catch (InvalidBookingStateException | BookingConflictException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -125,6 +127,7 @@ public class AdminBookingController {
     @PostMapping("/{id}/reject")
     public String rejectBooking(@PathVariable("id") Long id,
                                 @RequestParam(value = "remark", required = false) String remark,
+                                java.security.Principal principal,
                                 RedirectAttributes redirectAttributes) {
         if (remark == null || remark.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "A remark is required when rejecting a booking.");
@@ -132,7 +135,8 @@ public class AdminBookingController {
         }
 
         try {
-            bookingService.reject(id, remark);
+            String adminEmail = principal != null ? principal.getName() : "ADMIN";
+            bookingService.reject(id, remark, adminEmail);
             redirectAttributes.addFlashAttribute("successMessage", "Booking #" + id + " has been rejected.");
         } catch (InvalidBookingStateException | IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

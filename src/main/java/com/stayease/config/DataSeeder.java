@@ -81,14 +81,14 @@ public class DataSeeder implements CommandLineRunner {
     private void seedSampleRooms() {
         if (roomRepository.count() == 0) {
             List<Room> sampleRooms = List.of(
-                    new Room("101", RoomType.SINGLE, 1, new BigDecimal("550.00"), "Cozy single room with a dedicated study desk and quiet garden view.", true),
-                    new Room("102", RoomType.DOUBLE, 2, new BigDecimal("850.00"), "Spacious double bedroom with twin beds and high-speed Wi-Fi.", true),
-                    new Room("103", RoomType.TRIPLE, 3, new BigDecimal("1150.00"), "Well-ventilated triple room perfect for small student groups.", true),
-                    new Room("104", RoomType.DORMITORY, 4, new BigDecimal("1450.00"), "Modern dormitory accommodation with private lockers and ensuite bath.", true),
-                    new Room("201", RoomType.SINGLE, 1, new BigDecimal("650.00"), "Quiet executive single room with natural sunlight and ergonomic chair.", true),
-                    new Room("202", RoomType.DOUBLE, 2, new BigDecimal("950.00"), "Premium double room featuring air conditioning and attached balcony.", true),
-                    new Room("203", RoomType.TRIPLE, 3, new BigDecimal("1250.00"), "Deluxe triple sharing accommodation with individual wardrobes.", true),
-                    new Room("204", RoomType.DOUBLE, 2, new BigDecimal("800.00"), "Under maintenance room for testing inactive filtering.", false)
+                    new Room("101", RoomType.SINGLE, 1, new BigDecimal("550.00"), "Cozy single room with a dedicated study desk and quiet garden view.", true, false, "High-Speed Wi-Fi, Study Desk, Garden View"),
+                    new Room("102", RoomType.DOUBLE, 2, new BigDecimal("850.00"), "Spacious double bedroom with twin beds and high-speed Wi-Fi.", true, false, "High-Speed Wi-Fi, Air Conditioning, Twin Beds"),
+                    new Room("103", RoomType.TRIPLE, 3, new BigDecimal("1150.00"), "Well-ventilated triple room perfect for small student groups.", true, false, "Wi-Fi, Attached Bath, Study Desks"),
+                    new Room("104", RoomType.DORMITORY, 4, new BigDecimal("1450.00"), "Modern dormitory accommodation with private lockers and ensuite bath.", true, false, "Wi-Fi, Lockers, Ensuite Bath"),
+                    new Room("201", RoomType.SINGLE, 1, new BigDecimal("650.00"), "Quiet executive single room with natural sunlight and ergonomic chair.", true, false, "High-Speed Wi-Fi, Ergonomic Chair, Sunlit Balcony"),
+                    new Room("202", RoomType.DOUBLE, 2, new BigDecimal("950.00"), "Premium double room featuring air conditioning and attached balcony.", true, false, "Air Conditioning, Balcony, Wi-Fi"),
+                    new Room("203", RoomType.TRIPLE, 3, new BigDecimal("1250.00"), "Deluxe triple sharing accommodation with individual wardrobes.", true, false, "Wardrobes, Wi-Fi, Study Lamp"),
+                    new Room("204", RoomType.DOUBLE, 2, new BigDecimal("800.00"), "Under maintenance room for testing maintenance filtering.", true, true, "Wi-Fi, AC")
             );
 
             roomRepository.saveAll(sampleRooms);

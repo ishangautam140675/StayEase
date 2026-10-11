@@ -31,6 +31,9 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${app.booking.cancellation-lead-hours:24}")
+    private int cancellationLeadHours = 24;
+
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           UserRepository userRepository) {
@@ -54,6 +57,18 @@ public class BookingService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
 
+        // Idempotent creation: if form was submitted with an idempotency key that already succeeded,
+        // return the existing booking instead of creating a duplicate or failing.
+        if (form.getIdempotencyKey() != null && !form.getIdempotencyKey().trim().isEmpty()) {
+            java.util.Optional<Booking> existing = bookingRepository.findByIdempotencyKey(form.getIdempotencyKey().trim());
+            if (existing.isPresent()) {
+                Booking existingBooking = existing.get();
+                if (existingBooking.getUser() != null && existingBooking.getUser().getEmail().equalsIgnoreCase(userEmail)) {
+                    return existingBooking;
+                }
+            }
+        }
+
         if (form.getRoomId() == null) {
             throw new BookingValidationException("roomId", "Room selection is required.");
         }
@@ -66,6 +81,10 @@ public class BookingService {
 
         if (!room.isActive()) {
             throw new BookingValidationException("roomId", "The selected room is inactive and cannot be booked.");
+        }
+
+        if (room.isUnderMaintenance()) {
+            throw new BookingValidationException("roomId", "Room " + room.getRoomNumber() + " is currently under maintenance and cannot be reserved.");
         }
 
         LocalDate today = LocalDate.now();
@@ -103,6 +122,10 @@ public class BookingService {
             throw new BookingConflictException(conflicts);
         }
 
+        long nights = calculateNights(form.getCheckIn(), form.getCheckOut());
+        BigDecimal pricePerNight = room.getPricePerNight();
+        BigDecimal total = calculateTotalPrice(pricePerNight, nights);
+
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setRoom(room);
@@ -110,6 +133,13 @@ public class BookingService {
         booking.setCheckOut(form.getCheckOut());
         booking.setGuests(form.getGuests());
         booking.setStatus(BookingStatus.PENDING);
+        booking.setPricePerNightAtBooking(pricePerNight);
+        booking.setTotalPrice(total);
+        booking.setBookingReference(Booking.generateBookingReference(LocalDate.now()));
+        if (form.getIdempotencyKey() != null && !form.getIdempotencyKey().trim().isEmpty()) {
+            booking.setIdempotencyKey(form.getIdempotencyKey().trim());
+        }
+        booking.addStatusHistory(null, BookingStatus.PENDING, user.getEmail(), "Booking requested by guest");
 
         return bookingRepository.save(booking);
     }
@@ -207,6 +237,14 @@ public class BookingService {
      */
     @Transactional
     public Booking approve(Long bookingId) {
+        return approve(bookingId, "ADMIN");
+    }
+
+    /**
+     * Approves a PENDING booking, recording the approving administrator's identifier.
+     */
+    @Transactional
+    public Booking approve(Long bookingId, String adminEmail) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
 
@@ -236,6 +274,8 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.APPROVED);
+        booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.APPROVED,
+                adminEmail != null ? adminEmail : "ADMIN", "Booking approved by administrator");
         return bookingRepository.save(booking);
     }
 
@@ -245,6 +285,14 @@ public class BookingService {
      */
     @Transactional
     public Booking reject(Long bookingId, String remark) {
+        return reject(bookingId, remark, "ADMIN");
+    }
+
+    /**
+     * Rejects a PENDING booking with a mandatory admin remark, recording administrator email.
+     */
+    @Transactional
+    public Booking reject(Long bookingId, String remark, String adminEmail) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
 
@@ -266,18 +314,20 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.REJECTED);
         booking.setAdminRemark(trimmedRemark);
+        booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.REJECTED,
+                adminEmail != null ? adminEmail : "ADMIN", trimmedRemark);
         return bookingRepository.save(booking);
     }
 
     /**
-     * Cancels a booking by the customer who owns it (Phase 12).
+     * Cancels a booking by the customer who owns it (Phase 12, extended in Phase 3 with policy check).
      *
      * @param bookingId the booking ID
      * @param userEmail the authenticated user's email
      * @return the cancelled booking
      * @throws com.stayease.exception.BookingNotFoundException if the booking does not exist
      * @throws org.springframework.security.access.AccessDeniedException if the booking belongs to someone else
-     * @throws com.stayease.exception.InvalidBookingStateException if status is not PENDING/APPROVED or check-in is not after today
+     * @throws com.stayease.exception.InvalidBookingStateException if status is not PENDING/APPROVED or cancellation window closed
      */
     @Transactional
     public Booking cancel(Long bookingId, String userEmail) {
@@ -301,7 +351,68 @@ public class BookingService {
             );
         }
 
+        if (!booking.isCancellable(cancellationLeadHours)) {
+            java.time.LocalDateTime deadline = booking.getCancellationDeadline(cancellationLeadHours);
+            String deadlineStr = deadline != null
+                    ? deadline.format(java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a"))
+                    : "the check-in date";
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be cancelled because the cancellation deadline (" +
+                    deadlineStr + ") has passed (cancellation policy: free cancellation up to " +
+                    cancellationLeadHours + " hours before check-in)."
+            );
+        }
+
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(BookingStatus.CANCELLED);
+        booking.addStatusHistory(oldStatus, BookingStatus.CANCELLED, userEmail, "Cancelled by guest");
         return bookingRepository.save(booking);
+    }
+
+    /**
+     * Retrieves a booking by ID with eagerly loaded status history and related entities.
+     * Verifies that the requester owns the booking (unless userEmail is null, e.g. for admin access).
+     */
+    public Booking getBookingWithDetails(Long bookingId, String userEmail) {
+        Booking booking = bookingRepository.findByIdWithDetails(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (userEmail != null && (booking.getUser() == null || !booking.getUser().getEmail().equalsIgnoreCase(userEmail))) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to view this booking.");
+        }
+        return booking;
+    }
+
+    /**
+     * Retrieves a booking by its public reference code with eagerly loaded status history and related entities.
+     * Verifies that the requester owns the booking (unless userEmail is null, e.g. for admin access).
+     */
+    public Booking getBookingByReferenceWithDetails(String bookingReference, String userEmail) {
+        Booking booking = bookingRepository.findByBookingReferenceWithDetails(bookingReference)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with reference: " + bookingReference));
+
+        if (userEmail != null && (booking.getUser() == null || !booking.getUser().getEmail().equalsIgnoreCase(userEmail))) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to view this booking.");
+        }
+        return booking;
+    }
+
+    /**
+     * Helper calculating an itemized price breakdown for a room and date range.
+     */
+    public com.stayease.dto.PriceBreakdown calculatePriceBreakdown(Room room, LocalDate checkIn, LocalDate checkOut) {
+        if (room == null || room.getPricePerNight() == null) {
+            return new com.stayease.dto.PriceBreakdown(0, BigDecimal.ZERO, checkIn, checkOut);
+        }
+        long nights = calculateNights(checkIn, checkOut);
+        return new com.stayease.dto.PriceBreakdown(nights, room.getPricePerNight(), checkIn, checkOut);
+    }
+
+    public int getCancellationLeadHours() {
+        return cancellationLeadHours;
+    }
+
+    public void setCancellationLeadHours(int cancellationLeadHours) {
+        this.cancellationLeadHours = cancellationLeadHours;
     }
 }
