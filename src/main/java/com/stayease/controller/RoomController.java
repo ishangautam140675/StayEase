@@ -24,16 +24,19 @@ public class RoomController {
 
     private final RoomService roomService;
     private final com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository;
+    private final com.stayease.service.CustomerAccountService customerAccountService;
 
     public RoomController(RoomService roomService) {
-        this(roomService, null);
+        this(roomService, null, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
     public RoomController(RoomService roomService,
-                          @org.springframework.beans.factory.annotation.Autowired(required = false) com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository) {
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) com.stayease.repository.RoomMaintenanceScheduleRepository maintenanceScheduleRepository,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) com.stayease.service.CustomerAccountService customerAccountService) {
         this.roomService = roomService;
         this.maintenanceScheduleRepository = maintenanceScheduleRepository;
+        this.customerAccountService = customerAccountService;
     }
 
     /**
@@ -50,12 +53,23 @@ public class RoomController {
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkIn,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate checkOut,
             @RequestParam(name = "page", defaultValue = "1") Integer page,
+            java.security.Principal principal,
             Model model) {
 
         int pageNum = (page != null && page > 0) ? page : 1;
         int pageIndex = pageNum - 1;
         Pageable pageable = PageRequest.of(pageIndex, 9, Sort.by("roomNumber").ascending());
         Page<Room> roomPage = roomService.searchRoomsAdvanced(type, capacity, minPrice, maxPrice, amenity, checkIn, checkOut, pageable);
+
+        java.util.Set<Long> favoriteRoomIds = new java.util.HashSet<>();
+        if (principal != null && customerAccountService != null) {
+            try {
+                java.util.Set<Room> favs = customerAccountService.getFavoriteRooms(principal.getName());
+                if (favs != null) {
+                    favs.forEach(r -> favoriteRoomIds.add(r.getId()));
+                }
+            } catch (Exception ignored) {}
+        }
 
         model.addAttribute("rooms", roomPage.getContent());
         model.addAttribute("page", roomPage);
@@ -69,6 +83,7 @@ public class RoomController {
         model.addAttribute("checkOut", checkOut);
         model.addAttribute("today", java.time.LocalDate.now());
         model.addAttribute("activePage", "rooms");
+        model.addAttribute("favoriteRoomIds", favoriteRoomIds);
 
         return "rooms/list";
     }
@@ -77,13 +92,25 @@ public class RoomController {
      * GET /rooms/{id} — displays details for a specific active room.
      */
     @GetMapping("/rooms/{id}")
-    public String roomDetails(@PathVariable Long id, Model model) {
+    public String roomDetails(@PathVariable Long id, java.security.Principal principal, Model model) {
         Room room = roomService.getActiveRoom(id);
         model.addAttribute("room", room);
         if (maintenanceScheduleRepository != null) {
             model.addAttribute("maintenanceSchedules",
                     maintenanceScheduleRepository.findUpcomingByRoomId(room.getId(), java.time.LocalDate.now()));
         }
+
+        boolean isFavorite = false;
+        if (principal != null && customerAccountService != null) {
+            try {
+                java.util.Set<Room> favs = customerAccountService.getFavoriteRooms(principal.getName());
+                if (favs != null) {
+                    isFavorite = favs.stream().anyMatch(r -> r.getId().equals(room.getId()));
+                }
+            } catch (Exception ignored) {}
+        }
+
+        model.addAttribute("isFavorite", isFavorite);
         model.addAttribute("activePage", "rooms");
         return "rooms/details";
     }

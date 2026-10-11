@@ -18,6 +18,10 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
 
+    <!-- CSRF tokens for AJAX -->
+    <meta th:if="${_csrf}" name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:if="${_csrf}" name="_csrf_header" th:content="${_csrf.headerName}"/>
+
     <!-- Application-specific styles -->
     <link rel="stylesheet" th:href="@{/css/app.css}"/>
 </head>
@@ -84,6 +88,25 @@
                 </ul>
 
                 <div class="d-flex align-items-lg-center gap-2 mt-3 mt-lg-0">
+                    <!-- Notification Bell Dropdown (Admin) -->
+                    <div class="dropdown me-1">
+                        <button class="btn btn-outline-light btn-sm position-relative px-2 py-1" type="button" id="adminNotificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                            <i class="bi bi-bell-fill fs-6"></i>
+                            <span id="adminNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">
+                                0
+                            </span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="adminNotificationBell" style="width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15);">
+                            <div class="d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light rounded-top">
+                                <span class="fw-bold small text-dark"><i class="bi bi-bell me-1 text-primary"></i>Admin Alerts</span>
+                                <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
+                            </div>
+                            <div id="adminNotificationList" class="notification-scroll-list" style="max-height: 320px; overflow-y: auto;">
+                                <div class="text-center text-muted py-4 small">No notifications yet</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <form th:action="@{/logout}" method="post" class="d-inline m-0">
                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-medium">
@@ -156,6 +179,25 @@
                         </a>
                     </div>
                     <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
+                        <!-- Notification Bell Dropdown (Customer) -->
+                        <div class="dropdown me-1">
+                            <button class="btn btn-outline-light btn-sm position-relative px-2 py-1" type="button" id="userNotificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="bi bi-bell-fill fs-6"></i>
+                                <span id="userNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">
+                                    0
+                                </span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="userNotificationBell" style="width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15);">
+                                <div class="d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light rounded-top">
+                                    <span class="fw-bold small text-dark"><i class="bi bi-bell me-1 text-primary"></i>My Notifications</span>
+                                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
+                                </div>
+                                <div id="userNotificationList" class="notification-scroll-list" style="max-height: 320px; overflow-y: auto;">
+                                    <div class="text-center text-muted py-4 small">No notifications yet</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <span class="text-white-50 small d-none d-lg-inline me-1" sec:authentication="name">User</span>
                         <form th:action="@{/logout}" method="post" class="d-inline m-0">
                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -265,6 +307,9 @@
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmBA16Syvr9sKxHHp8kJPY7oixDH"
             crossorigin="anonymous"></script>
 
+    <!-- Floating Toast Container for Real-Time Popups -->
+    <div id="stayeaseToastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
     <!-- Prevent double submission on all forms -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -281,6 +326,181 @@
                 });
             });
         });
+    </script>
+
+    <!-- Real-time In-App Notifications & Floating Toast Client -->
+    <script sec:authorize="isAuthenticated()">
+        (function() {
+            let lastPollTime = new Date(Date.now() - 30000).toISOString();
+            const toastContainer = document.getElementById('stayeaseToastContainer');
+
+            function getCsrfHeader() {
+                const metaToken = document.querySelector('meta[name="_csrf"]');
+                const metaHeader = document.querySelector('meta[name="_csrf_header"]');
+                if (metaToken && metaHeader) {
+                    return { [metaHeader.getAttribute('content')]: metaToken.getAttribute('content') };
+                }
+                const csrfInput = document.querySelector('input[type="hidden"][name="_csrf"]');
+                if (csrfInput) {
+                    return { 'X-CSRF-TOKEN': csrfInput.value };
+                }
+                return {};
+            }
+
+            function updateBadge(badgeEl, count) {
+                if (!badgeEl) return;
+                if (count > 0) {
+                    badgeEl.textContent = count > 99 ? '99+' : count;
+                    badgeEl.classList.remove('d-none');
+                } else {
+                    badgeEl.textContent = '0';
+                    badgeEl.classList.add('d-none');
+                }
+            }
+
+            function formatTime(isoStr) {
+                if (!isoStr) return '';
+                try {
+                    const d = new Date(isoStr);
+                    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } catch(e) { return ''; }
+            }
+
+            function showToast(notification) {
+                if (!toastContainer) return;
+                const toastId = 'toast-notif-' + notification.id;
+                if (document.getElementById(toastId)) return;
+
+                const toastDiv = document.createElement('div');
+                toastDiv.id = toastId;
+                toastDiv.className = 'toast align-items-center text-bg-dark border-0 shadow-lg mb-2';
+                toastDiv.setAttribute('role', 'alert');
+                toastDiv.setAttribute('aria-live', 'assertive');
+                toastDiv.setAttribute('aria-atomic', 'true');
+                toastDiv.innerHTML = `
+                    <div class="toast-header bg-dark text-white border-secondary">
+                        <i class="bi bi-bell-fill text-warning me-2"></i>
+                        <strong class="me-auto text-truncate" style="max-width: 180px;">${escapeHtml(notification.title)}</strong>
+                        <small class="text-white-50">${formatTime(notification.createdAt)}</small>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body d-flex justify-content-between align-items-center py-2">
+                        <div class="small">${escapeHtml(notification.message)}</div>
+                        ${notification.linkUrl ? `<a href="${notification.linkUrl}" class="btn btn-sm btn-outline-warning ms-2 flex-shrink-0">View</a>` : ''}
+                    </div>
+                `;
+                toastContainer.appendChild(toastDiv);
+
+                const bsToast = new bootstrap.Toast(toastDiv, { delay: 7000 });
+                bsToast.show();
+                toastDiv.addEventListener('hidden.bs.toast', function() {
+                    toastDiv.remove();
+                });
+            }
+
+            function renderNotificationList(listEl, notifications) {
+                if (!listEl) return;
+                if (!notifications || notifications.length === 0) {
+                    listEl.innerHTML = '<div class="text-center text-muted py-4 small">No notifications yet</div>';
+                    return;
+                }
+
+                let html = '';
+                notifications.forEach(n => {
+                    const bgClass = n.read ? 'bg-white text-muted' : 'bg-light text-dark fw-medium border-start border-3 border-primary';
+                    const icon = n.read ? 'bi-envelope-open' : 'bi-envelope-fill text-primary';
+                    const clickAction = n.linkUrl ? `onclick="window.location.href='${n.linkUrl}'"` : '';
+                    const cursorStyle = n.linkUrl ? 'cursor: pointer;' : '';
+                    html += `
+                        <div class="p-2 px-3 border-bottom notification-item ${bgClass}" style="${cursorStyle}" ${clickAction}>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-semibold text-truncate" style="max-width: 200px;"><i class="bi ${icon} me-1"></i>${escapeHtml(n.title)}</span>
+                                <span class="text-muted" style="font-size: 0.7rem;">${formatTime(n.createdAt)}</span>
+                            </div>
+                            <div style="font-size: 0.8rem; line-height: 1.3;" class="mb-1">${escapeHtml(n.message)}</div>
+                        </div>
+                    `;
+                });
+                listEl.innerHTML = html;
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>'"]/g, tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag));
+            }
+
+            function fetchRecentNotifications() {
+                fetch('/api/notifications?limit=15', { credentials: 'same-origin' })
+                    .then(res => res.json())
+                    .then(data => {
+                        const adminBadge = document.getElementById('adminNotificationBadge');
+                        const userBadge = document.getElementById('userNotificationBadge');
+                        const adminList = document.getElementById('adminNotificationList');
+                        const userList = document.getElementById('userNotificationList');
+
+                        updateBadge(adminBadge, data.unreadCount);
+                        updateBadge(userBadge, data.unreadCount);
+                        renderNotificationList(adminList, data.notifications);
+                        renderNotificationList(userList, data.notifications);
+                    })
+                    .catch(err => {
+                        // Silent catch on offline/nav
+                    });
+            }
+
+            function pollNewNotifications() {
+                const url = '/api/notifications/poll?since=' + encodeURIComponent(lastPollTime);
+                lastPollTime = new Date().toISOString();
+
+                fetch(url, { credentials: 'same-origin' })
+                    .then(res => res.json())
+                    .then(data => {
+                        const adminBadge = document.getElementById('adminNotificationBadge');
+                        const userBadge = document.getElementById('userNotificationBadge');
+                        updateBadge(adminBadge, data.unreadCount);
+                        updateBadge(userBadge, data.unreadCount);
+
+                        if (data.newNotifications && data.newNotifications.length > 0) {
+                            data.newNotifications.forEach(showToast);
+                            fetchRecentNotifications();
+                        }
+                    })
+                    .catch(err => {});
+            }
+
+            function markAllRead() {
+                fetch('/api/notifications/read-all', {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getCsrfHeader()),
+                    credentials: 'same-origin'
+                })
+                .then(res => res.json())
+                .then(() => {
+                    fetchRecentNotifications();
+                })
+                .catch(err => {});
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchRecentNotifications();
+
+                document.querySelectorAll('.mark-all-notifications-read').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        markAllRead();
+                    });
+                });
+
+                // Poll every 8 seconds for fast, responsive toast notifications
+                setInterval(pollNewNotifications, 8000);
+            });
+        })();
     </script>
 </div>
 

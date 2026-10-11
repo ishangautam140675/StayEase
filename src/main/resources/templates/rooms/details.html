@@ -64,12 +64,18 @@
                                         Room <span th:text="${room.roomNumber}">101</span> &mdash; <span th:text="${room.type}">SINGLE</span>
                                     </h1>
                                     <form sec:authorize="hasRole('CUSTOMER')" th:action="@{/customer/favorites/{id}/toggle(id=${room.id})}" method="post" class="d-inline m-0">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                         <input type="hidden" name="redirectUrl" th:value="@{/rooms/{id}(id=${room.id})}"/>
-                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Save room to favorites">
-                                            <i class="bi bi-heart me-1"></i>Save
+                                        <button type="submit" class="btn btn-sm rounded-pill px-3"
+                                                th:classappend="${isFavorite} ? 'btn-danger text-white' : 'btn-outline-danger'"
+                                                th:title="${isFavorite} ? 'Remove from saved favorites' : 'Save room to favorites'">
+                                            <i class="bi" th:classappend="${isFavorite} ? 'bi-heart-fill me-1' : 'bi-heart me-1'"></i>
+                                            <span th:text="${isFavorite} ? 'Saved' : 'Save'">Save</span>
                                         </button>
                                     </form>
+                                    <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Login to save room">
+                                        <i class="bi bi-heart me-1"></i>Save
+                                    </a>
                                 </div>
                             </div>
                             <div class="text-md-end">

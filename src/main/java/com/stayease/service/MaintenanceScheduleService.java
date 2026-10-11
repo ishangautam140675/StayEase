@@ -29,14 +29,27 @@ public class MaintenanceScheduleService {
     private final BookingRepository bookingRepository;
     private final AuditLogService auditLogService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private InAppNotificationService notificationService;
+
     public MaintenanceScheduleService(RoomMaintenanceScheduleRepository maintenanceRepository,
                                       RoomRepository roomRepository,
                                       BookingRepository bookingRepository,
                                       AuditLogService auditLogService) {
+        this(maintenanceRepository, roomRepository, bookingRepository, auditLogService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public MaintenanceScheduleService(RoomMaintenanceScheduleRepository maintenanceRepository,
+                                      RoomRepository roomRepository,
+                                      BookingRepository bookingRepository,
+                                      AuditLogService auditLogService,
+                                      @org.springframework.beans.factory.annotation.Autowired(required = false) InAppNotificationService notificationService) {
         this.maintenanceRepository = maintenanceRepository;
         this.roomRepository = roomRepository;
         this.bookingRepository = bookingRepository;
         this.auditLogService = auditLogService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -128,6 +141,17 @@ public class MaintenanceScheduleService {
                 String.valueOf(room.getId()),
                 "Scheduled maintenance for Room " + room.getRoomNumber() + " (" + startDate + " to " + endDate + "): " + reason.trim()
         );
+
+        if (notificationService != null) {
+            try {
+                notificationService.notifyAdmin(
+                        "Room Maintenance Scheduled",
+                        "Room " + room.getRoomNumber() + " scheduled for maintenance from " + startDate + " to " + endDate + " (" + reason.trim() + "). Inventory is blocked.",
+                        "MAINTENANCE_SCHEDULED",
+                        "/admin/operations/maintenance"
+                );
+            } catch (Exception e) {}
+        }
 
         return saved;
     }

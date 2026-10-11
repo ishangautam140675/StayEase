@@ -6,7 +6,7 @@
 <body class="d-flex flex-column min-vh-100" style="background-color: var(--surface-page);">
 
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
-<div th:replace="~{fragments/layout :: alerts}"></div>
+<div th:replace="~{fragments/layout :: flash}"></div>
 
 <main class="flex-grow-1 py-5">
     <div class="container se-container">
@@ -49,15 +49,15 @@
                 <div class="card h-100 border-0 shadow-sm overflow-hidden"
                      style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
 
-                    <!-- Image / Header -->
-                    <div class="position-relative" style="height: 180px; background: linear-gradient(135deg, #2b3990, #1a2b88);">
-                        <img th:if="${room.imageUrl != null && !room.imageUrl.isEmpty()}"
-                             th:src="${room.imageUrl}"
-                             class="w-100 h-100 object-fit-cover"
-                             th:alt="'Room ' + ${room.roomNumber}"/>
+                    <!-- Header Banner -->
+                    <div class="position-relative d-flex align-items-center justify-content-center text-white" style="height: 150px; background: linear-gradient(135deg, var(--brand-oxblood) 0%, #3d1b26 100%);">
+                        <div class="text-center">
+                            <i class="bi bi-door-open fs-1 text-white-50 d-block mb-1"></i>
+                            <span class="fw-bold fs-5" style="font-family: var(--font-heading);">Room <span th:text="${room.roomNumber}">101</span></span>
+                        </div>
                         <div class="position-absolute top-0 end-0 p-3">
                             <form th:action="@{/customer/favorites/{id}/toggle(id=${room.id})}" method="post" class="m-0">
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <input type="hidden" name="redirectUrl" value="/customer/favorites"/>
                                 <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm"
                                         title="Remove from saved favorites"

@@ -38,11 +38,18 @@ public class BookingService {
     private final RoomMaintenanceScheduleRepository maintenanceScheduleRepository;
 
     @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private InAppNotificationService notificationService;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
     @org.springframework.context.annotation.Lazy
     private PaymentService paymentService;
 
     public void setPaymentService(PaymentService paymentService) {
         this.paymentService = paymentService;
+    }
+
+    public void setNotificationService(InAppNotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @org.springframework.beans.factory.annotation.Value("${app.booking.cancellation-lead-hours:24}")
@@ -51,7 +58,17 @@ public class BookingService {
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           UserRepository userRepository) {
-        this(bookingRepository, roomRepository, userRepository, null, null, null, null);
+        this(bookingRepository, roomRepository, userRepository, null, null, null, null, null);
+    }
+
+    public BookingService(BookingRepository bookingRepository,
+                          RoomRepository roomRepository,
+                          UserRepository userRepository,
+                          EmailService emailService,
+                          AuditLogService auditLogService,
+                          SeasonalPricingService seasonalPricingService,
+                          RoomMaintenanceScheduleRepository maintenanceScheduleRepository) {
+        this(bookingRepository, roomRepository, userRepository, emailService, auditLogService, seasonalPricingService, maintenanceScheduleRepository, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -61,7 +78,8 @@ public class BookingService {
                           @org.springframework.beans.factory.annotation.Autowired(required = false) EmailService emailService,
                           @org.springframework.beans.factory.annotation.Autowired(required = false) AuditLogService auditLogService,
                           @org.springframework.beans.factory.annotation.Autowired(required = false) SeasonalPricingService seasonalPricingService,
-                          @org.springframework.beans.factory.annotation.Autowired(required = false) RoomMaintenanceScheduleRepository maintenanceScheduleRepository) {
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) RoomMaintenanceScheduleRepository maintenanceScheduleRepository,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) InAppNotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.userRepository = userRepository;
@@ -69,6 +87,7 @@ public class BookingService {
         this.auditLogService = auditLogService;
         this.seasonalPricingService = seasonalPricingService;
         this.maintenanceScheduleRepository = maintenanceScheduleRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -199,6 +218,25 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
         if (emailService != null) {
             emailService.sendBookingCreated(saved);
+        }
+        if (notificationService != null) {
+            try {
+                notificationService.notifyUser(
+                        user.getEmail(),
+                        "Booking Request Placed",
+                        "Your booking request for Room " + room.getRoomNumber() + " (" + saved.getBookingReference() + ") is pending admin approval.",
+                        "BOOKING_CREATED",
+                        "/customer/bookings/" + saved.getId()
+                );
+                notificationService.notifyAdmin(
+                        "New Booking Request",
+                        "Guest " + user.getFullName() + " requested Room " + room.getRoomNumber() + " for " + saved.getCheckIn() + " to " + saved.getCheckOut() + " (" + saved.getBookingReference() + ").",
+                        "BOOKING_NEW",
+                        "/admin/bookings"
+                );
+            } catch (Exception e) {
+                // Log and don't fail transaction
+            }
         }
         return saved;
     }
@@ -371,6 +409,17 @@ public class BookingService {
         if (emailService != null) {
             emailService.sendBookingApproved(saved);
         }
+        if (notificationService != null && saved.getUser() != null) {
+            try {
+                notificationService.notifyUser(
+                        saved.getUser().getEmail(),
+                        "Booking Approved!",
+                        "Your reservation for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " (" + saved.getBookingReference() + ") is approved. Please complete payment.",
+                        "BOOKING_APPROVED",
+                        "/customer/bookings/" + saved.getId()
+                );
+            } catch (Exception e) {}
+        }
         return saved;
     }
 
@@ -390,9 +439,10 @@ public class BookingService {
             );
         }
 
+        BookingStatus priorStatus = booking.getStatus();
         booking.setStatus(BookingStatus.CHECKED_IN);
         booking.setCheckedInAt(java.time.LocalDateTime.now());
-        booking.addStatusHistory(BookingStatus.APPROVED, BookingStatus.CHECKED_IN,
+        booking.addStatusHistory(priorStatus, BookingStatus.CHECKED_IN,
                 adminEmail != null ? adminEmail : "ADMIN", "Guest checked in");
         Booking saved = bookingRepository.save(booking);
 
@@ -404,6 +454,26 @@ public class BookingService {
                     String.valueOf(saved.getId()),
                     "Checked in guest for booking #" + saved.getId() + " (" + saved.getBookingReference() + ")"
             );
+        }
+
+        if (notificationService != null) {
+            try {
+                if (saved.getUser() != null) {
+                    notificationService.notifyUser(
+                            saved.getUser().getEmail(),
+                            "Check-In Confirmed",
+                            "Welcome to StayEase! You are checked in for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " (" + saved.getBookingReference() + "). Enjoy your stay!",
+                            "GUEST_CHECKED_IN",
+                            "/customer/bookings/" + saved.getId()
+                    );
+                }
+                notificationService.notifyAdmin(
+                        "Guest Checked In",
+                        "Guest " + (saved.getUser() != null ? saved.getUser().getFullName() : "") + " has checked into Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + ".",
+                        "GUEST_CHECKED_IN",
+                        "/admin/bookings"
+                );
+            } catch (Exception e) {}
         }
 
         return saved;
@@ -441,12 +511,32 @@ public class BookingService {
             );
         }
 
+        if (notificationService != null) {
+            try {
+                if (saved.getUser() != null) {
+                    notificationService.notifyUser(
+                            saved.getUser().getEmail(),
+                            "Check-Out Complete",
+                            "Thank you for staying with StayEase! You have been checked out from Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + ".",
+                            "GUEST_CHECKED_OUT",
+                            "/customer/bookings/" + saved.getId()
+                    );
+                }
+                notificationService.notifyAdmin(
+                        "Guest Checked Out",
+                        "Guest " + (saved.getUser() != null ? saved.getUser().getFullName() : "") + " has checked out of Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + ".",
+                        "GUEST_CHECKED_OUT",
+                        "/admin/bookings"
+                );
+            } catch (Exception e) {}
+        }
+
         return saved;
     }
 
     /**
-     * Marks an APPROVED booking as NO_SHOW if the guest did not arrive.
-     * Transitions status from APPROVED -> NO_SHOW. Releases inventory block.
+     * Marks an APPROVED or CONFIRMED booking as NO_SHOW if the guest did not arrive.
+     * Transitions status to NO_SHOW. Releases inventory block.
      */
     @Transactional
     public Booking markNoShow(Long bookingId, String adminEmail, String remark) {
@@ -460,10 +550,11 @@ public class BookingService {
             );
         }
 
+        BookingStatus priorStatus = booking.getStatus();
         String reason = (remark != null && !remark.trim().isEmpty()) ? remark.trim() : "Guest marked as no-show";
         booking.setStatus(BookingStatus.NO_SHOW);
         booking.setAdminRemark(reason);
-        booking.addStatusHistory(BookingStatus.APPROVED, BookingStatus.NO_SHOW,
+        booking.addStatusHistory(priorStatus, BookingStatus.NO_SHOW,
                 adminEmail != null ? adminEmail : "ADMIN", reason);
         Booking saved = bookingRepository.save(booking);
 
@@ -584,6 +675,17 @@ public class BookingService {
         if (emailService != null) {
             emailService.sendBookingRejected(saved, trimmedRemark);
         }
+        if (notificationService != null && saved.getUser() != null) {
+            try {
+                notificationService.notifyUser(
+                        saved.getUser().getEmail(),
+                        "Booking Request Rejected",
+                        "Your booking request for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " (" + saved.getBookingReference() + ") was rejected. Reason: " + trimmedRemark,
+                        "BOOKING_REJECTED",
+                        "/customer/bookings/" + saved.getId()
+                );
+            } catch (Exception e) {}
+        }
         return saved;
     }
 
@@ -646,6 +748,23 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
         if (emailService != null) {
             emailService.sendBookingCancelled(saved);
+        }
+        if (notificationService != null) {
+            try {
+                notificationService.notifyUser(
+                        userEmail,
+                        "Booking Cancelled",
+                        "Your booking #" + saved.getId() + " (" + saved.getBookingReference() + ") for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " has been cancelled.",
+                        "BOOKING_CANCELLED",
+                        "/customer/bookings/" + saved.getId()
+                );
+                notificationService.notifyAdmin(
+                        "Booking Cancelled by Guest",
+                        "Booking #" + saved.getId() + " (" + saved.getBookingReference() + ") for Room " + (saved.getRoom() != null ? saved.getRoom().getRoomNumber() : "") + " was cancelled by guest " + (saved.getUser() != null ? saved.getUser().getFullName() : userEmail) + ".",
+                        "BOOKING_CANCELLED",
+                        "/admin/bookings"
+                );
+            } catch (Exception e) {}
         }
         return saved;
     }

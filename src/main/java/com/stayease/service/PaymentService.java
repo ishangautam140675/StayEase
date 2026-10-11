@@ -51,18 +51,33 @@ public class PaymentService {
     private final AuditLogService auditLogService;
     private final EmailService emailService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private InAppNotificationService notificationService;
+
     public PaymentService(BookingRepository bookingRepository,
                           PaymentTransactionRepository paymentTransactionRepository,
                           PaymentWebhookEventRepository paymentWebhookEventRepository,
                           PaymentProviderRegistry providerRegistry,
                           AuditLogService auditLogService,
                           EmailService emailService) {
+        this(bookingRepository, paymentTransactionRepository, paymentWebhookEventRepository, providerRegistry, auditLogService, emailService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PaymentService(BookingRepository bookingRepository,
+                          PaymentTransactionRepository paymentTransactionRepository,
+                          PaymentWebhookEventRepository paymentWebhookEventRepository,
+                          PaymentProviderRegistry providerRegistry,
+                          AuditLogService auditLogService,
+                          EmailService emailService,
+                          @org.springframework.beans.factory.annotation.Autowired(required = false) InAppNotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.paymentTransactionRepository = paymentTransactionRepository;
         this.paymentWebhookEventRepository = paymentWebhookEventRepository;
         this.providerRegistry = providerRegistry;
         this.auditLogService = auditLogService;
         this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -220,6 +235,26 @@ public class PaymentService {
                 log.info("Payment confirmed for booking #{}", booking.getId());
             }
 
+            if (notificationService != null) {
+                try {
+                    if (booking.getUser() != null) {
+                        notificationService.notifyUser(
+                                booking.getUser().getEmail(),
+                                "Payment Successful!",
+                                "Payment of ₹" + transaction.getAmount() + " confirmed for Room " + (booking.getRoom() != null ? booking.getRoom().getRoomNumber() : "") + " (" + booking.getBookingReference() + ").",
+                                "PAYMENT_SUCCESS",
+                                "/customer/bookings/" + booking.getId()
+                        );
+                    }
+                    notificationService.notifyAdmin(
+                        "Payment Received",
+                        "Payment of ₹" + transaction.getAmount() + " received for Booking #" + booking.getId() + " (" + booking.getBookingReference() + ").",
+                        "PAYMENT_SUCCESS",
+                        "/admin/bookings"
+                    );
+                } catch (Exception e) {}
+            }
+
             return result;
         } else {
             transaction.setStatus(PaymentStatus.FAILED);
@@ -288,6 +323,26 @@ public class PaymentService {
                         String.valueOf(booking.getId()),
                         "Processed refund " + refundResult.refundReference() + " for ₹" + refundResult.refundAmount() + ". Reason: " + refundResult.reason()
                 );
+            }
+
+            if (notificationService != null) {
+                try {
+                    if (booking.getUser() != null) {
+                        notificationService.notifyUser(
+                                booking.getUser().getEmail(),
+                                "Refund Processed",
+                                "A refund of ₹" + refundResult.refundAmount() + " (" + refundResult.refundReference() + ") has been processed for your booking #" + booking.getId() + ".",
+                                "PAYMENT_REFUNDED",
+                                "/customer/bookings/" + booking.getId()
+                        );
+                    }
+                    notificationService.notifyAdmin(
+                            "Refund Processed",
+                            "Refund of ₹" + refundResult.refundAmount() + " processed for Booking #" + booking.getId() + ".",
+                            "PAYMENT_REFUNDED",
+                            "/admin/bookings"
+                    );
+                } catch (Exception e) {}
             }
 
             return refundResult;
