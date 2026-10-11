@@ -49,12 +49,15 @@
                 <div class="card h-100 border-0 shadow-sm overflow-hidden"
                      style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
 
-                    <!-- Header Banner -->
-                    <div class="position-relative d-flex align-items-center justify-content-center text-white" style="height: 150px; background: linear-gradient(135deg, var(--brand-oxblood) 0%, #3d1b26 100%);">
-                        <div class="text-center">
-                            <i class="bi bi-door-open fs-1 text-white-50 d-block mb-1"></i>
-                            <span class="fw-bold fs-5" style="font-family: var(--font-heading);">Room <span th:text="${room.roomNumber}">101</span></span>
-                        </div>
+                    <!-- Room Image with Floating Badge -->
+                    <div class="position-relative overflow-hidden" style="height: 200px; background-color: var(--surface-muted);">
+                        <img th:if="${room.type != null and room.type.name() == 'DORMITORY'}" th:src="@{/images/dormitory_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
+                        <img th:if="${room.type != null and (room.type.name() == 'DOUBLE' or room.type.name() == 'TRIPLE')}" th:src="@{/images/deluxe_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
+                        <img th:if="${room.type != null and room.type.name() == 'SINGLE'}" th:src="@{/images/hero_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
+                        <img th:if="${room.type == null}" th:src="@{/images/hero_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
+                        <span class="img-floating-badge text-white"
+                              th:style="${room.type != null and room.type.name() == 'SINGLE'} ? 'background-color: var(--brand-oxblood);' : (${room.type != null and room.type.name() == 'DORMITORY'} ? 'background-color: var(--brand-tangerine);' : 'background-color: var(--brand-cobalt);')"
+                              th:text="${room.type != null ? room.type : 'ROOM'}">SINGLE</span>
                         <div class="position-absolute top-0 end-0 p-3">
                             <form th:action="@{/customer/favorites/{id}/toggle(id=${room.id})}" method="post" class="m-0">
                                 <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -65,9 +68,6 @@
                                     <i class="bi bi-heart-fill text-danger"></i>
                                 </button>
                             </form>
-                        </div>
-                        <div class="position-absolute bottom-0 start-0 p-3">
-                            <span class="badge bg-dark bg-opacity-75 rounded-pill px-3 py-1 small" th:text="${room.type}">SINGLE</span>
                         </div>
                     </div>
 

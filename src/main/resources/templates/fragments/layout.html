@@ -91,12 +91,12 @@
                     <!-- Notification Bell Dropdown (Admin) -->
                     <div class="dropdown me-1">
                         <button class="btn btn-outline-light btn-sm position-relative px-2 py-1" type="button" id="adminNotificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
-                            <i class="bi bi-bell-fill fs-6"></i>
-                            <span id="adminNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">
+                            <i class="bi bi-bell-fill fs-6" style="pointer-events: none;"></i>
+                            <span id="adminNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem; pointer-events: none;">
                                 0
                             </span>
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="adminNotificationBell" style="width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15);">
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="adminNotificationBell" style="width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15); z-index: 1060;">
                             <div class="d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light rounded-top">
                                 <span class="fw-bold small text-dark"><i class="bi bi-bell me-1 text-primary"></i>Admin Alerts</span>
                                 <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
@@ -182,12 +182,12 @@
                         <!-- Notification Bell Dropdown (Customer) -->
                         <div class="dropdown me-1">
                             <button class="btn btn-outline-light btn-sm position-relative px-2 py-1" type="button" id="userNotificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
-                                <i class="bi bi-bell-fill fs-6"></i>
-                                <span id="userNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem;">
+                                <i class="bi bi-bell-fill fs-6" style="pointer-events: none;"></i>
+                                <span id="userNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.65rem; pointer-events: none;">
                                     0
                                 </span>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="userNotificationBell" style="width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15);">
+                            <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="userNotificationBell" style="width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15); z-index: 1060;">
                                 <div class="d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light rounded-top">
                                     <span class="fw-bold small text-dark"><i class="bi bi-bell me-1 text-primary"></i>My Notifications</span>
                                     <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
@@ -304,15 +304,31 @@
 <div th:fragment="scripts">
     <!-- Bootstrap 5 JS bundle from CDN (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmBA16Syvr9sKxHHp8kJPY7oixDH"
             crossorigin="anonymous"></script>
 
     <!-- Floating Toast Container for Real-Time Popups -->
     <div id="stayeaseToastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
 
-    <!-- Prevent double submission on all forms -->
+    <!-- Alert Dismissal and Form Submission Handlers -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Unconditional dismiss handler for flash banners & alert cross buttons
+            document.addEventListener('click', function(e) {
+                const closeBtn = e.target.closest('[data-bs-dismiss="alert"], .alert .btn-close');
+                if (closeBtn) {
+                    const alertBox = closeBtn.closest('.alert');
+                    if (alertBox) {
+                        alertBox.classList.remove('show');
+                        setTimeout(function() {
+                            if (alertBox.parentNode) {
+                                alertBox.parentNode.removeChild(alertBox);
+                            }
+                        }, 150);
+                    }
+                }
+            });
+
+            // Prevent double submission on all forms
             document.querySelectorAll('form').forEach(function(form) {
                 form.addEventListener('submit', function(e) {
                     if (e.defaultPrevented) return;
@@ -391,11 +407,18 @@
                 `;
                 toastContainer.appendChild(toastDiv);
 
-                const bsToast = new bootstrap.Toast(toastDiv, { delay: 7000 });
-                bsToast.show();
-                toastDiv.addEventListener('hidden.bs.toast', function() {
-                    toastDiv.remove();
-                });
+                if (window.bootstrap && bootstrap.Toast) {
+                    const bsToast = new bootstrap.Toast(toastDiv, { delay: 7000 });
+                    bsToast.show();
+                    toastDiv.addEventListener('hidden.bs.toast', function() {
+                        toastDiv.remove();
+                    });
+                } else {
+                    toastDiv.classList.add('show');
+                    setTimeout(function() {
+                        if (toastDiv.parentNode) toastDiv.remove();
+                    }, 7000);
+                }
             }
 
             function renderNotificationList(listEl, notifications) {
@@ -409,15 +432,14 @@
                 notifications.forEach(n => {
                     const bgClass = n.read ? 'bg-white text-muted' : 'bg-light text-dark fw-medium border-start border-3 border-primary';
                     const icon = n.read ? 'bi-envelope-open' : 'bi-envelope-fill text-primary';
-                    const clickAction = n.linkUrl ? `onclick="window.location.href='${n.linkUrl}'"` : '';
-                    const cursorStyle = n.linkUrl ? 'cursor: pointer;' : '';
+                    const urlParam = n.linkUrl ? `'${n.linkUrl}'` : 'null';
                     html += `
-                        <div class="p-2 px-3 border-bottom notification-item ${bgClass}" style="${cursorStyle}" ${clickAction}>
+                        <div class="p-2 px-3 border-bottom notification-item ${bgClass}" style="cursor: pointer;" onclick="window.StayEaseNotifications.markRead(${n.id}, ${urlParam})">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="small fw-semibold text-truncate" style="max-width: 200px;"><i class="bi ${icon} me-1"></i>${escapeHtml(n.title)}</span>
+                                <span class="small fw-semibold text-truncate text-dark" style="max-width: 200px;"><i class="bi ${icon} me-1"></i>${escapeHtml(n.title)}</span>
                                 <span class="text-muted" style="font-size: 0.7rem;">${formatTime(n.createdAt)}</span>
                             </div>
-                            <div style="font-size: 0.8rem; line-height: 1.3;" class="mb-1">${escapeHtml(n.message)}</div>
+                            <div style="font-size: 0.8rem; line-height: 1.3;" class="mb-1 text-secondary">${escapeHtml(n.message)}</div>
                         </div>
                     `;
                 });
@@ -487,8 +509,53 @@
                 .catch(err => {});
             }
 
+            // Expose global notification helpers
+            window.StayEaseNotifications = {
+                fetchRecent: fetchRecentNotifications,
+                markAllRead: markAllRead,
+                markRead: function(id, linkUrl) {
+                    fetch('/api/notifications/' + id + '/read', {
+                        method: 'POST',
+                        headers: Object.assign({ 'Content-Type': 'application/json' }, getCsrfHeader()),
+                        credentials: 'same-origin'
+                    })
+                    .then(() => {
+                        fetchRecentNotifications();
+                        if (linkUrl) {
+                            window.location.href = linkUrl;
+                        }
+                    })
+                    .catch(() => {
+                        if (linkUrl) window.location.href = linkUrl;
+                    });
+                }
+            };
+
             document.addEventListener('DOMContentLoaded', function() {
                 fetchRecentNotifications();
+
+                // Attach click listeners to notification bell buttons
+                ['userNotificationBell', 'adminNotificationBell'].forEach(function(bellId) {
+                    const bellBtn = document.getElementById(bellId);
+                    if (!bellBtn) return;
+                    bellBtn.addEventListener('click', function() {
+                        fetchRecentNotifications();
+                        // Fallback manual dropdown toggle if Bootstrap is disabled or conflicting
+                        const menu = bellBtn.nextElementSibling;
+                        if (menu && (!window.bootstrap || !window.bootstrap.Dropdown)) {
+                            menu.classList.toggle('show');
+                        }
+                    });
+                });
+
+                // Close any open notification dropdown on outside click
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.dropdown')) {
+                        document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                            menu.classList.remove('show');
+                        });
+                    }
+                });
 
                 document.querySelectorAll('.mark-all-notifications-read').forEach(btn => {
                     btn.addEventListener('click', function(e) {
