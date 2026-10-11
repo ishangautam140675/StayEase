@@ -63,14 +63,18 @@
                     <label class="form-label small fw-semibold text-secondary mb-1">To Date</label>
                     <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}"/>
                 </div>
-                <div class="col-sm-2 col-md-1 d-grid">
-                    <button type="submit" class="btn btn-cobalt btn-sm">Filter</button>
+                <div class="col-sm-4 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-cobalt btn-sm flex-grow-1">Filter</button>
+                    <a th:href="@{/admin/reports/export/csv(startDate=${startDate}, endDate=${endDate})}"
+                       class="btn btn-outline-secondary btn-sm" title="Export Financial & Operations CSV">
+                        <i class="bi bi-download"></i> CSV
+                    </a>
                 </div>
             </form>
         </div>
 
         <!-- ── Financial & Operations Reporting KPI Grid (Date Window) ───── -->
-        <div class="row g-3 mb-4" th:if="${report != null}">
+        <div class="row g-3 mb-3" th:if="${report != null}">
             <!-- Total Revenue -->
             <div class="col-sm-6 col-lg-3">
                 <div class="card border-0 shadow-sm p-3 h-100"
@@ -132,6 +136,69 @@
                         <span th:text="${report.averageOccupancyRate}">0.0</span>%
                     </div>
                     <div class="small text-secondary">Across entire window period</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Advanced Hospitality Metrics Grid (ADR, RevPAR, Lead Time, Room Nights) ───── -->
+        <div class="row g-3 mb-4" th:if="${report != null}">
+            <!-- ADR -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">ADR (Avg Daily Rate)</span>
+                        <i class="bi bi-tag fs-5" style="color: var(--brand-cobalt);"></i>
+                    </div>
+                    <div class="h4 fw-bold mb-1" style="color: var(--brand-cobalt);">
+                        ₹<span th:text="${#numbers.formatDecimal(report.adr, 1, 2)}">0.00</span>
+                    </div>
+                    <div class="small text-secondary">Rev / Occupied Night</div>
+                </div>
+            </div>
+
+            <!-- RevPAR -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">RevPAR</span>
+                        <i class="bi bi-bar-chart-line fs-5" style="color: #0d6efd;"></i>
+                    </div>
+                    <div class="h4 fw-bold mb-1" style="color: #0d6efd;">
+                        ₹<span th:text="${#numbers.formatDecimal(report.revPar, 1, 2)}">0.00</span>
+                    </div>
+                    <div class="small text-secondary">Rev / Available Room</div>
+                </div>
+            </div>
+
+            <!-- Avg Booking Lead Time -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">Avg Booking Lead Time</span>
+                        <i class="bi bi-clock-history fs-5 text-warning"></i>
+                    </div>
+                    <div class="h4 fw-bold mb-1" style="color: var(--text-primary);">
+                        <span th:text="${report.averageLeadTimeDays}">0.0</span> <span class="fs-6 fw-normal text-muted">days</span>
+                    </div>
+                    <div class="small text-secondary">Advance booking window</div>
+                </div>
+            </div>
+
+            <!-- Room Nights Occupied -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm p-3 h-100"
+                     style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-secondary small fw-medium text-uppercase">Room Nights</span>
+                        <i class="bi bi-moon-stars fs-5 text-secondary"></i>
+                    </div>
+                    <div class="h4 fw-bold mb-1" style="color: var(--text-primary);">
+                        <span th:text="${report.totalRoomNightsOccupied}">0</span> <span class="fs-6 fw-normal text-muted">/ <span th:text="${report.totalRoomNightsPossible}">0</span></span>
+                    </div>
+                    <div class="small text-secondary">Occupied / Available nights</div>
                 </div>
             </div>
         </div>

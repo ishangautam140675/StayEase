@@ -198,7 +198,35 @@ public class DashboardService {
             averageOccupancyRate = BigDecimal.valueOf(avgRate).setScale(1, RoundingMode.HALF_UP).doubleValue();
         }
 
-        return new com.stayease.dto.AdminAnalyticsReport(
+        BigDecimal adr = BigDecimal.ZERO;
+        if (totalRoomNightsOccupied > 0 && totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
+            adr = totalRevenue.divide(BigDecimal.valueOf(totalRoomNightsOccupied), 2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal revPar = BigDecimal.ZERO;
+        if (totalRoomNightsPossible > 0 && totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
+            revPar = totalRevenue.divide(BigDecimal.valueOf(totalRoomNightsPossible), 2, RoundingMode.HALF_UP);
+        }
+
+        double averageLeadTimeDays = 0.0;
+        long totalLeadDays = 0;
+        long validLeadBookings = 0;
+        for (Booking b : bookingsInRange) {
+            if (b.getCreatedAt() != null && b.getCheckIn() != null) {
+                LocalDate bookedDate = b.getCreatedAt().toLocalDate();
+                if (!b.getCheckIn().isBefore(bookedDate)) {
+                    totalLeadDays += java.time.temporal.ChronoUnit.DAYS.between(bookedDate, b.getCheckIn());
+                    validLeadBookings++;
+                }
+            }
+        }
+        if (validLeadBookings > 0) {
+            averageLeadTimeDays = BigDecimal.valueOf((double) totalLeadDays / (double) validLeadBookings)
+                    .setScale(1, RoundingMode.HALF_UP)
+                    .doubleValue();
+        }
+
+        com.stayease.dto.AdminAnalyticsReport report = new com.stayease.dto.AdminAnalyticsReport(
                 start,
                 end,
                 totalBookings,
@@ -214,6 +242,12 @@ public class DashboardService {
                 averageOccupancyRate,
                 roomStats
         );
+        report.setAdr(adr);
+        report.setRevPar(revPar);
+        report.setAverageLeadTimeDays(averageLeadTimeDays);
+        report.setTotalRoomNightsOccupied(totalRoomNightsOccupied);
+        report.setTotalRoomNightsPossible(totalRoomNightsPossible);
+        return report;
     }
 
     /**

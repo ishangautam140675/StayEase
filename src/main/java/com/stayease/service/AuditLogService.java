@@ -56,4 +56,13 @@ public class AuditLogService {
         String cleanAction = (action != null && !action.trim().isEmpty() && !"ALL".equalsIgnoreCase(action)) ? action.trim() : null;
         return auditLogRepository.searchAuditLogs(cleanEmail, cleanAction, start, end, pageable);
     }
+
+    /**
+     * Searches unpaginated audit logs for CSV export.
+     */
+    public java.util.List<AdminAuditLog> searchAuditLogsForExport(String adminEmail, String action, LocalDateTime start, LocalDateTime end) {
+        String cleanEmail = (adminEmail != null && !adminEmail.trim().isEmpty()) ? adminEmail.trim() : null;
+        String cleanAction = (action != null && !action.trim().isEmpty() && !"ALL".equalsIgnoreCase(action)) ? action.trim() : null;
+        return auditLogRepository.searchAuditLogsForExport(cleanEmail, cleanAction, start, end);
+    }
 }

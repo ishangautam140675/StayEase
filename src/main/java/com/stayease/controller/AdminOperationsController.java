@@ -35,15 +35,18 @@ public class AdminOperationsController {
     private final SeasonalPricingService seasonalPricingService;
     private final AuditLogService auditLogService;
     private final RoomService roomService;
+    private final com.stayease.service.BookingExportService exportService;
 
     public AdminOperationsController(MaintenanceScheduleService maintenanceService,
                                      SeasonalPricingService seasonalPricingService,
                                      AuditLogService auditLogService,
-                                     RoomService roomService) {
+                                     RoomService roomService,
+                                     com.stayease.service.BookingExportService exportService) {
         this.maintenanceService = maintenanceService;
         this.seasonalPricingService = seasonalPricingService;
         this.auditLogService = auditLogService;
         this.roomService = roomService;
+        this.exportService = exportService;
     }
 
     // ── Maintenance Scheduling ─────────────────────────────────────────────
@@ -149,5 +152,22 @@ public class AdminOperationsController {
         model.addAttribute("filterEmail", adminEmail != null ? adminEmail.trim() : "");
         model.addAttribute("filterAction", action != null ? action.trim() : "ALL");
         return "admin/audit-logs";
+    }
+
+    @GetMapping("/audit-logs/export/csv")
+    public org.springframework.http.ResponseEntity<byte[]> exportAuditLogsCsv(
+            @RequestParam(value = "adminEmail", required = false) String adminEmail,
+            @RequestParam(value = "action", required = false) String action,
+            @RequestParam(value = "start", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        java.util.List<com.stayease.model.AdminAuditLog> logs = auditLogService.searchAuditLogsForExport(adminEmail, action, start, end);
+        String csv = exportService.auditLogsToCsv(logs);
+        byte[] bytes = csv.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        String filename = "stayease-audit-logs-" + LocalDate.now() + ".csv";
+        return org.springframework.http.ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .body(bytes);
     }
 }

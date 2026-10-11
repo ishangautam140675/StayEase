@@ -33,4 +33,17 @@ public interface AdminAuditLogRepository extends JpaRepository<AdminAuditLog, Lo
             @Param("end") LocalDateTime end,
             Pageable pageable
     );
+
+    @Query("SELECT l FROM AdminAuditLog l " +
+           "WHERE (:adminEmail IS NULL OR LOWER(l.adminEmail) LIKE LOWER(CONCAT('%', :adminEmail, '%'))) " +
+           "AND (:action IS NULL OR l.action = :action) " +
+           "AND (:start IS NULL OR l.timestamp >= :start) " +
+           "AND (:end IS NULL OR l.timestamp <= :end) " +
+           "ORDER BY l.timestamp DESC")
+    java.util.List<AdminAuditLog> searchAuditLogsForExport(
+            @Param("adminEmail") String adminEmail,
+            @Param("action") String action,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }

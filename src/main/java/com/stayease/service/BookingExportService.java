@@ -135,4 +135,68 @@ public class BookingExportService {
 
         return sanitized;
     }
+
+    /**
+     * Converts an analytics report to a structured CSV format.
+     */
+    public String analyticsReportToCsv(com.stayease.dto.AdminAnalyticsReport report) {
+        if (report == null) return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("StayEase Operational & Financial Report\r\n");
+        sb.append("Report Window,").append(report.getStartDate()).append(" to ").append(report.getEndDate()).append("\r\n\r\n");
+
+        sb.append("Metric,Value\r\n");
+        sb.append("Total Bookings,").append(report.getTotalBookings()).append("\r\n");
+        sb.append("Approved Bookings,").append(report.getApprovedBookings()).append("\r\n");
+        sb.append("Checked-in Bookings,").append(report.getCheckedInBookings()).append("\r\n");
+        sb.append("Checked-out Bookings,").append(report.getCheckedOutBookings()).append("\r\n");
+        sb.append("No-show Bookings,").append(report.getNoShowBookings()).append("\r\n");
+        sb.append("Cancelled Bookings,").append(report.getCancelledBookings()).append("\r\n");
+        sb.append("Rejected Bookings,").append(report.getRejectedBookings()).append("\r\n");
+        sb.append("Total Revenue (INR),").append(report.getTotalRevenue()).append("\r\n");
+        sb.append("Completed Revenue (INR),").append(report.getCompletedRevenue()).append("\r\n");
+        sb.append("Occupancy Rate (%),").append(report.getAverageOccupancyRate()).append("\r\n");
+        sb.append("Cancellation Rate (%),").append(report.getCancellationRate()).append("\r\n");
+        sb.append("Average Daily Rate - ADR (INR),").append(report.getAdr()).append("\r\n");
+        sb.append("Revenue Per Available Room - RevPAR (INR),").append(report.getRevPar()).append("\r\n");
+        sb.append("Average Booking Lead Time (Days),").append(report.getAverageLeadTimeDays()).append("\r\n");
+        sb.append("Total Room Nights Occupied,").append(report.getTotalRoomNightsOccupied()).append("\r\n");
+        sb.append("Total Room Nights Available,").append(report.getTotalRoomNightsPossible()).append("\r\n\r\n");
+
+        sb.append("Room Number,Room Type,Nights Occupied,Utilization Rate (%),Revenue (INR)\r\n");
+        if (report.getRoomUtilizations() != null) {
+            for (com.stayease.dto.AdminAnalyticsReport.RoomUtilizationStat stat : report.getRoomUtilizations()) {
+                sb.append(escapeCsvField(stat.getRoomNumber())).append(",")
+                  .append(escapeCsvField(stat.getRoomType())).append(",")
+                  .append(stat.getNightsOccupied()).append(",")
+                  .append(stat.getUtilizationRate()).append(",")
+                  .append(stat.getRevenue())
+                  .append("\r\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts a list of administrative audit logs to CSV format.
+     */
+    public String auditLogsToCsv(java.util.List<com.stayease.model.AdminAuditLog> logs) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Audit ID,Timestamp,Administrator,Action,Entity Type,Entity ID,Details\r\n");
+        if (logs != null) {
+            for (com.stayease.model.AdminAuditLog log : logs) {
+                String idStr = log.getId() != null ? String.valueOf(log.getId()) : "";
+                String timeStr = log.getTimestamp() != null ? log.getTimestamp().format(DATE_TIME_FORMATTER) : "";
+                sb.append(escapeCsvField(idStr)).append(",")
+                  .append(escapeCsvField(timeStr)).append(",")
+                  .append(escapeCsvField(log.getAdminEmail())).append(",")
+                  .append(escapeCsvField(log.getAction())).append(",")
+                  .append(escapeCsvField(log.getEntityType())).append(",")
+                  .append(escapeCsvField(log.getEntityId())).append(",")
+                  .append(escapeCsvField(log.getDetails()))
+                  .append("\r\n");
+            }
+        }
+        return sb.toString();
+    }
 }

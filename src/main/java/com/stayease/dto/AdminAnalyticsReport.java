@@ -23,6 +23,11 @@ public class AdminAnalyticsReport {
     private BigDecimal completedRevenue;
     private double cancellationRate;
     private double averageOccupancyRate;
+    private BigDecimal adr = BigDecimal.ZERO;
+    private BigDecimal revPar = BigDecimal.ZERO;
+    private double averageLeadTimeDays = 0.0;
+    private long totalRoomNightsOccupied = 0;
+    private long totalRoomNightsPossible = 0;
     private List<RoomUtilizationStat> roomUtilizations;
 
     public AdminAnalyticsReport() {
@@ -159,6 +164,46 @@ public class AdminAnalyticsReport {
 
     public void setRoomUtilizations(List<RoomUtilizationStat> roomUtilizations) {
         this.roomUtilizations = roomUtilizations;
+    }
+
+    public BigDecimal getAdr() {
+        return adr != null ? adr : BigDecimal.ZERO;
+    }
+
+    public void setAdr(BigDecimal adr) {
+        this.adr = adr;
+    }
+
+    public BigDecimal getRevPar() {
+        return revPar != null ? revPar : BigDecimal.ZERO;
+    }
+
+    public void setRevPar(BigDecimal revPar) {
+        this.revPar = revPar;
+    }
+
+    public double getAverageLeadTimeDays() {
+        return averageLeadTimeDays;
+    }
+
+    public void setAverageLeadTimeDays(double averageLeadTimeDays) {
+        this.averageLeadTimeDays = averageLeadTimeDays;
+    }
+
+    public long getTotalRoomNightsOccupied() {
+        return totalRoomNightsOccupied;
+    }
+
+    public void setTotalRoomNightsOccupied(long totalRoomNightsOccupied) {
+        this.totalRoomNightsOccupied = totalRoomNightsOccupied;
+    }
+
+    public long getTotalRoomNightsPossible() {
+        return totalRoomNightsPossible;
+    }
+
+    public void setTotalRoomNightsPossible(long totalRoomNightsPossible) {
+        this.totalRoomNightsPossible = totalRoomNightsPossible;
     }
 
     public static class RoomUtilizationStat {

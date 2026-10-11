@@ -86,6 +86,12 @@
                     </h2>
                     <p class="small text-secondary mb-0">Chronological activity record with actor email, action type, and details</p>
                 </div>
+                <div>
+                    <a th:href="@{/admin/operations/audit-logs/export/csv(adminEmail=${filterEmail}, action=${filterAction})}"
+                       class="btn btn-outline-secondary btn-sm px-3" title="Export filtered audit logs to CSV">
+                        <i class="bi bi-download me-1"></i>Export CSV
+                    </a>
+                </div>
             </div>
 
             <div th:if="${logs != null and !logs.isEmpty()}" class="table-responsive">

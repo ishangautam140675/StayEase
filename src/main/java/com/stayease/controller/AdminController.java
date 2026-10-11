@@ -18,10 +18,14 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final DashboardService dashboardService;
+    private final com.stayease.service.BookingExportService exportService;
 
-    public AdminController(UserRepository userRepository, DashboardService dashboardService) {
+    public AdminController(UserRepository userRepository,
+                           DashboardService dashboardService,
+                           com.stayease.service.BookingExportService exportService) {
         this.userRepository = userRepository;
         this.dashboardService = dashboardService;
+        this.exportService = exportService;
     }
 
     @GetMapping("/admin/dashboard")
@@ -45,5 +49,22 @@ public class AdminController {
         model.addAttribute("startDate", report.getStartDate());
         model.addAttribute("endDate", report.getEndDate());
         return "admin/dashboard";
+    }
+
+    @GetMapping("/admin/reports/export/csv")
+    public org.springframework.http.ResponseEntity<byte[]> exportAnalyticsCsv(
+            @org.springframework.web.bind.annotation.RequestParam(value = "startDate", required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+            @org.springframework.web.bind.annotation.RequestParam(value = "endDate", required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate) {
+        com.stayease.dto.AdminAnalyticsReport report = dashboardService.generateAnalyticsReport(startDate, endDate);
+        String csv = exportService.analyticsReportToCsv(report);
+        byte[] bytes = csv.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        String filename = "stayease-analytics-" + report.getStartDate() + "-to-" + report.getEndDate() + ".csv";
+        return org.springframework.http.ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .body(bytes);
     }
 }
