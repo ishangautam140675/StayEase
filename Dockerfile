@@ -56,7 +56,7 @@ ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryErro
 
 # Container Healthcheck via Spring Boot Actuator
 HEALTHCHECK --interval=20s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
 
 # Execute Spring Boot Application
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/stayease.jar"]
