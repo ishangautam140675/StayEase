@@ -248,8 +248,29 @@ Recorded in [`.agents/rules/ui-design-rules.md`](.agents/rules/ui-design-rules.m
 
 ---
 
-## 17. Git & GitHub Status
+## 17. Phase 15: Admin CSV Export of Bookings
+* **CSV Export Service:**
+  * Implemented [`BookingExportService.java`](src/main/java/com/stayease/service/BookingExportService.java) with `toCsv(List<Booking>)`.
+  * Strict header definition: `Booking ID,Customer name,Customer email,Room,Check-in,Checkout,Guests,Status,Total price,Requested on`.
+  * Robust RFC-4180 escaping: fields with commas, quotes, or newlines are wrapped in double quotes and inner quotes doubled (`""`).
+  * Formula injection mitigation: fields starting with `=`, `+`, `-`, or `@` are prefixed with `'`.
+  * Total price formatted with 2 decimal places (`setScale(2, RoundingMode.HALF_UP)`).
+* **Controller Endpoint:**
+  * Added `GET /admin/bookings/export?status=` to [`AdminBookingController.java`](src/main/java/com/stayease/controller/AdminBookingController.java).
+  * Returns `ResponseEntity<byte[]>` with `Content-Type: text/csv; charset=UTF-8` and `Content-Disposition: attachment; filename=bookings-YYYY-MM-DD.csv`.
+  * Preserves and respects the active booking status filter (`PENDING`, `APPROVED`, etc.).
+* **Template UI:**
+  * Added "Export CSV" button in [`admin/bookings.html`](src/main/resources/templates/admin/bookings.html) that dynamically binds `th:href="@{/admin/bookings/export(status=${selectedStatus})}"`.
+* **Tests:**
+  * Created [`BookingExportServiceTest.java`](src/test/java/com/stayease/service/BookingExportServiceTest.java): validates header row, comma escaping, quote escaping, formula injection neutralization, and formatted data rows.
+  * Extended [`AdminBookingControllerTest.java`](src/test/java/com/stayease/controller/AdminBookingControllerTest.java): validates ADMIN 200 with content-type/disposition headers, filter limits, CUSTOMER 403, and anonymous login redirect.
+  * Added `/admin/bookings/export` route matrix to [`SecurityAccessTest.java`](src/test/java/com/stayease/security/SecurityAccessTest.java).
+  * Total suite: 178 tests passing (`BUILD SUCCESS`).
+
+---
+
+## 18. Git & GitHub Status
 * **Branch:** `main`
 * **Remote:** [https://github.com/ishangautam140675/StayEase.git](https://github.com/ishangautam140675/StayEase.git)
-* **Status:** All tests passing (`BUILD SUCCESS`, 167 tests across all 14 phases).
+* **Status:** All tests passing (`BUILD SUCCESS`, 178 tests across all 15 phases).
 

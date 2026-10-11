@@ -143,6 +143,11 @@ class SecurityAccessTest {
             "/admin/bookings,     CUSTOMER,  FORBIDDEN",
             "/admin/bookings,     ADMIN,     OK",
 
+            // /admin/bookings/export — anonymous redirects, CUSTOMER 403, ADMIN 200 (Phase 15)
+            "/admin/bookings/export, ANONYMOUS, REDIRECT_LOGIN",
+            "/admin/bookings/export, CUSTOMER,  FORBIDDEN",
+            "/admin/bookings/export, ADMIN,     OK",
+
             // /customer/bookings/{id}/cancel — anonymous redirects, ADMIN 403 (Phase 12)
             "/customer/bookings/1/cancel, ANONYMOUS, REDIRECT_LOGIN",
             "/customer/bookings/1/cancel, ADMIN,     FORBIDDEN"

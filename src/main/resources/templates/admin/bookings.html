@@ -27,7 +27,11 @@
                 </h1>
                 <p class="text-secondary mb-0">Review booking requests, verify date availability, and approve or reject reservations.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/admin/bookings/export(status=${selectedStatus})}"
+                   class="btn btn-outline-success px-3">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV
+                </a>
                 <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary px-3">
                     <i class="bi bi-door-closed me-1"></i>Manage Rooms
                 </a>

@@ -200,4 +200,65 @@ class AdminBookingControllerTest {
                 .andExpect(model().attributeExists("counts"))
                 .andExpect(model().attribute("selectedStatus", "PENDING"));
     }
+
+    @Test
+    @DisplayName("GET /admin/bookings/export returns CSV with 200, correct headers, and honors status filter")
+    void admin_canExportBookingsCsv_andFilterLimitsRows() throws Exception {
+        // Create an APPROVED booking as well
+        Booking approvedBooking = new Booking(
+                customer, room,
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(12),
+                2,
+                BookingStatus.APPROVED,
+                null
+        );
+        bookingRepository.save(approvedBooking);
+
+        String expectedFilename = "bookings-" + LocalDate.now() + ".csv";
+
+        // 1. Export without filter or with ALL -> contains both
+        mockMvc.perform(get("/admin/bookings/export")
+                        .with(user(admin.getEmail()).roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=" + expectedFilename))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Booking ID,Customer name")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("PENDING")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("APPROVED")));
+
+        // 2. Export with status=PENDING -> limits rows to PENDING only
+        mockMvc.perform(get("/admin/bookings/export")
+                        .param("status", "PENDING")
+                        .with(user(admin.getEmail()).roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
+                .andExpect(header().string("Content-Disposition", "attachment; filename=" + expectedFilename))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("PENDING")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("APPROVED"))));
+
+        // 3. Export with status=APPROVED -> limits rows to APPROVED only
+        mockMvc.perform(get("/admin/bookings/export")
+                        .param("status", "APPROVED")
+                        .with(user(admin.getEmail()).roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("APPROVED")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("PENDING"))));
+    }
+
+    @Test
+    @DisplayName("CUSTOMER gets 403 on /admin/bookings/export")
+    void customer_exportBookings_forbidden() throws Exception {
+        mockMvc.perform(get("/admin/bookings/export")
+                        .with(user(customer.getEmail()).roles("CUSTOMER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Anonymous user is redirected to login on /admin/bookings/export")
+    void anonymous_exportBookings_redirectedToLogin() throws Exception {
+        mockMvc.perform(get("/admin/bookings/export"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
 }

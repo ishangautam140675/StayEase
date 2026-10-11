@@ -20,6 +20,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Map;
 
+import com.stayease.service.BookingExportService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+
 /**
  * Controller for administrative booking reviews, approvals, and rejections.
  */
@@ -28,9 +35,40 @@ import java.util.Map;
 public class AdminBookingController {
 
     private final BookingService bookingService;
+    private final BookingExportService bookingExportService;
 
-    public AdminBookingController(BookingService bookingService) {
+    public AdminBookingController(BookingService bookingService,
+                                  BookingExportService bookingExportService) {
         this.bookingService = bookingService;
+        this.bookingExportService = bookingExportService;
+    }
+
+    /**
+     * Exports bookings as CSV honoring the status filter.
+     */
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportBookings(@RequestParam(value = "status", required = false) String statusParam) {
+        BookingStatus status = null;
+        if (statusParam != null && !statusParam.trim().isEmpty() && !"ALL".equalsIgnoreCase(statusParam)) {
+            try {
+                status = BookingStatus.valueOf(statusParam.trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+                // Ignore invalid status and leave status as null (or falls back to all)
+            }
+        }
+
+        List<Booking> bookings = bookingService.listForAdmin(status);
+        String csvContent = bookingExportService.toCsv(bookings);
+        byte[] csvBytes = csvContent.getBytes(StandardCharsets.UTF_8);
+
+        String filename = "bookings-" + LocalDate.now() + ".csv";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(csvBytes);
     }
 
     /**
