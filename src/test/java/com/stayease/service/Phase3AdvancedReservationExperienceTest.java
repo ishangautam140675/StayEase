@@ -335,4 +335,82 @@ class Phase3AdvancedReservationExperienceTest {
         assertThat(breakdown.getTotalPrice()).isEqualByComparingTo(new BigDecimal("600.00"));
         assertThat(breakdown.getNightlyItems()).hasSize(4);
     }
+
+    @Test
+    @DisplayName("Booking modification: customer modifies dates and guests within allowed window, price is recalculated and audit history logged")
+    void testModifyBooking_successfulUpdate() {
+        LocalDate origIn = LocalDate.now().plusDays(70);
+        LocalDate origOut = LocalDate.now().plusDays(73); // 3 nights @ 150 = 450
+        Booking b = bookingService.createBooking(testCustomer1.getEmail(),
+                new BookingForm(testRoom.getId(), origIn, origOut, 1, "Original"));
+
+        assertThat(b.getTotalPrice()).isEqualByComparingTo(new BigDecimal("450.00"));
+
+        // Modify to 4 nights and 2 guests
+        LocalDate newIn = LocalDate.now().plusDays(71);
+        LocalDate newOut = LocalDate.now().plusDays(75); // 4 nights @ 150 = 600
+        BookingForm modForm = new BookingForm(testRoom.getId(), newIn, newOut, 2, "Extended stay");
+
+        Booking modified = bookingService.modifyBooking(b.getId(), testCustomer1.getEmail(), modForm);
+
+        assertThat(modified.getCheckIn()).isEqualTo(newIn);
+        assertThat(modified.getCheckOut()).isEqualTo(newOut);
+        assertThat(modified.getGuests()).isEqualTo(2);
+        assertThat(modified.getNights()).isEqualTo(4);
+        assertThat(modified.getTotalPrice()).isEqualByComparingTo(new BigDecimal("600.00"));
+
+        // Audit history must contain modification entry
+        List<BookingStatusHistory> history = historyRepository.findByBookingIdOrderByChangedAtAsc(b.getId());
+        assertThat(history).anyMatch(h -> h.getReason() != null && h.getReason().contains("Modified by guest"));
+    }
+
+    @Test
+    @DisplayName("Booking modification: modification beyond cutoff deadline is rejected")
+    void testModifyBooking_pastCutoff_rejected() {
+        LocalDate nearIn = LocalDate.now();
+        LocalDate nearOut = LocalDate.now().plusDays(2);
+        Booking nearBooking = bookingService.createBooking(testCustomer1.getEmail(),
+                new BookingForm(testRoom.getId(), nearIn, nearOut, 1, "Near booking"));
+
+        BookingForm modForm = new BookingForm(testRoom.getId(), nearIn.plusDays(1), nearOut.plusDays(2), 1);
+
+        assertThatThrownBy(() -> bookingService.modifyBooking(nearBooking.getId(), testCustomer1.getEmail(), modForm))
+                .isInstanceOf(InvalidBookingStateException.class)
+                .hasMessageContaining("modification deadline");
+    }
+
+    @Test
+    @DisplayName("Booking modification: conflicting dates with another booking are rejected")
+    void testModifyBooking_dateConflict_rejected() {
+        LocalDate b1In = LocalDate.now().plusDays(80);
+        LocalDate b1Out = LocalDate.now().plusDays(83);
+        Booking b1 = bookingService.createBooking(testCustomer1.getEmail(),
+                new BookingForm(testRoom.getId(), b1In, b1Out, 1, "B1"));
+
+        LocalDate b2In = LocalDate.now().plusDays(85);
+        LocalDate b2Out = LocalDate.now().plusDays(88);
+        Booking b2 = bookingService.createBooking(testCustomer2.getEmail(),
+                new BookingForm(testRoom.getId(), b2In, b2Out, 1, "B2"));
+
+        // Customer 1 tries to extend b1 so it intersects b2 (days 80 to 86)
+        BookingForm modForm = new BookingForm(testRoom.getId(), b1In, LocalDate.now().plusDays(86), 1);
+
+        assertThatThrownBy(() -> bookingService.modifyBooking(b1.getId(), testCustomer1.getEmail(), modForm))
+                .isInstanceOf(BookingConflictException.class);
+    }
+
+    @Test
+    @DisplayName("Booking modification: customer cannot modify another customer's booking")
+    void testModifyBooking_unauthorized_rejected() {
+        LocalDate bIn = LocalDate.now().plusDays(90);
+        LocalDate bOut = LocalDate.now().plusDays(93);
+        Booking b = bookingService.createBooking(testCustomer1.getEmail(),
+                new BookingForm(testRoom.getId(), bIn, bOut, 1, "B"));
+
+        BookingForm modForm = new BookingForm(testRoom.getId(), bIn.plusDays(1), bOut.plusDays(2), 1);
+
+        assertThatThrownBy(() -> bookingService.modifyBooking(b.getId(), testCustomer2.getEmail(), modForm))
+                .isInstanceOf(org.springframework.security.access.AccessDeniedException.class);
+    }
 }
+

@@ -362,6 +362,110 @@ public class CustomerController {
     }
 
     /**
+     * Resolves generic booking detail link by redirecting to receipt/summary view.
+     */
+    @GetMapping("/customer/bookings/{id}")
+    public String viewBooking(@PathVariable("id") Long id) {
+        return "redirect:/customer/bookings/" + id + "/receipt";
+    }
+
+    /**
+     * Displays the booking modification form for allowed reservation states (Phase 3).
+     */
+    @GetMapping("/customer/bookings/{id}/modify")
+    public String showModifyForm(@PathVariable("id") Long id,
+                                 Principal principal,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        Booking booking = bookingService.getBookingWithDetails(id, principal.getName());
+        if (!booking.isCancellable(bookingService.getCancellationLeadHours())) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Modification window has closed (policy requires at least " +
+                    bookingService.getCancellationLeadHours() + " hours notice before check-in).");
+            return "redirect:/customer/bookings";
+        }
+        if (booking.getStatus() != com.stayease.model.BookingStatus.PENDING && booking.getStatus() != com.stayease.model.BookingStatus.APPROVED) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only PENDING or APPROVED bookings can be modified.");
+            return "redirect:/customer/bookings";
+        }
+
+        BookingForm form = new BookingForm();
+        form.setRoomId(booking.getRoom().getId());
+        form.setCheckIn(booking.getCheckIn());
+        form.setCheckOut(booking.getCheckOut());
+        form.setGuests(booking.getGuests());
+
+        model.addAttribute("booking", booking);
+        model.addAttribute("bookingForm", form);
+        model.addAttribute("room", booking.getRoom());
+        if (maintenanceScheduleRepository != null) {
+            model.addAttribute("maintenanceSchedules",
+                    maintenanceScheduleRepository.findUpcomingByRoomId(booking.getRoom().getId(), LocalDate.now()));
+        }
+        model.addAttribute("priceBreakdown", bookingService.calculatePriceBreakdown(booking.getRoom(), form.getCheckIn(), form.getCheckOut()));
+        model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+        model.addAttribute("today", LocalDate.now());
+        return "customer/booking-modify";
+    }
+
+    /**
+     * Processes customer booking modification request (Phase 3).
+     */
+    @PostMapping("/customer/bookings/{id}/modify")
+    public String processModify(@PathVariable("id") Long id,
+                                @Valid @ModelAttribute("bookingForm") BookingForm form,
+                                BindingResult bindingResult,
+                                Principal principal,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            Booking booking = bookingService.getBookingWithDetails(id, principal.getName());
+            model.addAttribute("booking", booking);
+            model.addAttribute("room", booking.getRoom());
+            if (maintenanceScheduleRepository != null) {
+                model.addAttribute("maintenanceSchedules",
+                        maintenanceScheduleRepository.findUpcomingByRoomId(booking.getRoom().getId(), LocalDate.now()));
+            }
+            model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+            model.addAttribute("today", LocalDate.now());
+            return "customer/booking-modify";
+        }
+
+        try {
+            bookingService.modifyBooking(id, principal.getName(), form);
+            redirectAttributes.addFlashAttribute("successMessage", "Booking details successfully modified.");
+            return "redirect:/customer/bookings/" + id + "/receipt";
+        } catch (com.stayease.exception.BookingConflictException ex) {
+            model.addAttribute("errorMessage", "The requested dates conflict with another reservation for this room.");
+            Booking booking = bookingService.getBookingWithDetails(id, principal.getName());
+            model.addAttribute("booking", booking);
+            model.addAttribute("room", booking.getRoom());
+            if (maintenanceScheduleRepository != null) {
+                model.addAttribute("maintenanceSchedules",
+                        maintenanceScheduleRepository.findUpcomingByRoomId(booking.getRoom().getId(), LocalDate.now()));
+            }
+            model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+            model.addAttribute("today", LocalDate.now());
+            return "customer/booking-modify";
+        } catch (BookingValidationException ex) {
+            bindingResult.rejectValue(ex.getField(), "validation.booking", ex.getMessage());
+            Booking booking = bookingService.getBookingWithDetails(id, principal.getName());
+            model.addAttribute("booking", booking);
+            model.addAttribute("room", booking.getRoom());
+            if (maintenanceScheduleRepository != null) {
+                model.addAttribute("maintenanceSchedules",
+                        maintenanceScheduleRepository.findUpcomingByRoomId(booking.getRoom().getId(), LocalDate.now()));
+            }
+            model.addAttribute("cancellationLeadHours", bookingService.getCancellationLeadHours());
+            model.addAttribute("today", LocalDate.now());
+            return "customer/booking-modify";
+        } catch (InvalidBookingStateException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/customer/bookings";
+        }
+    }
+
+    /**
      * Renders printable booking confirmation and receipt with lifecycle audit timeline (Phase 3).
      */
     @GetMapping("/customer/bookings/{id}/receipt")

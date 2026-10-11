@@ -166,6 +166,13 @@
                                     <i class="bi bi-receipt me-1"></i>Receipt
                                 </a>
 
+                                <a th:if="${b.isCancellable(cancellationLeadHours) and (b.status.name() == 'PENDING' or b.status.name() == 'APPROVED')}"
+                                   th:href="@{/customer/bookings/{id}/modify(id=${b.id})}"
+                                   class="btn btn-outline-primary btn-sm px-2 me-1 fw-medium"
+                                   title="Modify Dates or Guests">
+                                    <i class="bi bi-pencil-square me-1"></i>Modify
+                                </a>
+
                                 <form th:if="${b.isCancellable(cancellationLeadHours)}"
                                       th:action="@{/customer/bookings/{id}/cancel(id=${b.id})}"
                                       method="post"

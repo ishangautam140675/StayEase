@@ -770,6 +770,169 @@ public class BookingService {
     }
 
     /**
+     * Modifies an existing booking's dates, room, or guests within the allowed cancellation/modification window.
+     *
+     * @param bookingId the booking ID to modify
+     * @param userEmail the authenticated customer's email
+     * @param form the new booking details (checkIn, checkOut, guests, optional roomId)
+     * @return the updated Booking
+     */
+    @Transactional
+    public Booking modifyBooking(Long bookingId, String userEmail, BookingForm form) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new com.stayease.exception.BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getUser() == null || !booking.getUser().getEmail().equalsIgnoreCase(userEmail)) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to modify this booking.");
+        }
+
+        if (booking.getStatus() != BookingStatus.PENDING && booking.getStatus() != BookingStatus.APPROVED) {
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be modified because its status is " + booking.getStatus() +
+                    " (only PENDING or APPROVED bookings can be modified)."
+            );
+        }
+
+        if (!booking.isCancellable(cancellationLeadHours)) {
+            java.time.LocalDateTime deadline = booking.getCancellationDeadline(cancellationLeadHours);
+            String deadlineStr = deadline != null
+                    ? deadline.format(java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a"))
+                    : "the check-in date";
+            throw new com.stayease.exception.InvalidBookingStateException(
+                    "Booking #" + bookingId + " cannot be modified because the modification deadline (" +
+                    deadlineStr + ") has passed (policy: modification allowed up to " +
+                    cancellationLeadHours + " hours before check-in)."
+            );
+        }
+
+        Long targetRoomId = form.getRoomId() != null ? form.getRoomId() : booking.getRoom().getId();
+        Room room = roomRepository.findByIdForUpdate(targetRoomId)
+                .orElseThrow(() -> new BookingValidationException("roomId", "The selected room does not exist."));
+
+        if (!room.isActive()) {
+            throw new BookingValidationException("roomId", "The selected room is inactive and cannot be booked.");
+        }
+
+        if (room.isUnderMaintenance()) {
+            throw new BookingValidationException("roomId", "Room " + room.getRoomNumber() + " is currently under maintenance and cannot be reserved.");
+        }
+
+        LocalDate today = LocalDate.now();
+        if (form.getCheckIn() == null) {
+            throw new BookingValidationException("checkIn", "Check-in date is required.");
+        }
+        if (form.getCheckIn().isBefore(today)) {
+            throw new BookingValidationException("checkIn", "Check-in date cannot be in the past.");
+        }
+
+        if (form.getCheckOut() == null) {
+            throw new BookingValidationException("checkOut", "Check-out date is required.");
+        }
+        if (!form.getCheckOut().isAfter(form.getCheckIn())) {
+            throw new BookingValidationException("checkOut", "Check-out date must be after the check-in date (minimum 1 night stay).");
+        }
+
+        if (form.getGuests() == null || form.getGuests() < 1) {
+            throw new BookingValidationException("guests", "Number of guests must be at least 1.");
+        }
+        if (form.getGuests() > room.getCapacity()) {
+            throw new BookingValidationException("guests",
+                    "Number of guests (" + form.getGuests() + ") exceeds the room capacity of " + room.getCapacity() + ".");
+        }
+
+        if (maintenanceScheduleRepository != null) {
+            List<com.stayease.model.RoomMaintenanceSchedule> maintenanceConflicts = maintenanceScheduleRepository.findOverlapping(
+                    room.getId(),
+                    form.getCheckIn(),
+                    form.getCheckOut()
+            );
+            if (!maintenanceConflicts.isEmpty()) {
+                com.stayease.model.RoomMaintenanceSchedule ms = maintenanceConflicts.get(0);
+                java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy", java.util.Locale.ENGLISH);
+                throw new BookingValidationException(
+                        "checkIn",
+                        String.format("Room %s is under scheduled maintenance from %s to %s and cannot be booked for these dates.",
+                                room.getRoomNumber(),
+                                ms.getStartDate().format(dtf),
+                                ms.getEndDate().format(dtf))
+                );
+            }
+        }
+
+        // Overlap detection: exclude this booking's own ID
+        List<Booking> conflicts = bookingRepository.findOverlapping(
+                room.getId(),
+                form.getCheckIn(),
+                form.getCheckOut(),
+                BookingStatus.BLOCKING,
+                booking.getId()
+        );
+
+        if (!conflicts.isEmpty()) {
+            throw new BookingConflictException(conflicts);
+        }
+
+        long nights = calculateNights(form.getCheckIn(), form.getCheckOut());
+        BigDecimal pricePerNight = (seasonalPricingService != null)
+                ? seasonalPricingService.calculateStayAverageRate(room, form.getCheckIn(), form.getCheckOut())
+                : room.getPricePerNight();
+        BigDecimal total = calculateTotalPrice(pricePerNight, nights);
+
+        BookingStatus priorStatus = booking.getStatus();
+        boolean datesOrRoomChanged = !booking.getCheckIn().equals(form.getCheckIn())
+                || !booking.getCheckOut().equals(form.getCheckOut())
+                || !booking.getRoom().getId().equals(room.getId());
+
+        BookingStatus newStatus = (datesOrRoomChanged && priorStatus == BookingStatus.APPROVED)
+                ? BookingStatus.PENDING
+                : priorStatus;
+
+        booking.setRoom(room);
+        booking.setCheckIn(form.getCheckIn());
+        booking.setCheckOut(form.getCheckOut());
+        booking.setGuests(form.getGuests());
+        booking.setPricePerNightAtBooking(pricePerNight);
+        booking.setTotalPrice(total);
+        booking.setStatus(newStatus);
+
+        String changeSummary = String.format("Modified by guest: %s to %s, %d guest(s), Room %s",
+                form.getCheckIn(), form.getCheckOut(), form.getGuests(), room.getRoomNumber());
+        booking.addStatusHistory(priorStatus, newStatus, userEmail, changeSummary);
+
+        Booking saved = bookingRepository.save(booking);
+
+        if (auditLogService != null) {
+            auditLogService.log(
+                    userEmail,
+                    "BOOKING_MODIFIED",
+                    "BOOKING",
+                    String.valueOf(saved.getId()),
+                    "Guest modified booking #" + saved.getId() + " (" + saved.getBookingReference() + "): " + changeSummary
+            );
+        }
+
+        if (notificationService != null) {
+            try {
+                notificationService.notifyUser(
+                        userEmail,
+                        "Booking Modified",
+                        "Your reservation (" + saved.getBookingReference() + ") was updated for " + saved.getCheckIn() + " to " + saved.getCheckOut() + ".",
+                        "BOOKING_MODIFIED",
+                        "/customer/bookings/" + saved.getId()
+                );
+                notificationService.notifyAdmin(
+                        "Booking Modified by Guest",
+                        "Guest " + userEmail + " modified booking (" + saved.getBookingReference() + "): " + changeSummary,
+                        "BOOKING_MODIFIED",
+                        "/admin/bookings"
+                );
+            } catch (Exception e) {}
+        }
+
+        return saved;
+    }
+
+    /**
      * Retrieves paginated bookings for a customer filtered by status and optional search term.
      */
     public Page<Booking> getBookingsForUser(String userEmail, BookingStatus status, String query, Pageable pageable) {
