@@ -77,6 +77,23 @@ public class RoomService {
     }
 
     /**
+     * Searches and filters rooms for the administrative console by query keyword, room type,
+     * active status, and maintenance status.
+     */
+    public List<Room> searchRoomsForAdmin(String query, RoomType type, Boolean active, Boolean underMaintenance) {
+        String cleanQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        return roomRepository.searchRoomsForAdmin(cleanQuery, type, active, underMaintenance);
+    }
+
+    /**
+     * Searches and filters rooms for the administrative console with pagination.
+     */
+    public Page<Room> searchRoomsForAdmin(String query, RoomType type, Boolean active, Boolean underMaintenance, Pageable pageable) {
+        String cleanQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        return roomRepository.searchRoomsForAdmin(cleanQuery, type, active, underMaintenance, pageable);
+    }
+
+    /**
      * Retrieves a room by ID for editing (active or inactive).
      *
      * @throws RoomNotFoundException if room does not exist

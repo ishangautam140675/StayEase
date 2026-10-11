@@ -32,6 +32,46 @@
             </div>
         </div>
 
+        <!-- Filter Card -->
+        <div class="card border-0 shadow-sm p-3 mb-4"
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+            <form th:action="@{/admin/rooms}" method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Search Room</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="query" class="form-control border-start-0"
+                               placeholder="Room # or description..." th:value="${query}"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Room Type</label>
+                    <select name="type" class="form-select form-select-sm">
+                        <option value="ALL" th:selected="${selectedType == 'ALL'}">All Types</option>
+                        <option th:each="t : ${roomTypes}" th:value="${t.name()}" th:text="${t.name()}"
+                                th:selected="${selectedType == t.name()}">SINGLE</option>
+                    </select>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Availability Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="ALL" th:selected="${selectedStatus == 'ALL'}">All Statuses</option>
+                        <option value="ACTIVE" th:selected="${selectedStatus == 'ACTIVE'}">Active</option>
+                        <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">Inactive</option>
+                        <option value="MAINTENANCE" th:selected="${selectedStatus == 'MAINTENANCE'}">Under Maintenance</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-cobalt btn-sm w-100">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
         <!-- Table Card -->
         <div class="card border-0 shadow-sm" style="background: var(--surface-card); border-radius: 12px; overflow: hidden;">
             <div class="card-body p-0">
@@ -100,6 +140,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <nav th:if="${page != null and page.totalPages > 1}"
+             aria-label="Room navigation"
+             class="d-flex justify-content-center my-4">
+            <ul class="pagination pagination-md shadow-sm mb-0">
+                <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${page.first} ? '#' : @{/admin/rooms(page=${page.number}, query=${query}, type=${selectedType}, status=${selectedStatus})}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li th:each="i : ${#numbers.sequence(1, page.totalPages)}"
+                    class="page-item"
+                    th:classappend="${i == (page.number + 1)} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/admin/rooms(page=${i}, query=${query}, type=${selectedType}, status=${selectedStatus})}"
+                       th:text="${i}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${page.last} ? '#' : @{/admin/rooms(page=${page.number + 2}, query=${query}, type=${selectedType}, status=${selectedStatus})}"
+                       aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
     </div>
 </main>

@@ -172,6 +172,38 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     List<Room> findAllByOrderByRoomNumberAsc();
 
+    @Query("SELECT r FROM Room r WHERE " +
+           "(:query IS NULL OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(r.description) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:active IS NULL OR r.active = :active) " +
+           "AND (:underMaintenance IS NULL OR r.underMaintenance = :underMaintenance) " +
+           "ORDER BY r.roomNumber ASC")
+    List<Room> searchRoomsForAdmin(
+            @Param("query") String query,
+            @Param("type") RoomType type,
+            @Param("active") Boolean active,
+            @Param("underMaintenance") Boolean underMaintenance
+    );
+
+    @Query(value = "SELECT r FROM Room r WHERE " +
+           "(:query IS NULL OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(r.description) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:active IS NULL OR r.active = :active) " +
+           "AND (:underMaintenance IS NULL OR r.underMaintenance = :underMaintenance) " +
+           "ORDER BY r.roomNumber ASC",
+           countQuery = "SELECT count(r) FROM Room r WHERE " +
+           "(:query IS NULL OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(r.description) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "AND (:type IS NULL OR r.type = :type) " +
+           "AND (:active IS NULL OR r.active = :active) " +
+           "AND (:underMaintenance IS NULL OR r.underMaintenance = :underMaintenance)")
+    Page<Room> searchRoomsForAdmin(
+            @Param("query") String query,
+            @Param("type") RoomType type,
+            @Param("active") Boolean active,
+            @Param("underMaintenance") Boolean underMaintenance,
+            Pageable pageable
+    );
+
     Optional<Room> findByRoomNumberIgnoreCase(String roomNumber);
 
     boolean existsByRoomNumberIgnoreCase(String roomNumber);

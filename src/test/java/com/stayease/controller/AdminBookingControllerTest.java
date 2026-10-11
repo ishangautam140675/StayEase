@@ -49,6 +49,9 @@ class AdminBookingControllerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.stayease.repository.AdminAuditLogRepository auditLogRepository;
+
     private User admin;
     private User customer;
     private Room room;
@@ -260,5 +263,73 @@ class AdminBookingControllerTest {
         mockMvc.perform(get("/admin/bookings/export"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @Test
+    @DisplayName("ADMIN check-in, check-out, and no-show operations transition states and record audit logs")
+    void admin_checkInCheckOutNoShow_lifecycleAndAuditLogged() throws Exception {
+        // 1. Approve the pending booking
+        mockMvc.perform(post("/admin/bookings/" + pendingBooking.getId() + "/approve")
+                        .with(user(admin.getEmail()).roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        // 2. Check-in the guest
+        mockMvc.perform(post("/admin/bookings/" + pendingBooking.getId() + "/check-in")
+                        .with(user(admin.getEmail()).roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/bookings"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        Booking checkedIn = bookingRepository.findById(pendingBooking.getId()).orElseThrow();
+        assertThat(checkedIn.getStatus()).isEqualTo(BookingStatus.CHECKED_IN);
+        assertThat(checkedIn.getCheckedInAt()).isNotNull();
+
+        boolean checkInAudited = auditLogRepository.findAll().stream()
+                .anyMatch(l -> "GUEST_CHECKED_IN".equals(l.getAction()) && String.valueOf(pendingBooking.getId()).equals(l.getEntityId()));
+        assertThat(checkInAudited).isTrue();
+
+        // 3. Check-out the guest
+        mockMvc.perform(post("/admin/bookings/" + pendingBooking.getId() + "/check-out")
+                        .with(user(admin.getEmail()).roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/bookings"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        Booking checkedOut = bookingRepository.findById(pendingBooking.getId()).orElseThrow();
+        assertThat(checkedOut.getStatus()).isEqualTo(BookingStatus.CHECKED_OUT);
+        assertThat(checkedOut.getCheckedOutAt()).isNotNull();
+
+        boolean checkOutAudited = auditLogRepository.findAll().stream()
+                .anyMatch(l -> "GUEST_CHECKED_OUT".equals(l.getAction()) && String.valueOf(pendingBooking.getId()).equals(l.getEntityId()));
+        assertThat(checkOutAudited).isTrue();
+    }
+
+    @Test
+    @DisplayName("ADMIN can mark an APPROVED booking as NO_SHOW with remark and audit log")
+    void admin_noShow_transitionsStateAndAuditLogs() throws Exception {
+        // 1. Approve
+        mockMvc.perform(post("/admin/bookings/" + pendingBooking.getId() + "/approve")
+                        .with(user(admin.getEmail()).roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        // 2. Mark No-Show
+        mockMvc.perform(post("/admin/bookings/" + pendingBooking.getId() + "/no-show")
+                        .with(user(admin.getEmail()).roles("ADMIN"))
+                        .with(csrf())
+                        .param("remark", "Guest did not arrive within 24 hours of check-in time"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/bookings"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        Booking noShow = bookingRepository.findById(pendingBooking.getId()).orElseThrow();
+        assertThat(noShow.getStatus()).isEqualTo(BookingStatus.NO_SHOW);
+
+        boolean noShowAudited = auditLogRepository.findAll().stream()
+                .anyMatch(l -> "BOOKING_NO_SHOW".equals(l.getAction()) && String.valueOf(pendingBooking.getId()).equals(l.getEntityId()));
+        assertThat(noShowAudited).isTrue();
     }
 }

@@ -2,6 +2,7 @@ package com.stayease.controller;
 
 import com.stayease.model.Room;
 import com.stayease.model.RoomType;
+import com.stayease.repository.AdminAuditLogRepository;
 import com.stayease.repository.BookingRepository;
 import com.stayease.repository.RoomRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,9 @@ class AdminRoomControllerTest {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private AdminAuditLogRepository auditLogRepository;
 
     private Room activeRoom;
     private Room inactiveRoom;
@@ -160,5 +164,63 @@ class AdminRoomControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("A101")))
                 .andExpect(content().string(not(containsString("A102"))));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Admin rooms list filters by keyword search and room type")
+    void adminList_filtersByQueryAndType() throws Exception {
+        mockMvc.perform(get("/admin/rooms")
+                        .param("query", "A101")
+                        .param("type", "SINGLE")
+                        .param("status", "ACTIVE"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("A101")))
+                .andExpect(content().string(not(containsString("A102"))));
+    }
+
+    @Test
+    @WithMockUser(username = "admin@stayease.com", roles = "ADMIN")
+    @DisplayName("Creating, updating, and deleting a room records immutable entries in admin audit log")
+    void admin_roomCrud_generatesAuditLogs() throws Exception {
+        // 1. Create
+        mockMvc.perform(post("/admin/rooms")
+                        .with(csrf())
+                        .param("roomNumber", "A109")
+                        .param("type", "TRIPLE")
+                        .param("capacity", "3")
+                        .param("pricePerNight", "2500.00")
+                        .param("description", "Luxury triple suite")
+                        .param("active", "true"))
+                .andExpect(status().is3xxRedirection());
+
+        Room created = roomRepository.findByRoomNumberIgnoreCase("A109").orElseThrow();
+        boolean createLogged = auditLogRepository.findAll().stream()
+                .anyMatch(l -> "ROOM_CREATED".equals(l.getAction()) && String.valueOf(created.getId()).equals(l.getEntityId()));
+        assertThat(createLogged).isTrue();
+
+        // 2. Update
+        mockMvc.perform(post("/admin/rooms/{id}", created.getId())
+                        .with(csrf())
+                        .param("roomNumber", "A109")
+                        .param("type", "TRIPLE")
+                        .param("capacity", "3")
+                        .param("pricePerNight", "2800.00")
+                        .param("description", "Luxury triple suite updated")
+                        .param("active", "true"))
+                .andExpect(status().is3xxRedirection());
+
+        boolean updateLogged = auditLogRepository.findAll().stream()
+                .anyMatch(l -> "ROOM_UPDATED".equals(l.getAction()) && String.valueOf(created.getId()).equals(l.getEntityId()));
+        assertThat(updateLogged).isTrue();
+
+        // 3. Delete
+        mockMvc.perform(post("/admin/rooms/{id}/delete", created.getId())
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection());
+
+        boolean deleteLogged = auditLogRepository.findAll().stream()
+                .anyMatch(l -> "ROOM_DELETED".equals(l.getAction()) && String.valueOf(created.getId()).equals(l.getEntityId()));
+        assertThat(deleteLogged).isTrue();
     }
 }
