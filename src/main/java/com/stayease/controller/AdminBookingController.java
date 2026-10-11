@@ -154,7 +154,25 @@ public class AdminBookingController {
             String adminEmail = principal != null ? principal.getName() : "ADMIN";
             bookingService.checkIn(id, adminEmail);
             redirectAttributes.addFlashAttribute("successMessage", "Guest for booking #" + id + " checked in successfully.");
-        } catch (InvalidBookingStateException ex) {
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/bookings";
+    }
+
+    /**
+     * Approves and immediately checks in guest in a single administrative action.
+     */
+    @PostMapping("/{id}/approve-and-check-in")
+    public String approveAndCheckInBooking(@PathVariable("id") Long id,
+                                          java.security.Principal principal,
+                                          RedirectAttributes redirectAttributes) {
+        try {
+            String adminEmail = principal != null ? principal.getName() : "ADMIN";
+            bookingService.approve(id, adminEmail);
+            bookingService.checkIn(id, adminEmail);
+            redirectAttributes.addFlashAttribute("successMessage", "Booking #" + id + " approved and guest checked in successfully.");
+        } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/admin/bookings";
@@ -171,7 +189,7 @@ public class AdminBookingController {
             String adminEmail = principal != null ? principal.getName() : "ADMIN";
             bookingService.checkOut(id, adminEmail);
             redirectAttributes.addFlashAttribute("successMessage", "Guest for booking #" + id + " checked out successfully.");
-        } catch (InvalidBookingStateException ex) {
+        } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/admin/bookings";

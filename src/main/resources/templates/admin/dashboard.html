@@ -345,8 +345,14 @@
                                 </span>
                             </td>
 
-                            <!-- Action link -->
-                            <td class="pe-4 py-3 text-end">
+                            <!-- Action buttons -->
+                            <td class="pe-4 py-3 text-end text-nowrap">
+                                <form th:action="@{/admin/bookings/{id}/approve(id=${b.id})}" method="post" class="d-inline m-0">
+                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-sm btn-success px-2 py-1 me-1" title="Quick Approve">
+                                        <i class="bi bi-check-lg me-1"></i>Approve
+                                    </button>
+                                </form>
                                 <a th:href="@{/admin/bookings(status='PENDING')}"
                                    class="btn btn-outline-se btn-sm fw-medium px-3">
                                     Review

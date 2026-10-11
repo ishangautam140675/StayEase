@@ -370,6 +370,30 @@ public class CustomerController {
     }
 
     /**
+     * Express Web / Self Check-In for APPROVED bookings.
+     */
+    @PostMapping("/customer/bookings/{id}/check-in")
+    public String selfCheckIn(@PathVariable("id") Long id,
+                              Principal principal,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Booking booking = bookingService.getBookingWithDetails(id, principal.getName());
+            if (booking.getStatus() != com.stayease.model.BookingStatus.APPROVED) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Online check-in is only available for APPROVED bookings.");
+                return "redirect:/customer/bookings";
+            }
+            bookingService.checkIn(id, principal.getName());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Welcome to StayEase! Online check-in completed successfully for Room " +
+                    (booking.getRoom() != null ? booking.getRoom().getRoomNumber() : "") + ".");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Check-in could not be completed: " + ex.getMessage());
+        }
+        return "redirect:/customer/bookings";
+    }
+
+    /**
      * Displays the booking modification form for allowed reservation states (Phase 3).
      */
     @GetMapping("/customer/bookings/{id}/modify")

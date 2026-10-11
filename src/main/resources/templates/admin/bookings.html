@@ -376,6 +376,13 @@
                                             </button>
                                         </form>
 
+                                        <form th:action="@{/admin/bookings/{id}/approve-and-check-in(id=${b.id})}" method="post" class="d-inline m-0">
+                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" title="Approve and Immediately Check-In">
+                                                <i class="bi bi-box-arrow-in-right me-1"></i>Approve &amp; Check-In
+                                            </button>
+                                        </form>
+
                                         <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1"
                                                 data-bs-toggle="modal" th:data-bs-target="'#rejectModal-' + ${b.id}" title="Reject Booking">
                                             <i class="bi bi-x-lg me-1"></i>Reject

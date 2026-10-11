@@ -158,8 +158,27 @@
                                 </div>
                             </td>
 
-                            <!-- Receipt & Cancel Actions (Phase 3) -->
+                            <!-- Pay, Check-In, Receipt & Cancel Actions -->
                             <td class="pe-4 py-3 text-end text-nowrap">
+                                <!-- Pay Button if UNPAID -->
+                                <a th:if="${b.paymentStatus != null and b.paymentStatus.name() != 'SUCCESSFUL' and b.status.name() != 'CANCELLED' and b.status.name() != 'REJECTED'}"
+                                   th:href="@{/customer/bookings/{id}/payment(id=${b.id})}"
+                                   class="btn btn-se-primary btn-sm px-2 me-1 fw-bold"
+                                   title="Pay for Reservation">
+                                    <i class="bi bi-credit-card me-1"></i>Pay
+                                </a>
+
+                                <!-- Web Check-In Button if APPROVED -->
+                                <form th:if="${b.status.name() == 'APPROVED'}"
+                                      th:action="@{/customer/bookings/{id}/check-in(id=${b.id})}"
+                                      method="post"
+                                      class="d-inline m-0">
+                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-outline-success btn-sm px-2 me-1 fw-medium" title="Complete Online Check-In">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>Check-In
+                                    </button>
+                                </form>
+
                                 <a th:href="@{/customer/bookings/{id}/receipt(id=${b.id})}"
                                    class="btn btn-outline-secondary btn-sm px-2 me-1 fw-medium"
                                    title="View / Print Official Receipt">
