@@ -104,27 +104,27 @@
                         <div class="p-3 rounded-3 mb-3 border bg-white shadow-sm">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                    <i class="bi bi-check-circle-fill me-1"></i>Active Provider: <span th:text="${session.provider}">SANDBOX</span>
+                                    <i class="bi bi-check-circle-fill me-1"></i>Active Provider: <span th:text="${paymentSession.provider}">SANDBOX</span>
                                 </span>
                             </div>
                             <div class="small text-muted mb-2">
-                                Transaction ID: <code class="text-dark fw-bold" th:text="${session.transactionReference}">TXN-123456</code>
+                                Transaction ID: <code class="text-dark fw-bold" th:text="${paymentSession.transactionReference}">TXN-123456</code>
                             </div>
                             <div class="small text-muted mb-2">
-                                Gateway Order: <code class="text-muted" th:text="${session.gatewayReference}">order_sb_123</code>
+                                Gateway Order: <code class="text-muted" th:text="${paymentSession.gatewayReference}">order_sb_123</code>
                             </div>
                         </div>
 
                         <!-- Payment Submission Form (Posts to Server-Side Verification) -->
                         <form th:action="@{/customer/bookings/{id}/payment/verify(id=${booking.id})}" method="post">
                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="transactionReference" th:value="${session.transactionReference}"/>
-                            <input type="hidden" name="gatewayOrderId" th:value="${session.gatewayReference}"/>
-                            <input type="hidden" name="gatewayPaymentId" th:value="'pay_sb_' + ${#strings.substring(session.transactionReference, 4)}"/>
+                            <input type="hidden" name="transactionReference" th:value="${paymentSession.transactionReference}"/>
+                            <input type="hidden" name="gatewayOrderId" th:value="${paymentSession.gatewayReference}"/>
+                            <input type="hidden" name="gatewayPaymentId" th:value="'pay_sb_' + ${#strings.substring(paymentSession.transactionReference, 4)}"/>
 
                             <!-- Server-side signature simulation computed deterministically for sandbox -->
                             <input type="hidden" name="gatewaySignature"
-                                   th:value="${T(com.stayease.service.payment.SandboxPaymentProvider).calculateHmacSha256(session.gatewayReference + '|pay_sb_' + #strings.substring(session.transactionReference, 4), 'sb_test_secret_stayease')}"/>
+                                   th:value="${T(com.stayease.service.payment.SandboxPaymentProvider).calculateHmacSha256(paymentSession.gatewayReference + '|pay_sb_' + #strings.substring(paymentSession.transactionReference, 4), 'sb_test_secret_stayease')}"/>
 
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold text-secondary">Payment Method</label>

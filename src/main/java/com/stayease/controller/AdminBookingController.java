@@ -36,11 +36,14 @@ public class AdminBookingController {
 
     private final BookingService bookingService;
     private final BookingExportService bookingExportService;
+    private final com.stayease.service.PaymentService paymentService;
 
     public AdminBookingController(BookingService bookingService,
-                                  BookingExportService bookingExportService) {
+                                  BookingExportService bookingExportService,
+                                  @org.springframework.beans.factory.annotation.Autowired(required = false) com.stayease.service.PaymentService paymentService) {
         this.bookingService = bookingService;
         this.bookingExportService = bookingExportService;
+        this.paymentService = paymentService;
     }
 
     /**
@@ -104,7 +107,15 @@ public class AdminBookingController {
         Page<Booking> bookingPage = bookingService.searchAdminBookings(status, query, startDate, endDate, pageable);
         Map<String, Long> counts = bookingService.countByStatus();
 
+        Map<Long, List<com.stayease.model.PaymentTransaction>> transactionsByBookingId = new java.util.HashMap<>();
+        if (paymentService != null) {
+            for (Booking b : bookingPage.getContent()) {
+                transactionsByBookingId.put(b.getId(), paymentService.getTransactionsForBooking(b.getId()));
+            }
+        }
+
         model.addAttribute("bookings", bookingPage.getContent());
+        model.addAttribute("transactionsByBookingId", transactionsByBookingId);
         model.addAttribute("page", bookingPage);
         model.addAttribute("counts", counts);
         model.addAttribute("selectedStatus", selectedStatus);

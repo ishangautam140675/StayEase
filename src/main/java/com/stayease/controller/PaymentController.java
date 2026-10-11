@@ -61,7 +61,7 @@ public class PaymentController {
         }
 
         model.addAttribute("booking", booking);
-        model.addAttribute("session", session);
+        model.addAttribute("paymentSession", session);
         model.addAttribute("transactions", paymentService.getTransactionsForBooking(bookingId));
         return "customer/payment";
     }

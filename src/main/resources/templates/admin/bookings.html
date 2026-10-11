@@ -226,7 +226,7 @@
                             <!-- Status Badge & Payment Status -->
                             <td class="py-3 text-center text-nowrap">
                                 <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
-                                <div class="mt-1">
+                                <div class="mt-1 d-flex justify-content-center align-items-center gap-1">
                                     <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Settled">
                                         <i class="bi bi-check-circle-fill me-1"></i>PAID
                                     </span>
@@ -239,6 +239,77 @@
                                     <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Failed">
                                         <i class="bi bi-x-circle me-1"></i>FAILED
                                     </span>
+
+                                    <!-- Payment Info Inspector Button -->
+                                    <button type="button" class="btn btn-sm btn-link text-secondary p-0"
+                                            data-bs-toggle="modal" th:data-bs-target="'#paymentModal-' + ${b.id}"
+                                            title="View Payment Breakdown & Receipts">
+                                        <i class="bi bi-receipt"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Payment Details Modal for Admin -->
+                                <div class="modal fade text-start" th:id="'paymentModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow">
+                                            <div class="modal-header bg-light">
+                                                <h5 class="modal-title h6 fw-bold">
+                                                    <i class="bi bi-credit-card-2-front me-2 text-primary"></i>Payment Details &mdash; <span th:text="${b.bookingReference}">SE-001</span>
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
+                                                    <div>
+                                                        <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Amount Due / Received</div>
+                                                        <div class="h5 fw-bold mb-0" style="color: var(--brand-oxblood);">
+                                                            ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">0.00</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="badge px-2 py-1"
+                                                              th:classappend="${b.paymentStatus.name() == 'SUCCESSFUL'} ? 'bg-success' : (${b.paymentStatus.name() == 'REFUNDED'} ? 'bg-info text-dark' : 'bg-warning text-dark')"
+                                                              th:text="${b.paymentStatus}">UNPAID</span>
+                                                    </div>
+                                                </div>
+
+                                                <h6 class="small fw-bold text-uppercase text-secondary mb-2" style="font-size: 0.75rem;">Payment Transactions / History</h6>
+                                                <div th:if="${transactionsByBookingId != null and transactionsByBookingId.get(b.id) != null and !transactionsByBookingId.get(b.id).isEmpty()}">
+                                                    <div class="list-group list-group-flush border rounded-3 mb-3">
+                                                        <div class="list-group-item p-3" th:each="txn : ${transactionsByBookingId.get(b.id)}">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <span class="fw-semibold small text-dark font-monospace" th:text="${txn.transactionReference}">TXN-123</span>
+                                                                <span class="badge" th:classappend="${txn.status.name() == 'SUCCESSFUL'} ? 'bg-success' : (${txn.status.name() == 'REFUNDED'} ? 'bg-info text-dark' : 'bg-secondary')" th:text="${txn.status}">SUCCESSFUL</span>
+                                                            </div>
+                                                            <div class="small text-muted mb-1">
+                                                                <strong>Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(txn.amount, 1, 2)}">0.00</span> |
+                                                                <strong>Method:</strong> <span th:text="${txn.paymentMethod != null ? txn.paymentMethod : 'UPI/Online'}">UPI</span>
+                                                            </div>
+                                                            <div class="small text-muted mb-1">
+                                                                <strong>Gateway Ref:</strong> <code th:text="${txn.gatewayReference != null ? txn.gatewayReference : 'N/A'}">pay_123</code>
+                                                            </div>
+                                                            <div th:if="${txn.refundReference != null}" class="small text-danger mb-1">
+                                                                <strong>Refund Ref:</strong> <code th:text="${txn.refundReference}">ref_123</code> (₹<span th:text="${#numbers.formatDecimal(txn.refundAmount, 1, 2)}">0.00</span>)
+                                                            </div>
+                                                            <div class="small text-muted" style="font-size: 0.75rem;">
+                                                                <i class="bi bi-clock me-1"></i><span th:text="${#temporals.format(txn.createdAt, 'MMM d, yyyy h:mm a')}">Date</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div th:unless="${transactionsByBookingId != null and transactionsByBookingId.get(b.id) != null and !transactionsByBookingId.get(b.id).isEmpty()}" class="p-3 text-center text-muted small bg-light rounded-3 mb-3">
+                                                    No transaction records yet. Guest has not submitted payment.
+                                                </div>
+
+                                                <div class="small text-muted">
+                                                    <strong>Guest:</strong> <span th:text="${b.user != null ? b.user.fullName : 'Guest'}">Name</span> (<span th:text="${b.user != null ? b.user.email : ''}">email</span>)
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
 
