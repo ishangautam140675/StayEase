@@ -9,14 +9,14 @@ FROM eclipse-temurin:21-jdk-jammy AS builder
 
 WORKDIR /workspace
 
-# Copy Maven wrapper and POM first for layer caching
+# Copy Maven wrapper and POM
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 
 # Copy application source code and package
 COPY src ./src
-RUN ./mvnw package -DskipTests=true -B
+RUN ./mvnw clean package -DskipTests=true -B
 
 # ── Stage 2: Production Minimal Runtime ──────────────────────────────────────
 FROM eclipse-temurin:21-jre-jammy AS runtime
