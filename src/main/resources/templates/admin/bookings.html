@@ -223,9 +223,23 @@
                                 </span>
                             </td>
 
-                            <!-- Status Badge -->
+                            <!-- Status Badge & Payment Status -->
                             <td class="py-3 text-center text-nowrap">
                                 <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
+                                <div class="mt-1">
+                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Settled">
+                                        <i class="bi bi-check-circle-fill me-1"></i>PAID
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Pending">
+                                        <i class="bi bi-clock me-1"></i>UNPAID
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Refunded">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>REFUNDED
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Failed">
+                                        <i class="bi bi-x-circle me-1"></i>FAILED
+                                    </span>
+                                </div>
                             </td>
 
                             <!-- Notes & Remark -->
@@ -350,8 +364,47 @@
                                         </form>
                                     </div>
 
-                                    <!-- If Terminal Status -->
-                                    <span th:if="${b.status.name() == 'CHECKED_OUT' or b.status.name() == 'REJECTED' or b.status.name() == 'CANCELLED' or b.status.name() == 'NO_SHOW'}"
+                                    <!-- Refund Action if payment is SUCCESSFUL -->
+                                    <div th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="d-inline">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-warning rounded-pill px-2 py-1 ms-1"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="'#refundModal-' + ${b.id}"
+                                                title="Issue Refund">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
+                                        </button>
+
+                                        <!-- Refund Modal -->
+                                        <div class="modal fade" th:id="'refundModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content border-0 shadow text-start">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title h6 fw-bold text-danger">
+                                                            <i class="bi bi-arrow-counterclockwise me-2"></i>Issue Verified Refund
+                                                        </h5>
+                                                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form th:action="@{/admin/bookings/{id}/refund(id=${b.id})}" method="post">
+                                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                                        <div class="modal-body">
+                                                            <p class="small text-muted mb-2">
+                                                                Are you sure you want to refund ₹<strong th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">0.00</strong> for booking <strong th:text="${b.bookingReference}">SE-001</strong>?
+                                                            </p>
+                                                            <label class="form-label small fw-semibold text-secondary">Refund Reason:</label>
+                                                            <input type="text" name="reason" class="form-control" placeholder="e.g. Guest cancelled within policy, service adjustment..." maxlength="255" required/>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-sm btn-warning fw-bold px-3">Confirm Refund</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- If Terminal Status and not paid -->
+                                    <span th:if="${(b.status.name() == 'CHECKED_OUT' or b.status.name() == 'REJECTED' or b.status.name() == 'CANCELLED' or b.status.name() == 'NO_SHOW') and b.paymentStatus.name() != 'SUCCESSFUL'}"
                                           class="text-muted small">&mdash;</span>
 
                                 </div>

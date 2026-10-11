@@ -161,11 +161,26 @@
                                 </div>
                             </div>
 
-                            <div class="mt-3 pt-2 border-top text-end">
-                                <a th:href="@{/customer/bookings/{id}/receipt(id=${view.nextStay.id})}"
-                                   class="btn btn-outline-secondary btn-sm px-3 fw-medium">
-                                    <i class="bi bi-receipt me-1"></i>View Official Receipt
-                                </a>
+                            <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span th:if="${view.nextStay.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                        <i class="bi bi-shield-check me-1"></i>Paid
+                                    </span>
+                                    <span th:if="${view.nextStay.paymentStatus.name() != 'SUCCESSFUL'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+                                        <i class="bi bi-clock-history me-1"></i>Payment Pending
+                                    </span>
+                                </div>
+                                <div>
+                                    <a th:if="${view.nextStay.paymentStatus.name() != 'SUCCESSFUL'}"
+                                       th:href="@{/customer/bookings/{id}/payment(id=${view.nextStay.id})}"
+                                       class="btn btn-se-primary btn-sm px-3 fw-bold me-1">
+                                        <i class="bi bi-credit-card me-1"></i>Pay Now
+                                    </a>
+                                    <a th:href="@{/customer/bookings/{id}/receipt(id=${view.nextStay.id})}"
+                                       class="btn btn-outline-secondary btn-sm px-3 fw-medium">
+                                        <i class="bi bi-receipt me-1"></i>Receipt
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -309,13 +324,34 @@
                                 </span>
                             </td>
 
-                            <!-- Status Badge (Phase 14 Fragment) -->
+                            <!-- Status Badge & Payment Status -->
                             <td class="py-3 text-center">
                                 <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
+                                <div class="mt-1">
+                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-check-circle-fill me-1"></i>PAID
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-clock me-1"></i>UNPAID
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>REFUNDED
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-x-circle me-1"></i>FAILED
+                                    </span>
+                                </div>
                             </td>
 
-                            <!-- Receipt & Cancel Button Form (Phase 3) -->
+                            <!-- Actions: Pay, Receipt & Cancel -->
                             <td class="pe-4 py-3 text-end text-nowrap">
+                                <a th:if="${b.paymentStatus.name() != 'SUCCESSFUL' and b.status.name() != 'CANCELLED' and b.status.name() != 'REJECTED'}"
+                                   th:href="@{/customer/bookings/{id}/payment(id=${b.id})}"
+                                   class="btn btn-se-primary btn-sm px-2 me-1 fw-bold"
+                                   title="Pay for Reservation">
+                                    <i class="bi bi-credit-card me-1"></i>Pay
+                                </a>
+
                                 <a th:href="@{/customer/bookings/{id}/receipt(id=${b.id})}"
                                    class="btn btn-outline-secondary btn-sm px-2 me-1 fw-medium"
                                    title="Receipt">

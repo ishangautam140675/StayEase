@@ -37,6 +37,14 @@ public class BookingService {
     private final SeasonalPricingService seasonalPricingService;
     private final RoomMaintenanceScheduleRepository maintenanceScheduleRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @org.springframework.context.annotation.Lazy
+    private PaymentService paymentService;
+
+    public void setPaymentService(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
     @org.springframework.beans.factory.annotation.Value("${app.booking.cancellation-lead-hours:24}")
     private int cancellationLeadHours = 24;
 
@@ -553,6 +561,14 @@ public class BookingService {
         booking.setAdminRemark(trimmedRemark);
         booking.addStatusHistory(BookingStatus.PENDING, BookingStatus.REJECTED,
                 adminEmail != null ? adminEmail : "ADMIN", trimmedRemark);
+
+        if (booking.getPaymentStatus() == com.stayease.model.PaymentStatus.SUCCESSFUL && paymentService != null) {
+            try {
+                paymentService.refundBookingPayment(booking.getId(), "Admin rejected booking: " + trimmedRemark, adminEmail);
+            } catch (Exception e) {
+                // Log and continue
+            }
+        }
         Booking saved = bookingRepository.save(booking);
 
         if (auditLogService != null) {
@@ -618,6 +634,15 @@ public class BookingService {
         BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(BookingStatus.CANCELLED);
         booking.addStatusHistory(oldStatus, BookingStatus.CANCELLED, userEmail, "Cancelled by guest");
+
+        if (booking.getPaymentStatus() == com.stayease.model.PaymentStatus.SUCCESSFUL && paymentService != null) {
+            try {
+                paymentService.refundBookingPayment(booking.getId(), "Customer cancellation within policy window", userEmail);
+            } catch (Exception e) {
+                // Log and continue
+            }
+        }
+
         Booking saved = bookingRepository.save(booking);
         if (emailService != null) {
             emailService.sendBookingCancelled(saved);

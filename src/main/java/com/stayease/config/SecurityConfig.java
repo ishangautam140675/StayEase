@@ -71,13 +71,19 @@ public class SecurityConfig {
         http
             .authenticationProvider(authenticationProvider())
 
+            // ── CSRF (Exempt webhook endpoints that authenticate cryptographically) ─
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/webhooks/**", "/webhooks/**")
+            )
+
             // ── Authorization ──────────────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
-                // Publicly accessible pages
+                // Publicly accessible pages & webhook listeners
                 .requestMatchers(
                     "/", "/rooms", "/rooms/**",
                     "/register", "/login",
                     "/forgot-password", "/reset-password", "/verify-email",
+                    "/api/webhooks/**", "/webhooks/**",
                     "/css/**", "/js/**", "/images/**",
                     "/error", "/error/**"
                 ).permitAll()

@@ -57,6 +57,10 @@ public class Booking {
     @Column(name = "status", nullable = false)
     private BookingStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
+
     @Column(name = "price_per_night_at_booking", precision = 10, scale = 2)
     private java.math.BigDecimal pricePerNightAtBooking;
 
@@ -115,6 +119,9 @@ public class Booking {
         }
         if (this.totalPrice == null && this.pricePerNightAtBooking != null) {
             this.totalPrice = this.pricePerNightAtBooking.multiply(java.math.BigDecimal.valueOf(getNights()));
+        }
+        if (this.paymentStatus == null) {
+            this.paymentStatus = PaymentStatus.UNPAID;
         }
     }
 
@@ -178,6 +185,18 @@ public class Booking {
 
     public void setStatus(BookingStatus status) {
         this.status = status;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus != null ? paymentStatus : PaymentStatus.UNPAID;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public boolean isPaid() {
+        return this.paymentStatus == PaymentStatus.SUCCESSFUL;
     }
 
     public String getAdminRemark() {
