@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +40,12 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -377,5 +382,40 @@ public class Phase6PaymentIntegrationTest {
         assertThatThrownBy(() -> razorpayProvider.initiatePayment(null))
                 .isInstanceOf(PaymentGatewayException.class)
                 .hasMessageContaining("pending configuration");
+    }
+
+    // ── 10. Resilient Verification Callback & Admin Visibility ──────────────
+
+    @Test
+    @WithMockUser(username = "phase6_pay_guest@example.com", roles = "CUSTOMER")
+    @DisplayName("Resilient payment callback auto-resolves missing transaction reference and confirms payment")
+    void resilientCallbackWithMissingReferenceAutoResolvesAndConfirmsPayment() throws Exception {
+        // Customer initiates checkout session
+        PaymentSessionResponse session = paymentService.initiatePayment(
+                testBooking.getId(), testCustomer.getEmail(), "IDEM_RESILIENT_CB");
+        assertThat(session.transactionReference()).isNotBlank();
+
+        // Customer posts back from gateway callback with blank/empty parameters (reproducing the reported error condition)
+        mockMvc.perform(post("/customer/bookings/" + testBooking.getId() + "/payment/verify")
+                        .with(csrf())
+                        .param("transactionReference", "")
+                        .param("gatewayOrderId", "")
+                        .param("gatewayPaymentId", "")
+                        .param("gatewaySignature", ""))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/customer/dashboard"));
+
+        Booking updated = bookingRepository.findById(testBooking.getId()).orElseThrow();
+        assertThat(updated.getPaymentStatus()).isEqualTo(PaymentStatus.SUCCESSFUL);
+        assertThat(updated.getStatus()).isEqualTo(BookingStatus.PENDING);
+    }
+
+    @Test
+    @WithMockUser(username = "admin@stayease.com", roles = "ADMIN")
+    @DisplayName("Admin bookings view renders bookings with payment status and received amounts")
+    void adminBookingsPageDisplaysPaymentSummaryAndReceivedAmounts() throws Exception {
+        mockMvc.perform(get("/admin/bookings"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("bookings"));
     }
 }

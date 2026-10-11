@@ -293,6 +293,7 @@
                             <th scope="col" class="py-3">Dates</th>
                             <th scope="col" class="py-3 text-center">Guests</th>
                             <th scope="col" class="py-3 text-end">Total Price</th>
+                            <th scope="col" class="py-3 text-center">Payment</th>
                             <th scope="col" class="pe-4 py-3 text-end">Action</th>
                         </tr>
                     </thead>
@@ -340,8 +341,30 @@
 
                             <!-- Total Price -->
                             <td class="py-3 text-end">
-                                <span class="fw-bold" style="color: var(--brand-oxblood);">
+                                <div class="fw-bold" style="color: var(--brand-oxblood);">
                                     ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
+                                </div>
+                                <div class="small" th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" style="color: #198754; font-size: 0.72rem;">
+                                    (Paid)
+                                </div>
+                                <div class="small text-muted" th:unless="${b.paymentStatus.name() == 'SUCCESSFUL'}" style="font-size: 0.72rem;">
+                                    (Pending)
+                                </div>
+                            </td>
+
+                            <!-- Payment Status -->
+                            <td class="py-3 text-center">
+                                <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                    <i class="bi bi-check-circle-fill me-1"></i>PAID
+                                </span>
+                                <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                    <i class="bi bi-clock me-1"></i>UNPAID
+                                </span>
+                                <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>REFUNDED
+                                </span>
+                                <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                    <i class="bi bi-x-circle me-1"></i>FAILED
                                 </span>
                             </td>
 

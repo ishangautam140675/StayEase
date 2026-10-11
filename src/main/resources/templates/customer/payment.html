@@ -120,11 +120,11 @@
                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="transactionReference" th:value="${paymentSession.transactionReference}"/>
                             <input type="hidden" name="gatewayOrderId" th:value="${paymentSession.gatewayReference}"/>
-                            <input type="hidden" name="gatewayPaymentId" th:value="'pay_sb_' + ${#strings.substring(paymentSession.transactionReference, 4)}"/>
+                            <input type="hidden" name="gatewayPaymentId" th:value="'pay_sb_' + ${(paymentSession.transactionReference != null and #strings.length(paymentSession.transactionReference) > 4) ? #strings.substring(paymentSession.transactionReference, 4) : 'sim'}"/>
 
                             <!-- Server-side signature simulation computed deterministically for sandbox -->
                             <input type="hidden" name="gatewaySignature"
-                                   th:value="${T(com.stayease.service.payment.SandboxPaymentProvider).calculateHmacSha256(paymentSession.gatewayReference + '|pay_sb_' + #strings.substring(paymentSession.transactionReference, 4), 'sb_test_secret_stayease')}"/>
+                                   th:value="${T(com.stayease.service.payment.SandboxPaymentProvider).calculateHmacSha256(paymentSession.gatewayReference + '|pay_sb_' + ((paymentSession.transactionReference != null and #strings.length(paymentSession.transactionReference) > 4) ? #strings.substring(paymentSession.transactionReference, 4) : 'sim'), 'sb_test_secret_stayease')}"/>
 
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold text-secondary">Payment Method</label>

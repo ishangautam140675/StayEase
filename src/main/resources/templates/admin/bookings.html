@@ -216,36 +216,50 @@
                                 </span>
                             </td>
 
-                            <!-- Total Price -->
+                            <!-- Total Price & Received Amount -->
                             <td class="py-3 text-end text-nowrap">
-                                <span class="fw-bold" style="color: var(--brand-oxblood);">
+                                <div class="fw-bold fs-6" style="color: var(--brand-oxblood);">
                                     ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
-                                </span>
-                            </td>
-
-                            <!-- Status Badge & Payment Status -->
-                            <td class="py-3 text-center text-nowrap">
-                                <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
-                                <div class="mt-1 d-flex justify-content-center align-items-center gap-1">
-                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Settled">
-                                        <i class="bi bi-check-circle-fill me-1"></i>PAID
+                                </div>
+                                <div class="mt-1">
+                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;" title="Payment Settled in Full">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Received: ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
                                     </span>
-                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Pending">
-                                        <i class="bi bi-clock me-1"></i>UNPAID
+                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Awaiting Payment">
+                                        <i class="bi bi-clock me-1"></i>Due / Unpaid
                                     </span>
-                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Refunded">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i>REFUNDED
+                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1" style="font-size: 0.72rem;" title="Payment Refunded">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Refunded: ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
                                     </span>
-                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;" title="Payment Failed">
-                                        <i class="bi bi-x-circle me-1"></i>FAILED
+                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size: 0.72rem;" title="Payment Failed">
+                                        <i class="bi bi-x-circle me-1"></i>Failed
                                     </span>
-
-                                    <!-- Payment Info Inspector Button -->
-                                    <button type="button" class="btn btn-sm btn-link text-secondary p-0"
+                                </div>
+                                <div class="mt-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-0 rounded-pill" style="font-size: 0.7rem;"
                                             data-bs-toggle="modal" th:data-bs-target="'#paymentModal-' + ${b.id}"
                                             title="View Payment Breakdown & Receipts">
-                                        <i class="bi bi-receipt"></i>
+                                        <i class="bi bi-receipt me-1"></i>Payment Details
                                     </button>
+                                </div>
+                            </td>
+
+                            <!-- Status Badge & Payment Badge -->
+                            <td class="py-3 text-center text-nowrap">
+                                <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
+                                <div class="mt-1">
+                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-check-circle-fill me-1"></i>PAID
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-clock me-1"></i>UNPAID
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>REFUNDED
+                                    </span>
+                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                        <i class="bi bi-x-circle me-1"></i>FAILED
+                                    </span>
                                 </div>
 
                                 <!-- Payment Details Modal for Admin -->
