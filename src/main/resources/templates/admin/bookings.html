@@ -49,7 +49,7 @@
              style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
             <form th:action="@{/admin/bookings}" method="get" class="row g-2 align-items-end">
                 <input type="hidden" name="status" th:value="${selectedStatus}"/>
-                <div class="col-md-5">
+                <div class="col-lg-5 col-md-4">
                     <label class="form-label small fw-semibold text-secondary mb-1">Search Guest, Room or Booking Reference</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
@@ -57,16 +57,21 @@
                                placeholder="e.g. John, SE-202610, 101" th:value="${query}"/>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-lg-3 col-md-3">
                     <label class="form-label small fw-semibold text-secondary mb-1">Check-in from</label>
                     <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}"/>
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-lg-2 col-md-3">
                     <label class="form-label small fw-semibold text-secondary mb-1">Checkout to</label>
                     <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}"/>
                 </div>
-                <div class="col-md-1 d-grid">
-                    <button type="submit" class="btn btn-cobalt btn-sm">Filter</button>
+                <div class="col-lg-2 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-cobalt btn-sm w-100">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a th:href="@{/admin/bookings(status=${selectedStatus})}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
                 </div>
             </form>
         </div>

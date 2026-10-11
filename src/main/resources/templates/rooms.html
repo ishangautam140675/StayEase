@@ -31,55 +31,63 @@
         <div class="row g-4">
             <!-- Left Filter Sidebar (Section 9) -->
             <div class="col-lg-3">
-                <div class="p-4 bg-white rounded-3 border shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0 text-dark">Filters</h6>
+                <div class="p-3 p-md-4 bg-white rounded-3 border shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2 mb-lg-3">
+                        <button class="btn btn-link text-decoration-none p-0 d-lg-none fw-bold text-dark d-flex align-items-center gap-2"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#catalogFilterCollapse" aria-expanded="false" aria-controls="catalogFilterCollapse">
+                            <i class="bi bi-funnel"></i>
+                            <span>Filter Accommodations</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <h6 class="fw-bold mb-0 text-dark d-none d-lg-block">Filters</h6>
                         <a href="#" class="small text-decoration-none" style="color: var(--brand-oxblood);">Reset</a>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">Room Category</label>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="cat-single" checked/>
-                            <label class="form-check-label small" for="cat-single">Single Suite (Private)</label>
+                    <div class="collapse d-lg-block" id="catalogFilterCollapse">
+                        <div class="mb-4 pt-2 pt-lg-0">
+                            <label class="form-label small fw-bold">Room Category</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="cat-single" checked/>
+                                <label class="form-check-label small" for="cat-single">Single Suite (Private)</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="cat-double" checked/>
+                                <label class="form-check-label small" for="cat-double">Double Sharing</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="cat-triple"/>
+                                <label class="form-check-label small" for="cat-triple">Triple Sharing</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cat-dorm"/>
+                                <label class="form-check-label small" for="cat-dorm">Community Dormitory</label>
+                            </div>
                         </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="cat-double" checked/>
-                            <label class="form-check-label small" for="cat-double">Double Sharing</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="cat-triple"/>
-                            <label class="form-check-label small" for="cat-triple">Triple Sharing</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="cat-dorm"/>
-                            <label class="form-check-label small" for="cat-dorm">Community Dormitory</label>
-                        </div>
-                    </div>
 
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">Price Range / Night</label>
-                        <select class="form-select form-select-sm">
-                            <option>All Prices</option>
-                            <option>Under ₹1,000</option>
-                            <option>₹1,000 – ₹2,500</option>
-                            <option>Above ₹2,500</option>
-                        </select>
-                    </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Price Range / Night</label>
+                            <select class="form-select form-select-sm">
+                                <option>All Prices</option>
+                                <option>Under ₹1,000</option>
+                                <option>₹1,000 – ₹2,500</option>
+                                <option>Above ₹2,500</option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="form-label small fw-bold">Amenities</label>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="amenity-ac" checked/>
-                            <label class="form-check-label small" for="amenity-ac">Air Conditioning</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="amenity-wifi" checked/>
-                            <label class="form-check-label small" for="amenity-wifi">High-speed WiFi</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="amenity-food"/>
-                            <label class="form-check-label small" for="amenity-food">Meals Included</label>
+                        <div>
+                            <label class="form-label small fw-bold">Amenities</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="amenity-ac" checked/>
+                                <label class="form-check-label small" for="amenity-ac">Air Conditioning</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="amenity-wifi" checked/>
+                                <label class="form-check-label small" for="amenity-wifi">High-speed WiFi</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="amenity-food"/>
+                                <label class="form-check-label small" for="amenity-food">Meals Included</label>
+                            </div>
                         </div>
                     </div>
                 </div>
