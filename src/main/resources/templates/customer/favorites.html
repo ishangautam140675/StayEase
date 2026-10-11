@@ -51,10 +51,7 @@
 
                     <!-- Room Image with Floating Badge -->
                     <div class="position-relative overflow-hidden" style="height: 200px; background-color: var(--surface-muted);">
-                        <img th:if="${room.type != null and room.type.name() == 'DORMITORY'}" th:src="@{/images/dormitory_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
-                        <img th:if="${room.type != null and (room.type.name() == 'DOUBLE' or room.type.name() == 'TRIPLE')}" th:src="@{/images/deluxe_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
-                        <img th:if="${room.type != null and room.type.name() == 'SINGLE'}" th:src="@{/images/hero_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
-                        <img th:if="${room.type == null}" th:src="@{/images/hero_room.jpg}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img"/>
+                        <img th:src="@{${room.imagePath}}" th:alt="'Room ' + ${room.roomNumber}" class="w-100 h-100 object-fit-cover room-gallery-img" loading="lazy"/>
                         <span class="img-floating-badge text-white"
                               th:style="${room.type != null and room.type.name() == 'SINGLE'} ? 'background-color: var(--brand-oxblood);' : (${room.type != null and room.type.name() == 'DORMITORY'} ? 'background-color: var(--brand-tangerine);' : 'background-color: var(--brand-cobalt);')"
                               th:text="${room.type != null ? room.type : 'ROOM'}">SINGLE</span>

@@ -159,6 +159,16 @@ public class Room {
                 .anyMatch(a -> a.equalsIgnoreCase(amenity.trim()));
     }
 
+    public String getImagePath() {
+        if (type == RoomType.DORMITORY) {
+            return "/images/dormitory_room.jpg";
+        }
+        if (type == RoomType.DOUBLE || type == RoomType.TRIPLE) {
+            return "/images/deluxe_room.jpg";
+        }
+        return "/images/hero_room.jpg";
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
