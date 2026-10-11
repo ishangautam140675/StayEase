@@ -130,7 +130,7 @@ public class SecurityConfig {
                 .logoutUrl("/logout")                        // POST /logout
                 .logoutSuccessUrl("/login?logout")
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .deleteCookies("JSESSIONID", "STAYEASE_SESSION")
                 .permitAll()
             )
 
