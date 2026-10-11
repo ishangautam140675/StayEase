@@ -127,8 +127,8 @@ Recorded in [`.agents/rules/ui-design-rules.md`](.agents/rules/ui-design-rules.m
   * `HomeControllerTest`: `/`, `/rooms`, `/customer/dashboard`, `/admin/dashboard`, and `homePage_anonymousUser_containsBrowseRoomsAndLogin`.
   * `RepositoryTests`: User save/find, duplicate email constraint, duplicate room number constraint, booking save/retrieve, `BookingStatus.isBlocking()`.
 
-### 5.2 Test Coverage (Phases 1 to 8)
-* Total Tests: 89 passed (`BUILD SUCCESS`) across Repository, Service, Controller, and Security matrix tests.
+### 5.2 Test Coverage (Phases 1 to 13)
+* Total Tests: 164 passed (`BUILD SUCCESS`) across Repository, Service, Controller, and Security matrix tests.
 
 ---
 
@@ -175,8 +175,54 @@ Recorded in [`.agents/rules/ui-design-rules.md`](.agents/rules/ui-design-rules.m
 
 ---
 
-## 11. Git & GitHub Status
+## 11. Phase 9: Customer Booking Requests and Booking History
+* Implemented `BookingForm` DTO with validation for check-in/check-out dates and guest capacity.
+* Created `BookingValidationException`.
+* Added `BookingService.createBooking()` and `findBookingsForCustomer()`.
+* Implemented `CustomerController` (`GET /customer/bookings`, `GET /customer/book/{roomId}`, `POST /customer/book`).
+* Created `customer/booking-form.html` and `customer/bookings.html`.
+* Added `CustomerBookingControllerTest` and `BookingServiceTest` coverage.
+
+---
+
+## 12. Phase 10: Overlap Detection, Alternatives and Safe Concurrent Bookings
+* Implemented date overlap detection in `BookingRepository.findOverlapping()`.
+* Added `BookingConflictException` capturing conflicting date ranges and suggested alternative rooms.
+* Concurrency hardening with pessimistic locking query on room reservation (`RoomRepository.findWithPessimisticLockById()`).
+* Rendered conflict notices and alternative room recommendations on `customer/booking-form.html`.
+* Added 11 dedicated overlap permutation tests in `BookingOverlapTest`.
+
+---
+
+## 13. Phase 11: Admin Approves or Rejects Bookings
+* Implemented admin review workflows in `BookingService`: `findAllForAdmin()`, `approveBooking(id)`, `rejectBooking(id, adminRemark)`.
+* Handled validation with `BookingNotFoundException` and `InvalidBookingStateException`.
+* Created `AdminBookingController` (`GET /admin/bookings`, `POST /admin/bookings/{id}/approve`, `POST /admin/bookings/{id}/reject`).
+* Created `admin/bookings.html` management view with tabbed status filtering and rejection modals with remarks.
+* Extended `AdminBookingControllerTest` and updated security matrix tests.
+
+---
+
+## 14. Phase 12: Customers Cancel Their Own Bookings
+* Implemented customer self-service cancellation in `BookingService.cancelCustomerBooking()`.
+* Enforced security ownership validation (customers can only cancel their own bookings) and allowed cancellation only for `PENDING` or `APPROVED` future stays.
+* Created `CustomerController` endpoint `POST /customer/bookings/{id}/cancel`.
+* Added cancel confirmation modals to `customer/bookings.html` with CSRF protection.
+* Added comprehensive tests in `CustomerBookingControllerTest`, `BookingServiceTest`, and `SecurityAccessTest`.
+
+---
+
+## 15. Phase 13: Two Genuinely Different Dashboards
+* Implemented `DashboardService` with dedicated data aggregation for each role:
+  * **Admin Dashboard:** `AdminDashboardStats` featuring total rooms, active rooms, occupied rooms today, available rooms today, occupancy percentage, pending requests count, 6-month booking trends (`MonthBookingCount`), and urgent pending approvals table.
+  * **Customer Dashboard:** `CustomerDashboardView` featuring personal stay stats (upcoming, pending, past stays), hero highlight for the immediate next stay, upcoming itinerary table, and quick room availability search widget (`/customer/availability`).
+* Created views: `admin/dashboard.html`, `customer/dashboard.html`, and `customer/availability.html`.
+* Added unit, integration, and security tests in `DashboardServiceTest` and `DashboardControllerTest`.
+
+---
+
+## 16. Git & GitHub Status
 * **Branch:** `main`
 * **Remote:** [https://github.com/ishangautam140675/StayEase.git](https://github.com/ishangautam140675/StayEase.git)
-* **Status:** All tests passing (`BUILD SUCCESS`, 89 tests).
+* **Status:** All tests passing (`BUILD SUCCESS`, 164 tests across all 13 phases).
 
