@@ -162,109 +162,80 @@
             <!-- Table of Bookings -->
             <div th:if="${bookings != null and !bookings.isEmpty()}" class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light border-bottom text-secondary small text-uppercase"
-                           style="letter-spacing: 0.05em; background: var(--surface-page);">
+                    <thead class="border-bottom text-secondary small text-uppercase"
+                           style="letter-spacing: 0.06em; background: #faf8f5; font-size: 0.75rem;">
                         <tr>
-                            <th scope="col" class="ps-4 py-3">Guest &amp; Ref</th>
-                            <th scope="col" class="py-3">Room</th>
-                            <th scope="col" class="py-3">Dates</th>
-                            <th scope="col" class="py-3 text-center"><i class="bi bi-people" title="Guests"></i></th>
-                            <th scope="col" class="py-3 text-end">Amount</th>
-                            <th scope="col" class="py-3 text-center">Status</th>
-                            <th scope="col" class="py-3">Notes</th>
-                            <th scope="col" class="pe-4 py-3 text-end">Actions</th>
+                            <th scope="col" class="ps-4 py-3.5">Guest &amp; Reference</th>
+                            <th scope="col" class="py-3.5">Room &amp; Stay</th>
+                            <th scope="col" class="py-3.5 text-end">Amount</th>
+                            <th scope="col" class="py-3.5 text-center">Status</th>
+                            <th scope="col" class="py-3.5" style="min-width: 120px;">Notes</th>
+                            <th scope="col" class="pe-4 py-3.5 text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="b : ${bookings}">
                             <!-- Customer & Ref Info -->
-                            <td class="ps-4 py-3">
-                                <div class="fw-bold" style="color: var(--text-primary);"
+                            <td class="ps-4 py-3.5">
+                                <div class="fw-bold text-dark"
                                      th:text="${b.user != null ? b.user.fullName : 'Guest'}">
                                     Customer Name
                                 </div>
-                                <div class="small text-secondary text-truncate" style="max-width: 180px;"
+                                <div class="small text-secondary text-truncate" style="max-width: 200px;"
                                      th:text="${b.user != null ? b.user.email : ''}">
                                     customer@example.com
                                 </div>
-                                <span class="badge bg-light text-muted border font-monospace mt-1 px-2 py-0" style="font-size: 0.75rem;" th:text="${b.bookingReference}">
-                                    SE-20261011-ABCD
-                                </span>
-                            </td>
-
-                            <!-- Room Info -->
-                            <td class="py-3 text-nowrap">
-                                <div class="fw-bold" style="color: var(--text-primary);">
-                                    Room <span th:text="${b.room != null ? b.room.roomNumber : 'N/A'}">101</span>
+                                <div class="mt-1">
+                                    <span class="badge bg-light text-muted border font-monospace px-2 py-0.5" style="font-size: 0.72rem;" th:text="${b.bookingReference}">
+                                        SE-20261011-ABCD
+                                    </span>
                                 </div>
-                                <span class="badge px-2 py-0 small text-uppercase"
-                                      style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.7rem;"
-                                      th:text="${b.room != null ? b.room.type : ''}">SINGLE</span>
                             </td>
 
-                            <!-- Stay Dates & Nights -->
-                            <td class="py-3 text-nowrap">
-                                <div>
-                                    <span class="fw-medium" th:text="${#temporals.format(b.checkIn, 'dd MMM')}">01 Nov</span>
-                                    <span class="text-muted mx-1">&rarr;</span>
-                                    <span class="fw-medium" th:text="${#temporals.format(b.checkOut, 'dd MMM yyyy')}">05 Nov 2026</span>
+                            <!-- Room & Stay Info -->
+                            <td class="py-3.5 text-nowrap">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="fw-bold text-dark">
+                                        Room <span th:text="${b.room != null ? b.room.roomNumber : 'N/A'}">101</span>
+                                    </span>
+                                    <span class="badge px-2 py-0.5 small text-uppercase"
+                                          style="background: var(--brand-cobalt-soft); color: var(--brand-cobalt); font-size: 0.68rem;"
+                                          th:text="${b.room != null ? b.room.type : ''}">SINGLE</span>
+                                    <span class="badge bg-light text-secondary border px-1.5 py-0.5 small" title="Guests">
+                                        <i class="bi bi-person me-0.5"></i><span th:text="${b.guests}">1</span>
+                                    </span>
                                 </div>
                                 <div class="small text-secondary">
-                                    <i class="bi bi-moon-stars me-1 text-muted"></i><span th:text="${b.nights}">4</span> night(s)
+                                    <span class="fw-medium text-dark" th:text="${#temporals.format(b.checkIn, 'dd MMM')}">01 Nov</span>
+                                    <span class="text-muted mx-1">&rarr;</span>
+                                    <span class="fw-medium text-dark" th:text="${#temporals.format(b.checkOut, 'dd MMM yyyy')}">05 Nov 2026</span>
+                                    <span class="text-muted ms-1">(<span th:text="${b.nights}">4</span>n)</span>
                                 </div>
                             </td>
 
-                            <!-- Guests -->
-                            <td class="py-3 text-center">
-                                <span class="badge bg-light text-dark border px-2 py-1">
-                                    <i class="bi bi-person me-1"></i><span th:text="${b.guests}">1</span>
-                                </span>
-                            </td>
-
-                            <!-- Total Price & Received Amount -->
-                            <td class="py-3 text-end text-nowrap">
-                                <div class="fw-bold fs-6" style="color: var(--brand-oxblood);">
+                            <!-- Total Price & Payment Summary -->
+                            <td class="py-3.5 text-end text-nowrap">
+                                <div class="fw-bold" style="color: var(--brand-oxblood); font-size: 1rem;">
                                     ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
                                 </div>
-                                <div class="mt-1">
-                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;" title="Payment Settled in Full">
-                                        <i class="bi bi-check-circle-fill me-1"></i>Received: ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
+                                <div class="d-inline-flex align-items-center gap-1 mt-1">
+                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5" style="font-size: 0.72rem;" title="Payment Settled in Full">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Paid
                                     </span>
-                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;" title="Awaiting Payment">
-                                        <i class="bi bi-clock me-1"></i>Due / Unpaid
+                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0.5" style="font-size: 0.72rem;" title="Awaiting Payment">
+                                        <i class="bi bi-clock me-1"></i>Unpaid
                                     </span>
-                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1" style="font-size: 0.72rem;" title="Payment Refunded">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Refunded: ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">3,000.00</span>
+                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0.5" style="font-size: 0.72rem;" title="Payment Refunded">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Refunded
                                     </span>
-                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size: 0.72rem;" title="Payment Failed">
+                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5" style="font-size: 0.72rem;" title="Payment Failed">
                                         <i class="bi bi-x-circle me-1"></i>Failed
                                     </span>
-                                </div>
-                                <div class="mt-1">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-0 rounded-pill" style="font-size: 0.7rem;"
+                                    <button type="button" class="btn btn-sm btn-link text-muted p-0 text-decoration-none ms-1"
                                             data-bs-toggle="modal" th:data-bs-target="'#paymentModal-' + ${b.id}"
                                             title="View Payment Breakdown & Receipts">
-                                        <i class="bi bi-receipt me-1"></i>Payment Details
+                                        <i class="bi bi-receipt" style="font-size: 0.85rem;"></i>
                                     </button>
-                                </div>
-                            </td>
-
-                            <!-- Status Badge & Payment Badge -->
-                            <td class="py-3 text-center text-nowrap">
-                                <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
-                                <div class="mt-1">
-                                    <span th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;">
-                                        <i class="bi bi-check-circle-fill me-1"></i>PAID
-                                    </span>
-                                    <span th:if="${b.paymentStatus.name() == 'UNPAID' or b.paymentStatus.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;">
-                                        <i class="bi bi-clock me-1"></i>UNPAID
-                                    </span>
-                                    <span th:if="${b.paymentStatus.name() == 'REFUNDED'}" class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0" style="font-size: 0.68rem;">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i>REFUNDED
-                                    </span>
-                                    <span th:if="${b.paymentStatus.name() == 'FAILED'}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;">
-                                        <i class="bi bi-x-circle me-1"></i>FAILED
-                                    </span>
                                 </div>
 
                                 <!-- Payment Details Modal for Admin -->
@@ -332,11 +303,16 @@
                                 </div>
                             </td>
 
+                            <!-- Booking Status Badge -->
+                            <td class="py-3.5 text-center text-nowrap">
+                                <th:block th:replace="~{fragments/status-badge :: badge(${b.status})}"></th:block>
+                            </td>
+
                             <!-- Notes & Remark -->
-                            <td class="py-3" style="max-width: 200px;">
+                            <td class="py-3.5 text-nowrap" style="min-width: 120px;">
                                 <div class="d-flex align-items-center gap-1">
                                     <span th:if="${b.operationalNotes != null and !b.operationalNotes.isEmpty()}"
-                                          class="badge bg-light text-dark border text-truncate" style="max-width: 140px;"
+                                          class="badge bg-light text-dark border text-truncate" style="max-width: 110px;"
                                           th:title="${b.operationalNotes}">
                                         <i class="bi bi-sticky me-1 text-primary"></i><span th:text="${b.operationalNotes}">Note</span>
                                     </span>
@@ -344,19 +320,20 @@
                                           class="small text-muted fst-italic">None</span>
 
                                     <!-- Trigger for Note Modal -->
-                                    <button type="button" class="btn btn-sm btn-light border p-1 px-2 rounded-circle ms-1"
+                                    <button type="button" class="btn btn-sm btn-light border p-0 rounded-circle ms-1"
                                             data-bs-toggle="modal" th:data-bs-target="'#noteModal-' + ${b.id}"
-                                            title="Edit Operational Notes">
-                                        <i class="bi bi-pencil" style="font-size: 0.75rem;"></i>
+                                            title="Edit Operational Notes"
+                                            style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-pencil" style="font-size: 0.7rem;"></i>
                                     </button>
                                 </div>
-                                <div th:if="${b.adminRemark != null and !b.adminRemark.isEmpty()}" class="small text-danger mt-1 text-truncate"
+                                <div th:if="${b.adminRemark != null and !b.adminRemark.isEmpty()}" class="small text-danger mt-1 text-truncate" style="max-width: 120px;"
                                      th:title="${b.adminRemark}">
                                     <i class="bi bi-info-circle me-1"></i><span th:text="${b.adminRemark}">Remark</span>
                                 </div>
 
                                 <!-- Note Edit Modal -->
-                                <div class="modal fade" th:id="'noteModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                                <div class="modal fade text-start" th:id="'noteModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content border-0 shadow">
                                             <div class="modal-header">
@@ -383,29 +360,49 @@
                             </td>
 
                             <!-- Actions -->
-                            <td class="pe-4 py-3 text-end text-nowrap">
-                                <div class="d-inline-flex gap-1 align-items-center">
+                            <td class="pe-4 py-3.5 text-end text-nowrap">
+                                <div class="d-inline-flex gap-1.5 align-items-center">
 
-                                    <!-- If PENDING: Approve & Reject Modal -->
-                                    <div th:if="${b.status.name() == 'PENDING'}" class="d-inline-flex gap-1">
+                                    <!-- If PENDING: Approve & Reject + Dropdown for Approve & Check-In -->
+                                    <div th:if="${b.status.name() == 'PENDING'}" class="d-inline-flex gap-1 align-items-center">
                                         <form th:action="@{/admin/bookings/{id}/approve(id=${b.id})}" method="post" class="d-inline m-0">
                                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-2 py-1" title="Approve Booking">
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-2.5 py-1" style="font-size: 0.78rem;" title="Approve Booking">
                                                 <i class="bi bi-check-lg me-1"></i>Approve
                                             </button>
                                         </form>
 
-                                        <form th:action="@{/admin/bookings/{id}/approve-and-check-in(id=${b.id})}" method="post" class="d-inline m-0">
-                                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" title="Approve and Immediately Check-In">
-                                                <i class="bi bi-box-arrow-in-right me-1"></i>Approve &amp; Check-In
-                                            </button>
-                                        </form>
-
-                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1"
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" style="font-size: 0.78rem;"
                                                 data-bs-toggle="modal" th:data-bs-target="'#rejectModal-' + ${b.id}" title="Reject Booking">
                                             <i class="bi bi-x-lg me-1"></i>Reject
                                         </button>
+
+                                        <div class="dropdown d-inline">
+                                            <button class="btn btn-sm btn-light border rounded-pill px-2 py-1 text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Options" style="font-size: 0.78rem;">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border text-start" style="font-size: 0.82rem; min-width: 190px; border-radius: 10px;">
+                                                <li>
+                                                    <form th:action="@{/admin/bookings/{id}/approve-and-check-in(id=${b.id})}" method="post" class="m-0">
+                                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                                        <button type="submit" class="dropdown-item py-1.5 text-primary fw-medium">
+                                                            <i class="bi bi-box-arrow-in-right me-2"></i>Approve &amp; Check-In
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item py-1.5 text-secondary" data-bs-toggle="modal" th:data-bs-target="'#noteModal-' + ${b.id}">
+                                                        <i class="bi bi-pencil me-2"></i>Edit Notes
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item py-1.5 text-secondary" data-bs-toggle="modal" th:data-bs-target="'#paymentModal-' + ${b.id}">
+                                                        <i class="bi bi-receipt me-2"></i>Payment Details
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
 
                                         <!-- Reject Remark Modal -->
                                         <div class="modal fade text-start" th:id="'rejectModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
@@ -434,10 +431,10 @@
                                     </div>
 
                                     <!-- If APPROVED: Check-In or No-Show -->
-                                    <div th:if="${b.status.name() == 'APPROVED'}" class="d-inline-flex gap-1">
+                                    <div th:if="${b.status.name() == 'APPROVED'}" class="d-inline-flex gap-1 align-items-center">
                                         <form th:action="@{/admin/bookings/{id}/check-in(id=${b.id})}" method="post" class="d-inline m-0">
                                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                            <button type="submit" class="btn btn-sm btn-primary rounded-pill px-2 py-1" title="Check-In Guest">
+                                            <button type="submit" class="btn btn-sm btn-primary rounded-pill px-2.5 py-1" style="font-size: 0.78rem;" title="Check-In Guest">
                                                 <i class="bi bi-box-arrow-in-right me-1"></i>Check-In
                                             </button>
                                         </form>
@@ -445,7 +442,7 @@
                                         <form th:action="@{/admin/bookings/{id}/no-show(id=${b.id})}" method="post" class="d-inline m-0"
                                               onsubmit="return confirm('Mark this booking as No-Show? Inventory will be freed.');">
                                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Mark as No-Show">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" style="font-size: 0.78rem;" title="Mark as No-Show">
                                                 <i class="bi bi-person-x me-1"></i>No-Show
                                             </button>
                                         </form>
@@ -455,7 +452,7 @@
                                     <div th:if="${b.status.name() == 'CHECKED_IN'}" class="d-inline">
                                         <form th:action="@{/admin/bookings/{id}/check-out(id=${b.id})}" method="post" class="d-inline m-0">
                                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                            <button type="submit" class="btn btn-sm btn-secondary rounded-pill px-2 py-1" title="Check-Out Guest">
+                                            <button type="submit" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" style="font-size: 0.78rem;" title="Check-Out Guest">
                                                 <i class="bi bi-box-arrow-right me-1"></i>Check-Out
                                             </button>
                                         </form>
@@ -464,7 +461,7 @@
                                     <!-- Refund Action if payment is SUCCESSFUL -->
                                     <div th:if="${b.paymentStatus.name() == 'SUCCESSFUL'}" class="d-inline">
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-warning rounded-pill px-2 py-1 ms-1"
+                                                class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 ms-1" style="font-size: 0.78rem;"
                                                 data-bs-toggle="modal"
                                                 th:data-bs-target="'#refundModal-' + ${b.id}"
                                                 title="Issue Refund">
@@ -472,9 +469,9 @@
                                         </button>
 
                                         <!-- Refund Modal -->
-                                        <div class="modal fade" th:id="'refundModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal fade text-start" th:id="'refundModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content border-0 shadow text-start">
+                                                <div class="modal-content border-0 shadow">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title h6 fw-bold text-danger">
                                                             <i class="bi bi-arrow-counterclockwise me-2"></i>Issue Verified Refund

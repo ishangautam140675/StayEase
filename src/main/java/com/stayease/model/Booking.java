@@ -57,11 +57,11 @@ public class Booking {
     private int guests;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 32)
     private BookingStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
+    @Column(name = "payment_status", nullable = false, length = 32)
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Column(name = "price_per_night_at_booking", precision = 10, scale = 2)

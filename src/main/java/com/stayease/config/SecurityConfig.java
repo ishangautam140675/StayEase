@@ -86,6 +86,7 @@ public class SecurityConfig {
                     "/api/webhooks/**", "/webhooks/**",
                     "/actuator/health", "/actuator/health/**", "/actuator/info",
                     "/css/**", "/js/**", "/images/**",
+                    "/manifest.json", "/favicon.ico",
                     "/error", "/error/**"
                 ).permitAll()
                 // Role-restricted areas

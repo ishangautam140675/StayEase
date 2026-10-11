@@ -1090,11 +1090,170 @@ input[type="date"] {
   min-height: 44px;
 }
 
-/* Text Wrapping Guard Against Unbroken Strings */
-h1, h2, h3, h4, h5, h6, p, span, a, td, th {
+/* Typography & Safe Word Wrapping (No Mid-Word Splitting) */
+p, .card-text, .description {
   overflow-wrap: break-word;
-  word-break: break-word;
 }
 
+/* Guarantee No Mid-Word Splitting on Buttons, Badges, Navigation, Labels & Table Headers */
+.btn,
+.badge,
+.nav-link,
+.dropdown-item,
+.nav-pills .nav-link,
+.pagination .page-link,
+.se-nav-link,
+.form-label,
+.input-group-text,
+th,
+.text-nowrap {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
 
+.btn {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Dark Navbar Dropdown Menu Theme */
+.navbar-dark .dropdown-menu {
+  background-color: #24141d !important;
+  border: 1px solid #3d1b26 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+.navbar-dark .dropdown-menu .dropdown-item {
+  color: rgba(255, 255, 255, 0.75) !important;
+  background-color: transparent !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.navbar-dark .dropdown-menu .dropdown-item:hover,
+.navbar-dark .dropdown-menu .dropdown-item:focus {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.navbar-dark .dropdown-menu .dropdown-item.active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* ==========================================================================
+   Mobile-Adaptable Web App Specifications (Responsive, Touch, PWA)
+   ========================================================================== */
+
+/* Universal mobile-safe containers */
+@media (max-width: 767.98px) {
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .se-container,
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Compact card padding on mobile devices for extra breathing room */
+  .card .card-body,
+  .card.p-4,
+  .card.p-5 {
+    padding: 1.25rem !important;
+  }
+
+  /* Touch-friendly interactive controls */
+  .btn,
+  .form-control,
+  .form-select,
+  .input-group-text {
+    min-height: 42px;
+  }
+
+  /* Horizontally Swipeable Filter Pills on Mobile Phones */
+  .nav-pills,
+  .status-pill-strip,
+  .mobile-touch-strip {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 6px !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .nav-pills::-webkit-scrollbar,
+  .status-pill-strip::-webkit-scrollbar,
+  .mobile-touch-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-pills .nav-item,
+  .status-pill-strip .btn,
+  .mobile-touch-strip > * {
+    flex-shrink: 0 !important;
+  }
+
+  /* Table momentum scrolling on mobile screens */
+  .table-responsive {
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: inset -6px 0 6px -6px rgba(0, 0, 0, 0.12);
+  }
+
+  .table td,
+  .table th {
+    padding: 0.75rem 0.6rem !important;
+    font-size: 0.85rem;
+  }
+
+  /* Fluid typography on small screens */
+  h1, .display-4, .display-5, .display-6 {
+    font-size: calc(1.35rem + 1vw) !important;
+    line-height: 1.25;
+  }
+
+  /* Mobile App Navbar Drawer Elevation */
+  .navbar-collapse {
+    background: rgba(30, 10, 18, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    margin-top: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Customer navbar mobile drawer */
+  nav[style*="var(--brand-cobalt)"] .navbar-collapse {
+    background: rgba(18, 30, 115, 0.96) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .navbar-collapse .nav-link {
+    padding: 0.7rem 1rem !important;
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+
+  .navbar-collapse .nav-link:hover,
+  .navbar-collapse .nav-link:active {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Mobile Notification Dropdown containment */
+  .dropdown-menu[aria-labelledby*="NotificationBell"] {
+    position: fixed !important;
+    top: 70px !important;
+    right: 15px !important;
+    left: 15px !important;
+    width: auto !important;
+    max-width: 100vw !important;
+  }
+}
 

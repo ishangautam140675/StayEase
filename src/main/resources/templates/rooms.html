@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Available Rooms & PG Listings')}">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -124,7 +125,8 @@
                                         <span class="room-price-tag">₹1,200</span>
                                         <span class="room-price-unit">/ night</span>
                                     </div>
-                                    <a th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                    <a sec:authorize="!hasRole('ADMIN')" th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/bookings}" class="btn btn-sm btn-cobalt">Manage Bookings</a>
                                 </div>
                             </div>
                         </div>
@@ -146,7 +148,8 @@
                                         <span class="room-price-tag">₹1,800</span>
                                         <span class="room-price-unit">/ night</span>
                                     </div>
-                                    <a th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                    <a sec:authorize="!hasRole('ADMIN')" th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/bookings}" class="btn btn-sm btn-cobalt">Manage Bookings</a>
                                 </div>
                             </div>
                         </div>
@@ -168,7 +171,8 @@
                                         <span class="room-price-tag">₹650</span>
                                         <span class="room-price-unit">/ night</span>
                                     </div>
-                                    <a th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                    <a sec:authorize="!hasRole('ADMIN')" th:href="@{/customer/dashboard}" class="btn btn-sm btn-cobalt">Book Stay</a>
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/bookings}" class="btn btn-sm btn-cobalt">Manage Bookings</a>
                                 </div>
                             </div>
                         </div>

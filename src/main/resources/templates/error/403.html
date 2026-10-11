@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Access Denied')}">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -16,15 +17,30 @@
 <!-- 403 Content -->
 <main class="page-content d-flex align-items-center py-5">
     <div class="container se-container">
-        <div class="error-page-container bg-white p-5 rounded-4 border shadow-sm mx-auto">
-            <div class="error-code">403</div>
+        <div class="error-page-container bg-white p-5 rounded-4 border shadow-sm mx-auto text-center" style="max-width: 580px;">
+            <div class="error-code text-danger fw-bold display-4 mb-2">403</div>
             <h2 class="h3 fw-bold text-dark mb-3">Access Denied</h2>
-            <p class="text-secondary mb-4">
-                You do not have permission to open this page.
+            <p class="text-secondary mb-3">
+                You do not have permission to access this section.
             </p>
-            <div class="d-flex justify-content-center gap-3">
-                <a th:href="@{/}" class="btn btn-cobalt">
+            <p sec:authorize="hasRole('ADMIN')" class="small text-muted mb-4">
+                You are currently signed in with an <strong>Administrator</strong> account. Customer portal features require a customer account.
+            </p>
+            <p sec:authorize="hasRole('CUSTOMER')" class="small text-muted mb-4">
+                You are currently signed in with a <strong>Customer</strong> account. Administrative console features require administrator privileges.
+            </p>
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <a th:href="@{/}" class="btn btn-outline-secondary">
                     <i class="bi bi-house-door me-2"></i>Back to Home
+                </a>
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-cobalt">
+                    <i class="bi bi-speedometer2 me-2"></i>Admin Console
+                </a>
+                <a sec:authorize="hasRole('CUSTOMER')" th:href="@{/customer/dashboard}" class="btn btn-cobalt">
+                    <i class="bi bi-speedometer2 me-2"></i>Customer Portal
+                </a>
+                <a sec:authorize="isAnonymous()" th:href="@{/login}" class="btn btn-cobalt">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
                 </a>
             </div>
         </div>

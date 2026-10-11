@@ -5,7 +5,12 @@
 <!-- ── Fragment: head(title) ────────────────────────────────────────────── -->
 <head th:fragment="head(title)">
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="theme-color" content="#481D2A"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <link rel="manifest" th:href="@{/manifest.json}"/>
     <title th:text="'StayEase | ' + ${title}">StayEase</title>
 
     <!-- Bootstrap 5 CSS from CDN -->
@@ -51,38 +56,46 @@
             <div class="collapse navbar-collapse" id="adminNavbar">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-1">
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white-50" th:href="@{/rooms}">
-                            <i class="bi bi-compass me-1"></i>Rooms Catalog
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/dashboard}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/admin/dashboard}">
                             <i class="bi bi-speedometer2 me-1"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/rooms}">
-                            <i class="bi bi-door-closed me-1"></i>Manage Rooms
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/admin/bookings}">
+                            <i class="bi bi-calendar-check me-1"></i>Bookings
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/bookings}">
-                            <i class="bi bi-calendar-check me-1"></i>Manage Bookings
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/admin/rooms}">
+                            <i class="bi bi-door-closed me-1"></i>Rooms
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/operations/maintenance}">
-                            <i class="bi bi-tools me-1"></i>Maintenance
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-nowrap px-3 py-2 rounded text-white" href="#" id="adminOpsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear-wide-connected me-1"></i>Operations
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow border-0 py-2" aria-labelledby="adminOpsDropdown" style="background-color: #24141d !important; border: 1px solid #3d1b26 !important; border-radius: 8px; min-width: 190px;">
+                            <li>
+                                <a class="dropdown-item py-2 text-white-50 text-nowrap" th:href="@{/admin/operations/maintenance}">
+                                    <i class="bi bi-tools me-2 text-warning"></i>Maintenance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 text-white-50 text-nowrap" th:href="@{/admin/operations/pricing}">
+                                    <i class="bi bi-tag me-2 text-info"></i>Seasonal Rates
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
+                            <li>
+                                <a class="dropdown-item py-2 text-white-50 text-nowrap" th:href="@{/admin/operations/audit-logs}">
+                                    <i class="bi bi-journal-text me-2 text-light"></i>Audit Logs
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/operations/pricing}">
-                            <i class="bi bi-tag me-1"></i>Seasonal Rates
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/admin/operations/audit-logs}">
-                            <i class="bi bi-journal-text me-1"></i>Audit Logs
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white-50" th:href="@{/rooms}" target="_blank" title="Preview Public Catalog">
+                            <i class="bi bi-box-arrow-up-right me-1 small"></i>Catalog
                         </a>
                     </li>
                 </ul>
@@ -109,7 +122,7 @@
 
                     <form th:action="@{/logout}" method="post" class="d-inline m-0">
                         <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-medium">
+                        <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-medium text-nowrap">
                             <i class="bi bi-box-arrow-right me-1"></i>Logout
                         </button>
                     </form>
@@ -138,32 +151,32 @@
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-1">
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/}">
                             <i class="bi bi-house me-1"></i>Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/rooms}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/rooms}">
                             <i class="bi bi-compass me-1"></i>Explore Rooms
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/dashboard}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/dashboard}">
                             <i class="bi bi-speedometer2 me-1"></i>My Portal
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/bookings}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/bookings}">
                             <i class="bi bi-calendar2-heart me-1"></i>My Bookings
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/favorites}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/favorites}">
                             <i class="bi bi-heart me-1"></i>Saved Rooms
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link px-3 py-2 rounded text-white" th:href="@{/customer/profile}">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/profile}">
                             <i class="bi bi-person me-1"></i>Profile
                         </a>
                     </li>
@@ -254,8 +267,11 @@
                 <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
                     <li><a th:href="@{/}" class="text-decoration-none">Home</a></li>
                     <li><a th:href="@{/rooms}" class="text-decoration-none">Explore Rooms</a></li>
-                    <li><a th:href="@{/customer/dashboard}" class="text-decoration-none">Customer Portal</a></li>
-                    <li><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin Console</a></li>
+                    <li sec:authorize="hasRole('CUSTOMER')"><a th:href="@{/customer/dashboard}" class="text-decoration-none">Customer Portal</a></li>
+                    <li sec:authorize="hasRole('CUSTOMER')"><a th:href="@{/customer/bookings}" class="text-decoration-none">My Bookings</a></li>
+                    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/dashboard}" class="text-decoration-none">Admin Console</a></li>
+                    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/bookings}" class="text-decoration-none">Manage Bookings</a></li>
+                    <li sec:authorize="isAnonymous()"><a th:href="@{/login}" class="text-decoration-none">Customer Login</a></li>
                 </ul>
             </div>
 
