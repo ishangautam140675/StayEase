@@ -148,10 +148,10 @@
     </nav>
 
     <!-- Primary-colored navbar for others (CUSTOMER & Anonymous) -->
-    <nav sec:authorize="!hasRole('ADMIN')" class="navbar navbar-expand-lg navbar-dark border-bottom py-3" style="background-color: var(--brand-cobalt) !important; border-bottom: 2px solid #2335aa !important;">
+    <nav sec:authorize="!hasRole('ADMIN')" class="navbar navbar-expand-lg navbar-dark border-bottom py-2 py-lg-3" style="background-color: var(--brand-cobalt) !important; border-bottom: 2px solid #2335aa !important;">
         <div class="container se-container">
             <!-- Brand -->
-            <a class="navbar-brand text-white fw-bold d-inline-flex align-items-center" th:href="@{/}">
+            <a class="navbar-brand text-white fw-bold d-inline-flex align-items-center me-3" th:href="@{/}">
                 <i class="bi bi-building-fill me-2 fs-5" style="color: var(--brand-tangerine);"></i>
                 <span class="fs-4" style="font-family: var(--font-heading); letter-spacing: -0.02em;">StayEase</span>
             </a>
@@ -165,7 +165,8 @@
 
             <!-- Collapsible Content -->
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-1">
+                <!-- Main Nav Links (Clean, streamlined) -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center gap-1">
                     <li class="nav-item">
                         <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/}">
                             <i class="bi bi-house me-1"></i>Home
@@ -173,47 +174,55 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/rooms}">
-                            <i class="bi bi-compass me-1"></i>Explore Rooms
+                            <i class="bi bi-door-open me-1"></i>Explore Rooms
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/discovery}">
-                            <i class="bi bi-geo-alt-fill me-1 text-warning"></i>Find Hostels & PGs
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white fw-semibold" th:href="@{/discovery}">
+                            <i class="bi bi-geo-alt-fill me-1 text-warning"></i>Find Hostels &amp; PGs
                         </a>
                     </li>
-                    <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/dashboard}">
-                            <i class="bi bi-speedometer2 me-1"></i>My Portal
+
+                    <!-- Customer Quick Nav Dropdown for cleaner layout -->
+                    <li class="nav-item dropdown" sec:authorize="hasRole('CUSTOMER')">
+                        <a class="nav-link dropdown-toggle text-nowrap px-3 py-2 rounded text-white" href="#" id="customerStaysDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calendar-heart me-1"></i>My Stays
                         </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/bookings}">
-                            <i class="bi bi-calendar2-heart me-1"></i>My Bookings
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/favorites}">
-                            <i class="bi bi-heart me-1"></i>Saved Rooms
-                        </a>
-                    </li>
-                    <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/customer/profile}">
-                            <i class="bi bi-person me-1"></i>Profile
-                        </a>
+                        <ul class="dropdown-menu shadow border-0 py-2" aria-labelledby="customerStaysDropdown" style="border-radius: 10px; min-width: 200px;">
+                            <li>
+                                <a class="dropdown-item py-2" th:href="@{/customer/dashboard}">
+                                    <i class="bi bi-speedometer2 me-2 text-primary"></i>My Portal Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" th:href="@{/customer/bookings}">
+                                    <i class="bi bi-calendar2-check me-2 text-success"></i>My Bookings
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" th:href="@{/customer/favorites}">
+                                    <i class="bi bi-heart-fill me-2 text-danger"></i>Saved Rooms
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
 
-                <div class="d-flex align-items-lg-center gap-2 mt-3 mt-lg-0">
+                <!-- Right Nav: Actions, Notifications, Account & Logout -->
+                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <!-- Anonymous Guest State: Clear, prominent Login & Register -->
                     <div sec:authorize="isAnonymous()" class="d-flex align-items-center gap-2">
-                        <a class="btn btn-outline-light btn-sm px-3 fw-medium" th:href="@{/login}">
+                        <a class="btn btn-outline-light btn-sm px-3 fw-medium text-nowrap" th:href="@{/login}">
                             <i class="bi bi-box-arrow-in-right me-1"></i>Login
                         </a>
-                        <a class="btn btn-light btn-sm px-3 fw-semibold" style="color: var(--brand-cobalt);" th:href="@{/register}">
-                            <i class="bi bi-person-plus me-1"></i>Register
+                        <a class="btn btn-light btn-sm px-3 fw-semibold text-nowrap shadow-sm" style="color: var(--brand-cobalt);" th:href="@{/register}">
+                            <i class="bi bi-person-plus-fill me-1"></i>Register
                         </a>
                     </div>
+
+                    <!-- Authenticated Customer State -->
                     <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
-                        <!-- Notification Bell Dropdown (Customer) -->
+                        <!-- Notification Bell Dropdown -->
                         <div class="dropdown me-1">
                             <button class="btn btn-outline-light btn-sm position-relative px-2 py-1" type="button" id="userNotificationBell" data-se-toggle="dropdown" aria-expanded="false" title="Notifications">
                                 <i class="bi bi-bell-fill fs-6" style="pointer-events: none;"></i>
@@ -238,11 +247,56 @@
                             </div>
                         </div>
 
-                        <span class="text-white-50 small d-none d-lg-inline me-1" sec:authentication="name">User</span>
+                        <!-- User Account Profile Dropdown (Clean, modern avatar & menu) -->
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center gap-2 py-1 px-2" type="button" id="userAccountDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span class="d-none d-md-inline small fw-medium text-truncate" style="max-width: 140px;" sec:authentication="name">User</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2" aria-labelledby="userAccountDropdown" style="border-radius: 12px; min-width: 230px;">
+                                <li class="px-3 py-2 border-bottom bg-light">
+                                    <div class="small text-muted" style="font-size: 0.7rem;">SIGNED IN AS</div>
+                                    <div class="fw-bold small text-dark text-truncate" sec:authentication="name">user@email.com</div>
+                                </li>
+                                <li sec:authorize="hasRole('CUSTOMER')">
+                                    <a class="dropdown-item py-2 small" th:href="@{/customer/profile}">
+                                        <i class="bi bi-person-circle me-2 text-primary"></i>My Profile &amp; Settings
+                                    </a>
+                                </li>
+                                <li sec:authorize="hasRole('CUSTOMER')">
+                                    <a class="dropdown-item py-2 small" th:href="@{/customer/dashboard}">
+                                        <i class="bi bi-speedometer2 me-2 text-info"></i>Customer Dashboard
+                                    </a>
+                                </li>
+                                <li sec:authorize="hasRole('CUSTOMER')">
+                                    <a class="dropdown-item py-2 small" th:href="@{/customer/bookings}">
+                                        <i class="bi bi-calendar2-heart me-2 text-success"></i>Booking History
+                                    </a>
+                                </li>
+                                <li sec:authorize="hasRole('CUSTOMER')">
+                                    <a class="dropdown-item py-2 small" th:href="@{/customer/favorites}">
+                                        <i class="bi bi-heart me-2 text-danger"></i>Saved Stays
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li class="px-2 pt-1">
+                                    <form th:action="@{/logout}" method="post" class="m-0">
+                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <button type="submit" class="dropdown-item py-2 text-danger fw-semibold rounded small d-flex align-items-center">
+                                            <i class="bi bi-box-arrow-right me-2 fs-6"></i>Sign Out / Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Direct visible Logout Button for instant one-click exit -->
                         <form th:action="@{/logout}" method="post" class="d-inline m-0">
                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                            <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-medium">
-                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            <button type="submit" class="btn btn-outline-light btn-sm px-2 py-1 fw-medium text-nowrap d-flex align-items-center" title="Log out of StayEase">
+                                <i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-sm-inline">Logout</span>
                             </button>
                         </form>
                     </div>
