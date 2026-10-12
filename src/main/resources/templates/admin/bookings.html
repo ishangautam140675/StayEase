@@ -28,6 +28,9 @@
                 <p class="text-secondary mb-0">Review booking requests, verify date availability, and approve or reject reservations.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/admin/users}" class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-people me-1"></i>Guest Directory
+                </a>
                 <a th:href="@{/admin/bookings/export(status=${selectedStatus}, startDate=${startDate}, endDate=${endDate})}"
                    class="btn btn-outline-success px-3">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV
@@ -177,9 +180,18 @@
                         <tr th:each="b : ${bookings}">
                             <!-- Customer & Ref Info -->
                             <td class="ps-4 py-3.5">
-                                <div class="fw-bold text-dark"
-                                     th:text="${b.user != null ? b.user.fullName : 'Guest'}">
-                                    Customer Name
+                                <div class="d-flex align-items-center gap-1.5">
+                                    <div class="fw-bold text-dark"
+                                         th:text="${b.user != null ? b.user.fullName : 'Guest'}">
+                                        Customer Name
+                                    </div>
+                                    <button th:if="${b.user != null}" type="button"
+                                            class="btn btn-link p-0 text-muted text-decoration-none"
+                                            data-bs-toggle="modal" th:data-bs-target="'#editUserModal-' + ${b.id}"
+                                            title="Edit Guest Details"
+                                            style="font-size: 0.75rem; line-height: 1;">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </button>
                                 </div>
                                 <div class="small text-secondary text-truncate" style="max-width: 200px;"
                                      th:text="${b.user != null ? b.user.email : ''}">
@@ -273,7 +285,7 @@
                             <td class="pe-4 py-3.5 text-end text-nowrap">
                                 <div class="d-inline-flex gap-1.5 align-items-center">
 
-                                    <!-- If PENDING: Approve & Reject + Dropdown for Approve & Check-In -->
+                                    <!-- If PENDING: Approve & Reject -->
                                     <div th:if="${b.status.name() == 'PENDING'}" class="d-inline-flex gap-1 align-items-center">
                                         <form th:action="@{/admin/bookings/{id}/approve(id=${b.id})}" method="post" class="d-inline m-0">
                                             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -286,33 +298,6 @@
                                                 data-bs-toggle="modal" th:data-bs-target="'#rejectModal-' + ${b.id}" title="Reject Booking">
                                             <i class="bi bi-x-lg me-1"></i>Reject
                                         </button>
-
-                                        <div class="dropdown d-inline">
-                                            <button class="btn btn-sm btn-light border rounded-pill px-2 py-1 text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Options" style="font-size: 0.78rem;">
-                                                <i class="bi bi-three-dots-vertical"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border text-start" style="font-size: 0.82rem; min-width: 190px; border-radius: 10px;">
-                                                <li>
-                                                    <form th:action="@{/admin/bookings/{id}/approve-and-check-in(id=${b.id})}" method="post" class="m-0">
-                                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                        <button type="submit" class="dropdown-item py-1.5 text-primary fw-medium">
-                                                            <i class="bi bi-box-arrow-in-right me-2"></i>Approve &amp; Check-In
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                                <li><hr class="dropdown-divider my-1"></li>
-                                                <li>
-                                                    <button type="button" class="dropdown-item py-1.5 text-secondary" data-bs-toggle="modal" th:data-bs-target="'#noteModal-' + ${b.id}">
-                                                        <i class="bi bi-pencil me-2"></i>Edit Notes
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button type="button" class="dropdown-item py-1.5 text-secondary" data-bs-toggle="modal" th:data-bs-target="'#paymentModal-' + ${b.id}">
-                                                        <i class="bi bi-receipt me-2"></i>Payment Details
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div>
                                     </div>
 
                                     <!-- If APPROVED: Check-In or No-Show -->
@@ -354,9 +339,44 @@
                                         </button>
                                     </div>
 
-                                    <!-- If Terminal Status and not paid -->
-                                    <span th:if="${(b.status.name() == 'CHECKED_OUT' or b.status.name() == 'REJECTED' or b.status.name() == 'CANCELLED' or b.status.name() == 'NO_SHOW') and b.paymentStatus.name() != 'SUCCESSFUL'}"
-                                          class="text-muted small">&mdash;</span>
+                                    <!-- Unified Options Dropdown (For ALL Statuses) -->
+                                    <div class="dropdown d-inline">
+                                        <button class="btn btn-sm btn-light border rounded-pill px-2 py-1 text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Options" style="font-size: 0.78rem;">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border text-start" style="font-size: 0.82rem; min-width: 195px; border-radius: 10px;">
+                                            <li th:if="${b.status.name() == 'PENDING'}">
+                                                <form th:action="@{/admin/bookings/{id}/approve-and-check-in(id=${b.id})}" method="post" class="m-0">
+                                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                                    <button type="submit" class="dropdown-item py-1.5 text-primary fw-medium">
+                                                        <i class="bi bi-box-arrow-in-right me-2"></i>Approve &amp; Check-In
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li th:if="${b.status.name() == 'PENDING'}"><hr class="dropdown-divider my-1"></li>
+                                            <li th:if="${b.user != null}">
+                                                <button type="button" class="dropdown-item py-1.5 text-dark fw-medium" data-bs-toggle="modal" th:data-bs-target="'#editUserModal-' + ${b.id}">
+                                                    <i class="bi bi-person-gear me-2 text-primary"></i>Edit Guest Info
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item py-1.5 text-secondary" data-bs-toggle="modal" th:data-bs-target="'#noteModal-' + ${b.id}">
+                                                    <i class="bi bi-pencil me-2"></i>Edit Notes
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item py-1.5 text-secondary" data-bs-toggle="modal" th:data-bs-target="'#paymentModal-' + ${b.id}">
+                                                    <i class="bi bi-receipt me-2"></i>Payment Details
+                                                </button>
+                                            </li>
+                                            <li th:if="${b.user != null and b.user.role.name() != 'ADMIN'}"><hr class="dropdown-divider my-1"></li>
+                                            <li th:if="${b.user != null and b.user.role.name() != 'ADMIN'}">
+                                                <button type="button" class="dropdown-item py-1.5 text-danger" data-bs-toggle="modal" th:data-bs-target="'#deleteUserModal-' + ${b.id}">
+                                                    <i class="bi bi-trash3 me-2"></i>Remove User
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
 
                                 </div>
                             </td>
@@ -526,6 +546,84 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-sm btn-warning fw-bold px-3">Confirm Refund</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Edit Guest User Modal -->
+            <div th:if="${b.user != null}" class="modal fade text-start" th:id="'editUserModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title h6 fw-bold">
+                                <i class="bi bi-person-gear me-2 text-primary"></i>Edit Guest Information
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/admin/users/{id}/update(id=${b.user.id})}" method="post">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="redirectUrl"
+                                   th:value="${'/admin/bookings?status=' + (selectedStatus != null ? selectedStatus : 'ALL') + (query != null and !query.isEmpty() ? '&query=' + query : '') + (page != null ? '&page=' + (page.number + 1) : '')}"/>
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Full Name</label>
+                                    <input type="text" name="fullName" class="form-control"
+                                           th:value="${b.user.fullName}" maxlength="100" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Email Address</label>
+                                    <input type="email" name="email" class="form-control"
+                                           th:value="${b.user.email}" maxlength="150" required/>
+                                    <div class="form-text text-muted small">Must be a valid, unique email address.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Phone Number</label>
+                                    <input type="tel" name="phone" class="form-control"
+                                           th:value="${b.user.phone}" maxlength="20" placeholder="+91 98765 43210"/>
+                                </div>
+                                <div class="p-2.5 rounded-3 bg-light text-muted small" style="font-size: 0.75rem;">
+                                    <i class="bi bi-info-circle me-1 text-primary"></i>
+                                    Updates will reflect across all bookings associated with this guest account.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-cobalt px-3">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Delete Guest User Modal -->
+            <div th:if="${b.user != null and b.user.role.name() != 'ADMIN'}" class="modal fade text-start" th:id="'deleteUserModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title h6 fw-bold text-danger">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>Remove Guest Account
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/admin/users/{id}/delete(id=${b.user.id})}" method="post">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="redirectUrl"
+                                   th:value="${'/admin/bookings?status=' + (selectedStatus != null ? selectedStatus : 'ALL') + (query != null and !query.isEmpty() ? '&query=' + query : '') + (page != null ? '&page=' + (page.number + 1) : '')}"/>
+                            <div class="modal-body p-4">
+                                <p class="text-dark mb-2">
+                                    Are you sure you want to permanently remove guest account:
+                                    <strong class="d-block mt-1 text-danger" th:text="${b.user.fullName + ' (' + b.user.email + ')'}">Guest Name</strong>
+                                </p>
+                                <div class="alert alert-warning py-2 px-3 small mb-0 border-0" style="font-size: 0.8rem; background: #fff8e6; color: #8a6200;">
+                                    <i class="bi bi-shield-exclamation me-1"></i>
+                                    This will safely clean up all bookings, payment history, and preferences linked to this user. This action cannot be undone.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-danger px-3">Confirm Delete</button>
                             </div>
                         </form>
                     </div>
