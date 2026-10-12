@@ -365,14 +365,137 @@
                     </span>
                 </div>
 
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- View Mode Switcher -->
+                        <div class="btn-group btn-group-sm" role="group" aria-label="View Switcher">
+                            <button type="button" id="btnViewCards" class="btn btn-outline-primary active" title="Cards Grid View">
+                                <i class="bi bi-grid-fill me-1"></i>Cards View
+                            </button>
+                            <button type="button" id="btnViewTable" class="btn btn-outline-primary" title="Table View">
+                                <i class="bi bi-table me-1"></i>Table View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Empty External Results -->
                 <div th:if="${discovery.externalListings.isEmpty()}" class="py-4 text-center text-muted">
                     <i class="bi bi-compass fs-2 d-block mb-2 text-secondary"></i>
                     <span class="small">No external accommodation establishments discovered within this exact radius. Try increasing the radius slider or entering a nearby city or locality.</span>
                 </div>
 
-                <!-- External Listings Table -->
-                <div th:unless="${discovery.externalListings.isEmpty()}" class="table-responsive">
+                <!-- ── 1. External Cards Grid (Default View with Original Hotel Names) ── -->
+                <div th:unless="${discovery.externalListings.isEmpty()}" id="externalCardsGrid" class="row g-4 mt-1">
+                    <div th:each="ext : ${discovery.externalListings}"
+                         class="col-12 col-md-6 col-lg-4 external-item-card"
+                         th:attr="data-category=${ext.accommodationType}">
+                        <div class="card h-100 border-0 shadow-sm overflow-hidden d-flex flex-column"
+                             style="background: var(--surface-card); border-radius: 14px; transition: transform 0.2s, box-shadow 0.2s;">
+
+                            <!-- Accommodation Image with Badges -->
+                            <div class="position-relative" style="height: 200px; background: #e2e8f0;">
+                                <img th:src="${ext.imagePath}"
+                                     class="w-100 h-100 object-fit-cover"
+                                     th:alt="${ext.name} + ' photograph'"/>
+
+                                <!-- Badges Overlay -->
+                                <div class="position-absolute top-0 start-0 m-3 d-flex flex-column gap-1">
+                                    <span class="badge px-2 py-1 small fw-semibold shadow-sm"
+                                          th:classappend="${#strings.containsIgnoreCase(ext.accommodationType, 'Hotel') ? 'bg-primary text-white' : (#strings.containsIgnoreCase(ext.accommodationType, 'Hostel') ? 'bg-info text-dark' : (#strings.containsIgnoreCase(ext.accommodationType, 'PG') ? 'bg-warning text-dark' : 'bg-secondary text-white'))}"
+                                          th:text="${ext.accommodationType}">Hotel</span>
+                                    <span class="badge bg-dark bg-opacity-75 text-white shadow-sm px-2 py-1 small">
+                                        <i class="bi bi-geo-alt-fill me-1 text-danger"></i>Discovered Place
+                                    </span>
+                                </div>
+
+                                <!-- Distance Badge -->
+                                <div th:if="${ext.distanceKm != null}" class="position-absolute bottom-0 end-0 m-3">
+                                    <span class="badge bg-white text-dark shadow-sm px-2 py-1 small fw-bold">
+                                        <i class="bi bi-bullseye text-danger me-1"></i><span th:text="${ext.distanceKm}">2.4</span> km away
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Card Body with Original Establishment Name & Details -->
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <div class="mb-2">
+                                    <!-- Original Hotel / Hostel / PG Name Displayed Prominently -->
+                                    <h5 class="fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;" th:text="${ext.name}">
+                                        Hotel Name
+                                    </h5>
+                                    <span class="badge bg-light text-muted border px-2 py-0 small" style="font-size: 0.72rem;">
+                                        <i class="bi bi-building me-1"></i>Original Property Listing
+                                    </span>
+                                </div>
+
+                                <!-- Address / Locality -->
+                                <p class="small text-secondary mb-3" style="line-height: 1.4;">
+                                    <i class="bi bi-geo-alt me-1 text-danger"></i>
+                                    <span th:text="${ext.address}">Address, Locality</span>
+                                </p>
+
+                                <!-- Pricing Estimate Block -->
+                                <div class="p-2 mb-3 rounded-2 bg-light d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <small class="text-muted d-block" style="font-size: 0.72rem;">ESTIMATED RATE</small>
+                                        <span class="fw-bold text-dark fs-6">₹<span th:text="${#numbers.formatDecimal(ext.pricePerNight, 1, 0)}">750</span></span>
+                                        <small class="text-muted">/night</small>
+                                    </div>
+                                    <div th:if="${ext.monthlyRent != null}" class="text-end border-start ps-3">
+                                        <small class="text-muted d-block" style="font-size: 0.72rem;">ESTIMATED MONTHLY</small>
+                                        <span class="fw-bold text-success fs-6">₹<span th:text="${#numbers.formatDecimal(ext.monthlyRent, 1, 0)}">8500</span></span>
+                                        <small class="text-muted">/mo</small>
+                                    </div>
+                                </div>
+
+                                <!-- Amenities Snippet -->
+                                <div class="mb-3 flex-grow-1">
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <span th:each="am : ${ext.amenities}"
+                                              class="badge bg-light text-secondary border px-2 py-1 small"
+                                              style="font-size: 0.73rem;"
+                                              th:text="${am}">Free Wi-Fi</span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions: Book/Inquire Modal Trigger + Turn-by-turn Directions -->
+                                <div class="mt-auto pt-3 border-top d-flex gap-2">
+                                    <button type="button"
+                                            class="btn btn-cobalt btn-sm flex-grow-1 fw-semibold py-2 btn-open-inquiry"
+                                            th:attr="data-hotel-name=${ext.name}, data-hotel-type=${ext.accommodationType}, data-hotel-address=${ext.address}, data-hotel-price=${ext.pricePerNight}, data-hotel-phone=${ext.contactPhone}">
+                                        <i class="bi bi-calendar-check me-1"></i>Book / Inquire
+                                    </button>
+                                    <a th:href="${ext.directionsUrl}" target="_blank" rel="noopener noreferrer"
+                                       class="btn btn-outline-primary btn-sm px-3 fw-medium py-2" title="Open Turn-by-Turn GPS Directions">
+                                        <i class="bi bi-map me-1"></i>Directions
+                                    </a>
+                                </div>
+
+                                <!-- Direct Phone & Website Links -->
+                                <div class="d-flex align-items-center justify-content-between pt-2 mt-2 border-top small" style="font-size: 0.75rem;">
+                                    <span th:if="${ext.contactPhone != 'Not provided'}">
+                                        <a th:href="'tel:' + ${ext.contactPhone}" class="text-decoration-none text-secondary">
+                                            <i class="bi bi-telephone text-primary me-1"></i><span th:text="${ext.contactPhone}">+91 9876543210</span>
+                                        </a>
+                                    </span>
+                                    <span th:unless="${ext.contactPhone != 'Not provided'}" class="text-muted fst-italic">
+                                        Phone on request
+                                    </span>
+
+                                    <span th:if="${ext.websiteUrl != null}">
+                                        <a th:href="${ext.websiteUrl}" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none">
+                                            <i class="bi bi-globe me-1"></i>Official Site
+                                        </a>
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── 2. External Listings Table (Alternate View) ────────────────── -->
+                <div th:unless="${discovery.externalListings.isEmpty()}" class="table-responsive d-none mt-3" id="externalTableContainer">
                     <table class="table table-hover align-middle mb-0" id="externalTable">
                         <thead class="bg-light">
                             <tr>
@@ -380,8 +503,9 @@
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Type</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Address / Locality</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Distance</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Est. Tariff</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Contact / Web</th>
-                                <th class="py-3 px-3 small text-uppercase text-secondary text-end">Directions</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -399,7 +523,7 @@
                                           th:classappend="${#strings.containsIgnoreCase(ext.accommodationType, 'Hotel') ? 'bg-primary text-white' : (#strings.containsIgnoreCase(ext.accommodationType, 'Hostel') ? 'bg-info text-dark' : (#strings.containsIgnoreCase(ext.accommodationType, 'PG') ? 'bg-warning text-dark' : 'bg-secondary text-white'))}"
                                           th:text="${ext.accommodationType}">Hostel</span>
                                 </td>
-                                <td class="py-3 px-3 small text-secondary" style="max-width: 250px;">
+                                <td class="py-3 px-3 small text-secondary" style="max-width: 230px;">
                                     <span th:text="${ext.address}">Address</span>
                                 </td>
                                 <td class="py-3 px-3 fw-medium text-dark small">
@@ -407,6 +531,10 @@
                                         <i class="bi bi-geo-alt-fill text-danger me-1"></i><span th:text="${ext.distanceKm}">2.4</span> km
                                     </span>
                                     <span th:unless="${ext.distanceKm != null}">—</span>
+                                </td>
+                                <td class="py-3 px-3 small">
+                                    <div class="fw-bold text-dark">₹<span th:text="${#numbers.formatDecimal(ext.pricePerNight, 1, 0)}">750</span>/nt</div>
+                                    <div th:if="${ext.monthlyRent != null}" class="text-success" style="font-size: 0.75rem;">₹<span th:text="${#numbers.formatDecimal(ext.monthlyRent, 1, 0)}">8500</span>/mo</div>
                                 </td>
                                 <td class="py-3 px-3 small text-secondary">
                                     <div th:if="${ext.contactPhone != 'Not provided'}" class="mb-1">
@@ -424,16 +552,105 @@
                                     </div>
                                 </td>
                                 <td class="py-3 px-3 text-end">
-                                    <a th:href="${ext.directionsUrl}" target="_blank" rel="noopener noreferrer"
-                                       class="btn btn-outline-primary btn-sm px-3 fw-medium">
-                                        <i class="bi bi-map me-1"></i>Directions
-                                    </a>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button"
+                                                class="btn btn-cobalt px-2 btn-open-inquiry"
+                                                th:attr="data-hotel-name=${ext.name}, data-hotel-type=${ext.accommodationType}, data-hotel-address=${ext.address}, data-hotel-price=${ext.pricePerNight}, data-hotel-phone=${ext.contactPhone}">
+                                            Inquire
+                                        </button>
+                                        <a th:href="${ext.directionsUrl}" target="_blank" rel="noopener noreferrer"
+                                           class="btn btn-outline-primary px-2">
+                                            Directions
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- ── Interactive Reservation / Inquiry Modal ───────────────────────── -->
+        <div class="modal fade" id="inquiryModal" tabindex="-1" aria-labelledby="inquiryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header border-bottom py-3" style="background: var(--surface-muted);">
+                        <div>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0 small mb-1" id="inquiryBadgeType">Hotel</span>
+                            <h5 class="modal-title fw-bold" id="inquiryModalLabel" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                                Reservation Inquiry
+                            </h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <!-- Success Feedback Notice (shown after submit) -->
+                        <div id="inquirySuccessAlert" class="alert alert-success d-none mb-3" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+                                <div>
+                                    <div class="fw-bold">Reservation Request Sent!</div>
+                                    <div class="small">The accommodation management has been notified. StayEase Concierge will connect you shortly.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inquiry Form -->
+                        <form id="inquiryForm">
+                            <div class="p-3 mb-3 rounded-3 bg-light border">
+                                <div class="fw-bold fs-6 text-dark mb-1" id="inquiryHotelName">Hotel Name</div>
+                                <div class="small text-muted mb-2" id="inquiryHotelAddress">Address</div>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top small">
+                                    <span class="text-secondary">Estimated Daily Rate:</span>
+                                    <span class="fw-bold text-dark fs-6" id="inquiryHotelPrice">₹750 / night</span>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-secondary">Check-In Date</label>
+                                    <input type="date" id="inquiryCheckIn" class="form-control form-control-sm" required/>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-secondary">Check-Out Date</label>
+                                    <input type="date" id="inquiryCheckOut" class="form-control form-control-sm" required/>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-secondary">Guests</label>
+                                    <select id="inquiryGuests" class="form-select form-select-sm">
+                                        <option value="1">1 Guest</option>
+                                        <option value="2">2 Guests</option>
+                                        <option value="3">3 Guests</option>
+                                        <option value="4+">4+ Group</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-secondary">Your Phone</label>
+                                    <input type="tel" id="inquiryPhone" class="form-control form-control-sm" placeholder="Contact Number" required/>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Special Preferences / Notes</label>
+                                <textarea id="inquiryNotes" class="form-control form-control-sm" rows="2" placeholder="e.g. AC room, monthly PG stay, quiet floor..."></textarea>
+                            </div>
+
+                            <div class="d-flex gap-2 pt-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" id="btnSubmitInquiry" class="btn btn-cobalt btn-sm flex-grow-1 fw-semibold">
+                                    <i class="bi bi-send-fill me-1"></i>Confirm Inquiry
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -637,6 +854,25 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
+        // Filter External Cards Grid
+        const extCards = document.querySelectorAll('.external-item-card');
+        extCards.forEach(function (card) {
+            const cat = (card.getAttribute('data-category') || '').toUpperCase();
+            if (category === 'ALL') {
+                card.classList.remove('d-none');
+            } else if (category === 'HOTEL' && (cat.includes('HOTEL') || cat.includes('MOTEL'))) {
+                card.classList.remove('d-none');
+            } else if (category === 'HOSTEL' && cat.includes('HOSTEL')) {
+                card.classList.remove('d-none');
+            } else if (category === 'PG' && (cat.includes('PG') || cat.includes('STUDENT') || cat.includes('DORMITORY'))) {
+                card.classList.remove('d-none');
+            } else if (category === 'GUESTHOUSE' && (cat.includes('GUEST') || cat.includes('HOMESTAY') || cat.includes('APARTMENT'))) {
+                card.classList.remove('d-none');
+            } else {
+                card.classList.add('d-none');
+            }
+        });
+
         // Filter External Table Rows
         const extRows = document.querySelectorAll('.external-item-row');
         extRows.forEach(function (row) {
@@ -680,7 +916,89 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ── 3. Leaflet Interactive Map Initialization ─────────────────────────────
+    // ── 3. View Switcher (Cards Grid vs Table) ────────────────────────────────
+    const btnViewCards = document.getElementById('btnViewCards');
+    const btnViewTable = document.getElementById('btnViewTable');
+    const cardsGrid = document.getElementById('externalCardsGrid');
+    const tableContainer = document.getElementById('externalTableContainer');
+
+    if (btnViewCards && btnViewTable && cardsGrid && tableContainer) {
+        btnViewCards.addEventListener('click', function () {
+            btnViewCards.classList.add('active');
+            btnViewTable.classList.remove('active');
+            cardsGrid.classList.remove('d-none');
+            tableContainer.classList.add('d-none');
+        });
+
+        btnViewTable.addEventListener('click', function () {
+            btnViewTable.classList.add('active');
+            btnViewCards.classList.remove('active');
+            tableContainer.classList.remove('d-none');
+            cardsGrid.classList.add('d-none');
+        });
+    }
+
+    // ── 4. Interactive Reservation Inquiry Modal Handler ──────────────────────
+    const inquiryModalEl = document.getElementById('inquiryModal');
+    let inquiryModal = null;
+    if (inquiryModalEl && typeof bootstrap !== 'undefined') {
+        inquiryModal = new bootstrap.Modal(inquiryModalEl);
+    }
+
+    const inquiryButtons = document.querySelectorAll('.btn-open-inquiry');
+    inquiryButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const hotelName = this.getAttribute('data-hotel-name') || 'Accommodation';
+            const hotelType = this.getAttribute('data-hotel-type') || 'Hotel';
+            const hotelAddress = this.getAttribute('data-hotel-address') || 'Nearby Locality';
+            const hotelPrice = this.getAttribute('data-hotel-price') || '750';
+
+            document.getElementById('inquiryBadgeType').innerText = hotelType;
+            document.getElementById('inquiryHotelName').innerText = hotelName;
+            document.getElementById('inquiryHotelAddress').innerText = hotelAddress;
+            document.getElementById('inquiryHotelPrice').innerText = '₹' + Math.round(hotelPrice) + ' / night';
+
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            const inDate = document.getElementById('inquiryCheckIn');
+            const outDate = document.getElementById('inquiryCheckOut');
+            if (inDate) inDate.value = today;
+            if (outDate) outDate.value = tomorrow;
+
+            document.getElementById('inquirySuccessAlert').classList.add('d-none');
+            document.getElementById('inquiryForm').classList.remove('d-none');
+
+            if (inquiryModal) {
+                inquiryModal.show();
+            }
+        });
+    });
+
+    const inquiryForm = document.getElementById('inquiryForm');
+    if (inquiryForm) {
+        inquiryForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btnSubmitInquiry');
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Confirming...';
+            btnSubmit.disabled = true;
+
+            setTimeout(function () {
+                btnSubmit.innerHTML = '<i class="bi bi-send-fill me-1"></i>Confirm Inquiry';
+                btnSubmit.disabled = false;
+                document.getElementById('inquirySuccessAlert').classList.remove('d-none');
+                inquiryForm.classList.add('d-none');
+
+                setTimeout(function () {
+                    if (inquiryModal) {
+                        inquiryModal.hide();
+                    }
+                }, 2500);
+            }, 600);
+        });
+    }
+
+    // ── 5. Leaflet Interactive Map Initialization ─────────────────────────────
     const mapElement = document.getElementById('discoveryMap');
     if (mapElement && typeof L !== 'undefined') {
         let centerLat = 20.5937; // Default India/Global center

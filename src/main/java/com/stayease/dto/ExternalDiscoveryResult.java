@@ -23,6 +23,10 @@ public class ExternalDiscoveryResult implements Serializable {
     private String websiteUrl;
     private String contactPhone;
     private boolean bookableOnStayEase = false;
+    private java.math.BigDecimal pricePerNight;
+    private java.math.BigDecimal monthlyRent;
+    private String imagePath;
+    private java.util.List<String> amenities;
 
     public ExternalDiscoveryResult() {
     }
@@ -177,5 +181,37 @@ public class ExternalDiscoveryResult implements Serializable {
 
     public void setBookableOnStayEase(boolean bookableOnStayEase) {
         this.bookableOnStayEase = bookableOnStayEase;
+    }
+
+    public java.math.BigDecimal getPricePerNight() {
+        return pricePerNight != null ? pricePerNight : new java.math.BigDecimal("750.00");
+    }
+
+    public void setPricePerNight(java.math.BigDecimal pricePerNight) {
+        this.pricePerNight = pricePerNight;
+    }
+
+    public java.math.BigDecimal getMonthlyRent() {
+        return monthlyRent;
+    }
+
+    public void setMonthlyRent(java.math.BigDecimal monthlyRent) {
+        this.monthlyRent = monthlyRent;
+    }
+
+    public String getImagePath() {
+        return imagePath != null ? imagePath : "/images/hero_room.jpg";
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public java.util.List<String> getAmenities() {
+        return amenities != null ? amenities : java.util.List.of("Free Wi-Fi", "Air Conditioning", "Ensuite Bath");
+    }
+
+    public void setAmenities(java.util.List<String> amenities) {
+        this.amenities = amenities;
     }
 }
