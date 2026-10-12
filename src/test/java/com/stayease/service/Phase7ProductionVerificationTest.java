@@ -34,7 +34,7 @@ public class Phase7ProductionVerificationTest {
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"))
                 .andExpect(header().exists("Content-Security-Policy"))
                 .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
-                .andExpect(header().string("Permissions-Policy", "camera=(), microphone=(), geolocation=()"));
+                .andExpect(header().string("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)"));
     }
 
     @Test

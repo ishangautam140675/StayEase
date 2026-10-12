@@ -113,7 +113,7 @@ public class SecurityConfig {
                     .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 )
                 .permissionsPolicy(permissions -> permissions
-                    .policy("camera=(), microphone=(), geolocation=()")
+                    .policy("camera=(), microphone=(), geolocation=(self)")
                 )
             )
 

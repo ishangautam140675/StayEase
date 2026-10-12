@@ -96,11 +96,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- H2 in-memory database (tests only; replaces MySQL) -->
+        <!-- H2 in-memory database (local development fallback & tests) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

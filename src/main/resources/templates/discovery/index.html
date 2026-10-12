@@ -383,50 +383,60 @@ document.addEventListener('DOMContentLoaded', function () {
             gpsButtonText.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Requesting GPS...';
             btnGps.disabled = true;
 
-            const options = {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
-            };
+            function onPositionSuccess(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
 
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
+                searchLat.value = lat;
+                searchLng.value = lng;
+                searchGps.value = 'true';
+                locationQuery.value = ''; // Rely on precise coordinates
 
-                    searchLat.value = lat;
-                    searchLng.value = lng;
-                    searchGps.value = 'true';
-                    locationQuery.value = ''; // Clear text query to rely on coordinates
+                gpsButtonText.innerText = 'Location Acquired';
+                showAlert('Location acquired (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')! Refreshing accommodations around you...', 'success', 'bi-check-circle-fill');
 
-                    gpsButtonText.innerText = 'Location Acquired';
-                    showAlert('GPS location acquired successfully! Refreshing discovery results around you...', 'success', 'bi-check-circle-fill');
+                setTimeout(function () {
+                    searchForm.submit();
+                }, 400);
+            }
 
-                    setTimeout(function () {
-                        searchForm.submit();
-                    }, 500);
-                },
-                function (error) {
-                    btnGps.disabled = false;
-                    gpsButtonText.innerText = 'Use My Location';
+            function tryGeolocation(highAccuracy) {
+                navigator.geolocation.getCurrentPosition(
+                    onPositionSuccess,
+                    function (error) {
+                        if (highAccuracy && (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE)) {
+                            // Fallback to standard network/WiFi location
+                            tryGeolocation(false);
+                            return;
+                        }
 
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            showAlert('<strong>Location permission was denied.</strong> StayEase respects your privacy. You can discover properties at any time by typing a city or locality name above.', 'info', 'bi-shield-lock');
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            showAlert('Location information is currently unavailable on your device or network. Please use manual location search.', 'warning', 'bi-exclamation-triangle');
-                            break;
-                        case error.TIMEOUT:
-                            showAlert('Location request timed out. Please try again or search by city name.', 'warning', 'bi-clock-history');
-                            break;
-                        default:
-                            showAlert('An unexpected error occurred while requesting device location. Please search manually.', 'secondary', 'bi-info-circle');
-                            break;
+                        btnGps.disabled = false;
+                        gpsButtonText.innerText = 'Use My Location';
+
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                showAlert('<strong>Location permission was denied or blocked.</strong> Please allow location access in your browser address bar (tune/lock icon next to the URL), or search by city name.', 'info', 'bi-shield-lock');
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                showAlert('Location is unavailable on this device. Please check your system location settings, or search manually.', 'warning', 'bi-exclamation-triangle');
+                                break;
+                            case error.TIMEOUT:
+                                showAlert('Location request timed out. Please try again or search by city name.', 'warning', 'bi-clock-history');
+                                break;
+                            default:
+                                showAlert('Could not retrieve location. Please search manually.', 'secondary', 'bi-info-circle');
+                                break;
+                        }
+                    },
+                    {
+                        enableHighAccuracy: highAccuracy,
+                        timeout: highAccuracy ? 6000 : 15000,
+                        maximumAge: 300000
                     }
-                },
-                options
-            );
+                );
+            }
+
+            tryGeolocation(true);
         });
     }
 });
