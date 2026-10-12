@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StayEase - Complete Project Building & Viva Preparation Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  @page {
+    size: A4;
+    margin: 15mm 15mm 18mm 15mm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.55;
+    font-size: 10pt;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Cover Header */
+  .cover-banner {
+    background: linear-gradient(135deg, #0A1128 0%, #102A71 50%, #1D4ED8 100%);
+    color: #ffffff;
+    padding: 30px 25px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+    position: relative;
+  }
+
+  .cover-badge {
+    background: #f59e0b;
+    color: #000000;
+    font-weight: 800;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .cover-title {
+    font-size: 22pt;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .cover-subtitle {
+    font-size: 11pt;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 8.5pt;
+  }
+
+  .meta-item strong {
+    display: block;
+    color: #93c5fd;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 15pt;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    border-left: 4px solid #2563eb;
+    padding-left: 8px;
+  }
+
+  h3 {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+  }
+
+  /* Callout Boxes */
+  .callout-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    font-size: 9.5pt;
+  }
+
+  .callout-box.tip {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    border-left-color: #16a34a;
+  }
+
+  .callout-box.warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    border-left-color: #f59e0b;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px 0;
+    font-size: 8.5pt;
+  }
+
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  tr:nth-child(even) {
+    background: #f8fafc;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+  }
+
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+
+  /* Q&A Cards for Viva */
+  .qa-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .qa-question {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 10pt;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .qa-q-badge {
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 7.5pt;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .qa-answer {
+    color: #334155;
+    font-size: 9pt;
+    line-height: 1.5;
+    padding-left: 28px;
+  }
+
+  .qa-highlight {
+    background: #fef08a;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+    color: #713f12;
+  }
+
+  ul, ol {
+    margin: 4px 0 10px 0;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #0f172a;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Cover / Header Banner -->
+  <div class="cover-banner">
+    <span class="cover-badge">Academic Project Guide &amp; Viva Handbook</span>
+    <h1 class="cover-title">StayEase — Smart Accommodation Discovery &amp; Booking Platform</h1>
+    <p class="cover-subtitle">Complete end-to-end breakdown of what we built, which technologies were used for what, and how to confidently explain the project to professors and interviewers.</p>
+    
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Project Type</strong>
+        Full-Stack Enterprise Web App
+      </div>
+      <div class="meta-item">
+        <strong>Primary Stack</strong>
+        Java 21, Spring Boot 3.3.4, PostgreSQL
+      </div>
+      <div class="meta-item">
+        <strong>Frontend &amp; Maps</strong>
+        Thymeleaf, Bootstrap 5, Leaflet.js
+      </div>
+      <div class="meta-item">
+        <strong>Geospatial APIs</strong>
+        OpenStreetMap, Overpass QL, Photon
+      </div>
+      <div class="meta-item">
+        <strong>Deployment</strong>
+        Docker Container on Railway Cloud
+      </div>
+      <div class="meta-item">
+        <strong>Test Verification</strong>
+        329 / 329 Automated Tests Passed
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h1>1. What is StayEase in Simple Words? (Project Elevator Pitch)</h1>
+  <p>If your professor asks: <em>"In two minutes, explain what StayEase is and what problem it solves?"</em>, here is the clear, simple explanation:</p>
+  
+  <div class="callout-box tip">
+    <strong>The 2-Minute Answer:</strong><br>
+    "StayEase is a smart web platform built primarily for college students, interns, and young working professionals who move to new cities and struggle to find reliable hostels, PGs, and budget hotels. Most current solutions either charge heavy broker commissions or only show properties in a single hardcoded locality. StayEase solves this in two powerful ways:
+    <ol style="margin-top: 6px; margin-bottom: 0;">
+      <li><strong>Direct Zero-Brokerage Booking:</strong> Students can browse verified StayEase properties, check real-time room availability, and book rooms instantly with automated receipt generation and no brokers involved.</li>
+      <li><strong>Global Location Intelligence (Worldwide Map):</strong> Wherever the user travels in the world (e.g. Jaipur, Kukas, Delhi, Bengaluru, or abroad), the app detects their device GPS coordinates or lets them type any address with Uber-style autocomplete. It then dynamically scans the physical world up to 100 km using free OpenStreetMap geospatial intelligence to display all nearby Hostels, Hotels, and PGs with exact distances and directions."</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 2 -->
+  <h1>2. Before vs. After: What Did We Start With &amp; What Did We Build These Days?</h1>
+  <p>Here is the exact progression of what the project originally was and the major engineering upgrades we implemented step-by-step:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Component</th>
+        <th style="width: 38%;">Where We Started (Initial State)</th>
+        <th style="width: 42%;">What We Built in These Days (Upgraded State)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Geographic Scope</strong></td>
+        <td>Locked strictly to sample properties in Bengaluru. Searching other cities returned nothing.</td>
+        <td><span class="badge badge-green">Worldwide (Anywhere on Earth)</span> — Searches any city, village, landmark, or GPS coordinates globally.</td>
+      </tr>
+      <tr>
+        <td><strong>GPS &amp; Geolocation</strong></td>
+        <td>Browser GPS was blocked because the server security policy set <code>Permissions-Policy: geolocation=()</code>.</td>
+        <td>Enabled <code>geolocation=(self)</code> in Spring Security + added dual-mode fallback (hardware GPS with silent IP network backup).</td>
+      </tr>
+      <tr>
+        <td><strong>External POI Discovery</strong></td>
+        <td>No real-world map data. Only fixed database records.</td>
+        <td>Integrated 100% free OpenStreetMap Overpass &amp; Nominatim engines to detect real registered hostels, hotels, and PGs live.</td>
+      </tr>
+      <tr>
+        <td><strong>Search Experience</strong></td>
+        <td>User had to type exact coordinates or exact spelling without suggestions.</td>
+        <td><span class="badge badge-blue">Cab / Google Maps Style Autocomplete</span> — Fast typeahead dropdown with instant address &amp; place-type suggestions.</td>
+      </tr>
+      <tr>
+        <td><strong>Search Radius</strong></td>
+        <td>High ranges (50 km - 100 km) timed out with 504 errors on public geospatial mirrors.</td>
+        <td><span class="badge badge-purple">High-Performance Bounding Box Query</span> — Returns up to 40 verified stays across 100 km in ~2 seconds.</td>
+      </tr>
+      <tr>
+        <td><strong>UI, Stacking &amp; Contrast</strong></td>
+        <td>Navigation bar was cluttered, dropdowns were cut off by parent card overflow, and banner headers had dark text on dark blue.</td>
+        <td>Streamlined navbar, fixed <code>z-index</code> &amp; overflow stacking contexts, and ensured high-contrast bright white typography.</td>
+      </tr>
+      <tr>
+        <td><strong>Cloud Deployment</strong></td>
+        <td>Only ran on localhost.</td>
+        <td>Containerized with Docker and deployed live on Railway cloud with automated GitHub CI/CD synchronization.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 3 -->
+  <h1>3. Tech Stack Breakdown: What Technology Was Used for What &amp; Why?</h1>
+  <p>Your professor will definitely ask why you chose each tool. Here is the clear breakdown in simple, understandable terms:</p>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">BACKEND</span> Java 21 LTS + Spring Boot 3.3.4</div>
+    <div class="qa-answer">
+      <strong>What it does:</strong> Forms the core engine of our application. Handles all web requests (URLs), business logic, database queries, and security.<br>
+      <strong>Why we used it:</strong> Java 21 is a Long-Term Support (LTS) release known for rock-solid stability and speed. Spring Boot provides an enterprise-grade ecosystem where configuration is fast, dependency injection keeps code clean, and built-in Tomcat server allows effortless running.
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">SECURITY</span> Spring Security 6 + BCrypt Password Encoder</div>
+    <div class="qa-answer">
+      <strong>What it does:</strong> Manages authentication (login/logout), role-based authorization (Customer vs. Admin permissions), session cookies, and CSRF protection.<br>
+      <strong>Why we used it:</strong> Passwords are never stored in plain text. Spring Security hashes them using BCrypt with cryptographic salt. It also protects against common attacks like Cross-Site Request Forgery (CSRF) and Cross-Site Scripting (XSS).
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">DATABASE</span> PostgreSQL (Production) + H2 (Dev/Testing) + Spring Data JPA (Hibernate)</div>
+    <div class="qa-answer">
+      <strong>What it does:</strong> Stores users, rooms, bookings, favorites, maintenance logs, and audit logs. Spring Data JPA acts as the Object-Relational Mapping (ORM) bridge.<br>
+      <strong>Why we used it:</strong> Instead of writing error-prone SQL strings in Java, we interact directly with Java Entity objects (<code>Room</code>, <code>Booking</code>, <code>User</code>). PostgreSQL on Railway provides ACID-compliant production reliability, while in-memory H2 allows running all 329 tests in seconds.
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">FRONTEND</span> Thymeleaf + Bootstrap 5.3 + Vanilla CSS + ES6 JavaScript</div>
+    <div class="qa-answer">
+      <strong>What it does:</strong> Thymeleaf is the server-side template engine that populates HTML files with Java data before sending them to the browser. Bootstrap 5.3 provides a responsive grid layout. Custom Vanilla CSS (<code>app.css</code>) provides the luxury modern theme. JavaScript handles client-side events like typeahead and GPS.<br>
+      <strong>Why we used it:</strong> Avoids the complexity of managing a separate frontend Node/React server while ensuring fast initial page loads, excellent SEO, and clean HTML rendering.
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">MAPS &amp; GEO</span> OpenStreetMap + Leaflet.js + Komoot Photon API (100% Free &amp; Open-Source)</div>
+    <div class="qa-answer">
+      <strong>What it does:</strong>
+      <ul>
+        <li><strong>Leaflet.js:</strong> Lightweight JavaScript library that renders the interactive map tiles and colored pins on the web page.</li>
+        <li><strong>Komoot Photon API:</strong> Provides the fast Uber-style typeahead autocomplete as the user types a city or locality.</li>
+        <li><strong>OpenStreetMap Overpass &amp; Nominatim:</strong> Scans real geographic areas for hostels, hotels, PGs, and guest houses.</li>
+      </ul>
+      <strong>Why we used it:</strong> Google Maps Platform charges heavy credit card fees per 1,000 requests. OpenStreetMap and Photon provide worldwide coverage <strong>completely free of cost</strong> with zero API key or billing risk.
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">DEVOPS</span> Docker + Apache Maven + Railway Cloud + GitHub</div>
+    <div class="qa-answer">
+      <strong>What it does:</strong> Maven manages dependencies and compiles code. Docker packages the Java application, dependencies, and runtime into an isolated container image. Railway automatically builds and deploys this Docker container from GitHub on every git push.<br>
+      <strong>Why we used it:</strong> Guarantees that "if it works on my laptop, it works in the cloud" with zero environment discrepancies.
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 4 -->
+  <h1>4. System Architecture: How Data Flows in StayEase</h1>
+  <p>When a user opens the browser and searches for accommodations, here is the exact journey of that request:</p>
+
+  <div class="callout-box">
+    <strong>Step-by-Step Request Flow:</strong>
+    <ol>
+      <li><strong>User Interaction:</strong> The user types <em>"Kukas, Jaipur"</em> in the search box. The JavaScript debounces the keystrokes (waits 220ms) and calls <code>/api/discovery/suggest?query=kukas</code>.</li>
+      <li><strong>Suggest API:</strong> <code>DiscoveryApiController</code> calls <code>LocationDiscoveryService</code>, which queries the Photon geocoding API and returns a JSON list of matching locations with latitudes and longitudes.</li>
+      <li><strong>Selection &amp; Submit:</strong> The user selects a suggestion. The hidden form fields for <code>lat</code> and <code>lng</code> are filled, and the form submits to <code>/discovery?lat=27.04&lng=75.89&radius=15</code>.</li>
+      <li><strong>Backend Intelligence:</strong>
+        <ul>
+          <li><code>RoomRepository</code> queries local PostgreSQL database rooms within the chosen radius using Haversine distance calculations.</li>
+          <li><code>OpenStreetMapPlacesProvider</code> concurrently queries the OpenStreetMap Overpass/Nominatim engine for registered external hotels, hostels, and PGs in that exact coordinate bounding box.</li>
+        </ul>
+      </li>
+      <li><strong>Response Synthesis:</strong> The service merges verified StayEase rooms and external POIs, sorts them by distance from the user, and bundles them into a unified <code>DiscoveryResponse</code> DTO.</li>
+      <li><strong>Render:</strong> Thymeleaf populates the HTML cards and Leaflet.js pins on the server, sending a complete, interactive web page to the browser.</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 5 -->
+  <h1>5. Top 12 Viva &amp; Professor Questions (With Winning Academic Answers)</h1>
+  <p>Here are the top questions external examiners and professors ask for this project, along with the exact responses to give:</p>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q1</span> Why did you use OpenStreetMap instead of Google Maps API?</div>
+    <div class="qa-answer">
+      "Google Maps requires mandatory credit card billing and charges significant fees per API request, which is unsuitable for an academic project and creates financial risk. We chose <strong>OpenStreetMap (Overpass &amp; Nominatim)</strong> combined with <strong>Photon</strong> because they are open-source, community-driven, offer worldwide coverage, and provide complete programmatic access to raw geographical tags (like <code>tourism=hostel</code> or <code>amenity=student_accommodation</code>) completely free of cost."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q2</span> How does StayEase prevent two users from double-booking the same room?</div>
+    <div class="qa-answer">
+      "We handle this through database-level transactional integrity and concurrency control in Spring Data JPA. When booking a room, the booking service method is marked with <code>@Transactional(isolation = Isolation.READ_COMMITTED)</code>. Before confirming, the service verifies that no overlapping active booking exists for that specific room ID in the requested date range. If an overlapping booking is detected, the transaction rolls back with an idempotency check, preventing race conditions."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q3</span> What is the difference between Spring MVC, Spring Boot, and Spring Data JPA?</div>
+    <div class="qa-answer">
+      "<strong>Spring MVC</strong> is the web framework that handles HTTP routing, controllers, and model-view dispatching. <strong>Spring Boot</strong> is the overarching framework that eliminates boilerplate XML configuration, auto-configures dependencies, and bundles an embedded Tomcat server. <strong>Spring Data JPA</strong> is the data access layer built on top of Hibernate that lets us perform database operations using Java interfaces (like <code>JpaRepository</code>) without writing raw SQL queries."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q4</span> How does the typeahead autocomplete work without sending too many requests?</div>
+    <div class="qa-answer">
+      "We implemented <strong>client-side debouncing</strong> with a 220-millisecond delay. When a user types, a JavaScript timer resets on every keystroke and only fires the HTTP fetch request after the user pauses typing for 220ms. In addition, we maintain a client-side JavaScript memory cache and a backend server-side cache (<code>ConcurrentHashMap</code>) so duplicate queries (like typing and deleting 'jaipur') return instantly from memory without hitting external APIs."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q5</span> How do you store and secure user passwords?</div>
+    <div class="qa-answer">
+      "Passwords are never stored in plaintext. We use Spring Security's <strong>BCryptPasswordEncoder</strong>, which uses an adaptive one-way hashing function with a cryptographic work factor (strength = 10) and an automated random salt for every user. Even if two users have the identical password, their stored hashes in the database are completely distinct, protecting against rainbow table attacks."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q6</span> How do you calculate distances between the user's location and accommodations?</div>
+    <div class="qa-answer">
+      "We implemented the <strong>Haversine Formula</strong> in Java (<code>calculateDistanceKm(lat1, lon1, lat2, lon2)</code>). Because the Earth is a sphere, simple Euclidean distance (Pythagorean theorem) is inaccurate for coordinates. The Haversine formula calculates the great-circle distance between two points on a sphere of radius 6,371 km using spherical trigonometry."
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q7</span> How did you solve the 100 km radius search timeout problem?</div>
+    <div class="qa-answer">
+      "Initially, querying public Overpass instances with multiple union statements across a 100 km radius circle ($31,415	ext{ km}^2$) exceeded execution memory thresholds and timed out after 6 seconds. We re-engineered the search provider to adopt a <strong>dual-tier architecture</strong>: for radii $\le 35$ km, it runs an optimized single-regex Overpass query; for large radii (50 to 100 km), it switches to a bounded viewbox query via Nominatim. This reduced response times from 18+ seconds to under 2 seconds."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q8</span> What is CSRF and how does StayEase protect against it?</div>
+    <div class="qa-answer">
+      "<strong>CSRF (Cross-Site Request Forgery)</strong> is an exploit where an unauthorized website tricks an authenticated user's browser into executing unwanted actions on your web application. StayEase defends against this using Spring Security's synchronized token pattern: every state-changing form (POST, PUT, DELETE) includes a unique, cryptographically generated CSRF token that is validated on the server."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q9</span> Why did you use Thymeleaf instead of a separate React frontend?</div>
+    <div class="qa-answer">
+      "Thymeleaf provides seamless server-side rendering directly integrated with Spring MVC. It allows us to render secure, pre-computed HTML with zero flash of unstyled content, zero CORS configuration complexity, and natural templating (the HTML files can still be previewed in a browser without a build step). For an enterprise accommodation portal with security-sensitive bookings, server-side rendering also delivers superior SEO and fast initial load times."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q10</span> How do you know the project is reliable and bug-free?</div>
+    <div class="qa-answer">
+      "The project is covered by a comprehensive automated test suite consisting of <strong>329 automated unit and integration tests</strong> built with JUnit 5, Mockito, and Spring Boot Test (<code>MockMvc</code>). The tests validate database models, security boundaries, role-based access rules, discovery endpoints, and location services. All 329 tests pass with 0 failures on every build."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q11</span> What is Docker's role in your project deployment?</div>
+    <div class="qa-answer">
+      "Docker creates a standardized, containerized runtime environment. Our <code>Dockerfile</code> packages the Java 21 Eclipse Temurin JRE, the compiled application JAR, and the configuration. This completely eliminates the classic 'it works on my machine' problem, allowing Railway cloud to deploy the exact same image on its Linux edge servers as tested locally."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q12</span> If you had one more semester to work on this, what would you add next?</div>
+    <div class="qa-answer">
+      "The next roadmap features would include:
+      <ol style='margin-top: 4px; margin-bottom: 0;'>
+        <li><strong>Real-Time Payment Gateway:</strong> Integrating Razorpay or Stripe Webhooks for instant UPI, credit card, and net-banking transactions.</li>
+        <li><strong>Automated SMS &amp; WhatsApp Alerts:</strong> Sending instant check-in verification codes and booking receipts via Twilio or WhatsApp Business API.</li>
+        <li><strong>AI Accommodation Chatbot:</strong> Integrating an LLM assistant using Spring AI to recommend stays based on student budget, college distance, and dietary preferences."</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <h1>6. Quick Reference: Live URLs &amp; Git Repository</h1>
+  <table>
+    <tr>
+      <th style="width: 30%;">Resource</th>
+      <th style="width: 70%;">Link / Location</th>
+    </tr>
+    <tr>
+      <td><strong>Live Production App</strong></td>
+      <td><code>https://stayease-production-a18a.up.railway.app</code></td>
+    </tr>
+    <tr>
+      <td><strong>Worldwide Discovery Portal</strong></td>
+      <td><code>https://stayease-production-a18a.up.railway.app/discovery</code></td>
+    </tr>
+    <tr>
+      <td><strong>GitHub Repository</strong></td>
+      <td><code>https://github.com/ishangautam140675/StayEase</code></td>
+    </tr>
+    <tr>
+      <td><strong>Local Development URL</strong></td>
+      <td><code>http://localhost:8080/discovery</code></td>
+    </tr>
+    <tr>
+      <td><strong>Branch &amp; Latest Commit</strong></td>
+      <td><code>main</code> (Fully committed &amp; synced with origin)</td>
+    </tr>
+  </table>
+
+  <div style="text-align: center; margin-top: 25px; color: #64748b; font-size: 8.5pt; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+    <strong>StayEase Project Handbook</strong> • Generated for Academic Evaluation &amp; Viva Voce Defense • © 2026 StayEase Team
+  </div>
+
+</body>
+</html>
