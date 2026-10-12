@@ -752,6 +752,13 @@ textarea:focus-visible {
   word-wrap: break-word;
 }
 
+/* Allow cards with dropdowns/autocomplete to display floating popups cleanly */
+.card.card-overflow-visible,
+.card-overflow-visible,
+#discoverySearchCard {
+  overflow: visible !important;
+}
+
 /* Bold Color Blocking Utilities */
 .color-block-oxblood {
   background-color: var(--brand-oxblood) !important;
