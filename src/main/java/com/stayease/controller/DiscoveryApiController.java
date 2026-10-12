@@ -1,24 +1,36 @@
 package com.stayease.controller;
 
+import com.stayease.dto.AccommodationInquiryRequest;
 import com.stayease.dto.DiscoveryResponse;
+import com.stayease.model.AccommodationInquiry;
+import com.stayease.service.AccommodationInquiryService;
 import com.stayease.service.places.LocationDiscoveryService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * REST API providing location intelligence and accommodation discovery.
+ * REST API providing location intelligence, accommodation discovery, and reservation inquiries.
  */
 @RestController
 @RequestMapping("/api/discovery")
 public class DiscoveryApiController {
 
     private final LocationDiscoveryService discoveryService;
+    private final AccommodationInquiryService inquiryService;
 
-    public DiscoveryApiController(LocationDiscoveryService discoveryService) {
+    public DiscoveryApiController(LocationDiscoveryService discoveryService,
+                                  AccommodationInquiryService inquiryService) {
         this.discoveryService = discoveryService;
+        this.inquiryService = inquiryService;
     }
 
     /**
@@ -48,4 +60,25 @@ public class DiscoveryApiController {
 
         return ResponseEntity.ok(discoveryService.suggestLocations(query, limit != null ? limit : 6));
     }
+
+    /**
+     * POST /api/discovery/inquire
+     * Submits an accommodation reservation inquiry, persists it, and notifies admins in real-time.
+     */
+    @PostMapping("/inquire")
+    public ResponseEntity<Map<String, Object>> submitInquiry(
+            @RequestBody AccommodationInquiryRequest request,
+            Authentication authentication) {
+
+        AccommodationInquiry saved = inquiryService.createInquiry(request, authentication);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("id", saved.getId());
+        response.put("hotelName", saved.getHotelName());
+        response.put("message", "Inquiry submitted successfully. Accommodation concierge and admins have been notified.");
+
+        return ResponseEntity.ok(response);
+    }
 }
+

@@ -71,9 +71,9 @@ public class SecurityConfig {
         http
             .authenticationProvider(authenticationProvider())
 
-            // ── CSRF (Exempt webhook endpoints that authenticate cryptographically) ─
+            // ── CSRF (Exempt public inquiry & webhook endpoints that authenticate cryptographically) ─
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/webhooks/**", "/webhooks/**")
+                .ignoringRequestMatchers("/api/discovery/inquire", "/api/webhooks/**", "/webhooks/**")
             )
 
             // ── Authorization ──────────────────────────────────────────────

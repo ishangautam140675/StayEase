@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Accommodation Inquiries | Admin')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main Content ─────────────────────────────────────────────────────── -->
+<main class="flex-grow-1 py-5">
+    <div class="container se-container">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+            <div>
+                <span class="text-uppercase fw-bold small tracking-wider"
+                      style="color: var(--brand-oxblood); letter-spacing: 0.1em;">
+                    Discovery Leads &amp; Concierge
+                </span>
+                <h1 class="display-6 fw-bold mt-1 mb-1"
+                    style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                    Accommodation Inquiries
+                </h1>
+                <p class="text-secondary mb-0">Track real-time reservation requests and leads generated from the worldwide discovery portal.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/admin/bookings}" class="btn btn-outline-secondary px-3">
+                    <i class="bi bi-calendar-check me-1"></i>Bookings
+                </a>
+                <a th:href="@{/admin/dashboard}" class="btn btn-outline-se px-3">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm p-3" style="background: var(--surface-card); border-radius: 12px;">
+                    <div class="small text-muted fw-semibold">Total Inquiries</div>
+                    <div class="fs-3 fw-bold text-dark mt-1" th:text="${inquiries.size()}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm p-3 border-start border-warning border-4" style="background: var(--surface-card); border-radius: 12px;">
+                    <div class="small text-warning fw-semibold">Pending Action</div>
+                    <div class="fs-3 fw-bold text-warning mt-1" th:text="${pendingCount}">0</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card border-0 shadow-sm p-3 bg-primary bg-opacity-10" style="border-radius: 12px;">
+                    <div class="small fw-semibold text-primary mb-1">
+                        <i class="bi bi-info-circle me-1"></i>StayEase Concierge Workflow
+                    </div>
+                    <div class="small text-secondary">
+                        Inquiries are generated whenever guests click <strong>Book / Inquire</strong> on detected accommodations worldwide. Admins are notified instantly in-app. Contact the guest via phone or email to assist with reservation.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inquiries Table Card -->
+        <div class="card border-0 shadow-sm" style="background: var(--surface-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-default) !important;">
+            <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-inbox-fill text-primary me-2"></i>Received Inquiries
+                </h5>
+                <span class="badge bg-light text-secondary border px-3 py-1">
+                    <span th:text="${inquiries.size()}">0</span> Entries
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                <div th:if="${inquiries.isEmpty()}" class="text-center py-5">
+                    <i class="bi bi-chat-left-dots text-muted display-4 mb-3 d-block"></i>
+                    <h5 class="fw-bold text-dark">No Inquiries Received Yet</h5>
+                    <p class="text-muted small mb-0">When visitors inquire about hotels, hostels, or PGs on the discovery map, their requests will appear here in real time.</p>
+                </div>
+
+                <div th:unless="${inquiries.isEmpty()}" class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 px-4 small text-uppercase text-secondary">ID / Date</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Establishment</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Guest Contact</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Dates &amp; Party</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Notes &amp; Preferences</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Status</th>
+                                <th class="py-3 px-4 small text-uppercase text-secondary text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="inq : ${inquiries}">
+                                <td class="py-3 px-4">
+                                    <div class="fw-bold text-dark">#<span th:text="${inq.id}">1</span></div>
+                                    <div class="small text-muted" th:text="${#temporals.format(inq.createdAt, 'dd MMM yyyy, HH:mm')}">12 Oct 2026, 22:50</div>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div class="fw-bold text-dark" th:text="${inq.hotelName}">Hotel Rajputana</div>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0 small" th:text="${inq.accommodationType}">Hotel</span>
+                                    <div class="small text-muted text-truncate mt-1" style="max-width: 200px;" th:if="${inq.hotelAddress != null}" th:text="${inq.hotelAddress}">Address</div>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <div>
+                                        <a th:href="'tel:' + ${inq.contactPhone}" class="fw-semibold text-decoration-none text-dark">
+                                            <i class="bi bi-telephone-fill text-success me-1"></i><span th:text="${inq.contactPhone}">+91 9876543210</span>
+                                        </a>
+                                    </div>
+                                    <div th:if="${inq.guestEmail != null}" class="small text-muted mt-1">
+                                        <i class="bi bi-envelope me-1"></i><span th:text="${inq.guestEmail}">user@example.com</span>
+                                    </div>
+                                    <div th:if="${inq.guestName != null}" class="small text-secondary" th:text="${inq.guestName}">Guest Name</div>
+                                </td>
+                                <td class="py-3 px-3 small">
+                                    <div class="fw-medium text-dark">
+                                        <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                        <span th:text="${#temporals.format(inq.checkIn, 'dd MMM')}">12 Oct</span> →
+                                        <span th:text="${#temporals.format(inq.checkOut, 'dd MMM yyyy')}">13 Oct 2026</span>
+                                    </div>
+                                    <div class="text-secondary mt-1">
+                                        <i class="bi bi-people me-1"></i><span th:text="${inq.guests}">1</span> Guests
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 small text-secondary" style="max-width: 220px;">
+                                    <span th:if="${inq.notes != null and !inq.notes.isBlank()}" th:text="${inq.notes}">Notes</span>
+                                    <span th:unless="${inq.notes != null and !inq.notes.isBlank()}" class="text-muted fst-italic">No special notes</span>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <span th:if="${inq.status == 'PENDING'}" class="badge bg-warning text-dark px-3 py-1">
+                                        <i class="bi bi-clock-history me-1"></i>Pending
+                                    </span>
+                                    <span th:if="${inq.status == 'CONTACTED'}" class="badge bg-info text-dark px-3 py-1">
+                                        <i class="bi bi-telephone-outbound me-1"></i>Contacted
+                                    </span>
+                                    <span th:if="${inq.status == 'RESOLVED'}" class="badge bg-success text-white px-3 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Resolved
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-end">
+                                    <form th:action="@{'/admin/inquiries/' + ${inq.id} + '/status'}" method="post" class="d-inline">
+                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <div class="btn-group btn-group-sm">
+                                            <button th:if="${inq.status == 'PENDING'}" type="submit" name="status" value="CONTACTED" class="btn btn-outline-primary btn-sm px-2">
+                                                Mark Contacted
+                                            </button>
+                                            <button th:if="${inq.status != 'RESOLVED'}" type="submit" name="status" value="RESOLVED" class="btn btn-outline-success btn-sm px-2">
+                                                Resolve
+                                            </button>
+                                            <button th:if="${inq.status == 'RESOLVED'}" type="submit" name="status" value="PENDING" class="btn btn-outline-secondary btn-sm px-2">
+                                                Reopen
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

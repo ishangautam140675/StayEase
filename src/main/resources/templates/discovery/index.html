@@ -794,6 +794,11 @@
 
                         <!-- Inquiry Form -->
                         <form id="inquiryForm">
+                            <input type="hidden" id="inquiryHiddenHotelName"/>
+                            <input type="hidden" id="inquiryHiddenHotelType"/>
+                            <input type="hidden" id="inquiryHiddenHotelAddress"/>
+                            <input type="hidden" id="inquiryHiddenHotelPrice"/>
+
                             <div class="p-3 mb-3 rounded-3 bg-light border">
                                 <div class="fw-bold fs-6 text-dark mb-1" id="inquiryHotelName">Hotel Name</div>
                                 <div class="small text-muted mb-2" id="inquiryHotelAddress">Address</div>
@@ -805,11 +810,11 @@
 
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-secondary">Check-In Date</label>
+                                    <label class="form-label small fw-semibold text-secondary">Check-In Date *</label>
                                     <input type="date" id="inquiryCheckIn" class="form-control form-control-sm" required/>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-secondary">Check-Out Date</label>
+                                    <label class="form-label small fw-semibold text-secondary">Check-Out Date *</label>
                                     <input type="date" id="inquiryCheckOut" class="form-control form-control-sm" required/>
                                 </div>
                             </div>
@@ -825,9 +830,14 @@
                                     </select>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-secondary">Your Phone</label>
-                                    <input type="tel" id="inquiryPhone" class="form-control form-control-sm" placeholder="Contact Number" required/>
+                                    <label class="form-label small fw-semibold text-secondary">Your Phone *</label>
+                                    <input type="tel" id="inquiryPhone" class="form-control form-control-sm" placeholder="e.g. +91 98765 43210" required/>
                                 </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Your Full Name (Optional)</label>
+                                <input type="text" id="inquiryGuestName" class="form-control form-control-sm" placeholder="e.g. Rahul Sharma"/>
                             </div>
 
                             <div class="mb-3">
@@ -1353,6 +1363,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const hotelAddress = this.getAttribute('data-hotel-address') || 'Nearby Locality';
             const hotelPrice = this.getAttribute('data-hotel-price') || '750';
 
+            // Store in hidden fields for submission
+            const hName = document.getElementById('inquiryHiddenHotelName');
+            const hType = document.getElementById('inquiryHiddenHotelType');
+            const hAddr = document.getElementById('inquiryHiddenHotelAddress');
+            const hPrice = document.getElementById('inquiryHiddenHotelPrice');
+            if (hName) hName.value = hotelName;
+            if (hType) hType.value = hotelType;
+            if (hAddr) hAddr.value = hotelAddress;
+            if (hPrice) hPrice.value = hotelPrice;
+
             document.getElementById('inquiryBadgeType').innerText = hotelType;
             document.getElementById('inquiryHotelName').innerText = hotelName;
             document.getElementById('inquiryHotelAddress').innerText = hotelAddress;
@@ -1380,21 +1400,70 @@ document.addEventListener('DOMContentLoaded', function () {
         inquiryForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const btnSubmit = document.getElementById('btnSubmitInquiry');
-            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Confirming...';
+            const originalBtnHtml = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Notifying Admin & Concierge...';
             btnSubmit.disabled = true;
 
-            setTimeout(function () {
-                btnSubmit.innerHTML = '<i class="bi bi-send-fill me-1"></i>Confirm Inquiry';
+            const payload = {
+                hotelName: (document.getElementById('inquiryHiddenHotelName') ? document.getElementById('inquiryHiddenHotelName').value : '') || document.getElementById('inquiryHotelName').innerText,
+                hotelType: (document.getElementById('inquiryHiddenHotelType') ? document.getElementById('inquiryHiddenHotelType').value : '') || document.getElementById('inquiryBadgeType').innerText,
+                hotelAddress: (document.getElementById('inquiryHiddenHotelAddress') ? document.getElementById('inquiryHiddenHotelAddress').value : '') || document.getElementById('inquiryHotelAddress').innerText,
+                hotelPrice: parseFloat(document.getElementById('inquiryHiddenHotelPrice') ? document.getElementById('inquiryHiddenHotelPrice').value : '0') || 0,
+                checkIn: document.getElementById('inquiryCheckIn').value,
+                checkOut: document.getElementById('inquiryCheckOut').value,
+                guests: document.getElementById('inquiryGuests').value,
+                phone: document.getElementById('inquiryPhone').value,
+                guestName: document.getElementById('inquiryGuestName') ? document.getElementById('inquiryGuestName').value : '',
+                notes: document.getElementById('inquiryNotes').value
+            };
+
+            // Get CSRF token if present
+            const csrfTokenEl = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderEl = document.querySelector('meta[name="_csrf_header"]');
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfTokenEl && csrfHeaderEl) {
+                headers[csrfHeaderEl.getAttribute('content')] = csrfTokenEl.getAttribute('content');
+            }
+
+            fetch('/api/discovery/inquire', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            })
+            .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(function (data) {
+                btnSubmit.innerHTML = originalBtnHtml;
                 btnSubmit.disabled = false;
-                document.getElementById('inquirySuccessAlert').classList.remove('d-none');
+
+                const alertEl = document.getElementById('inquirySuccessAlert');
+                if (alertEl) {
+                    alertEl.innerHTML =
+                        '<div class="d-flex align-items-center">' +
+                        '<i class="bi bi-check-circle-fill fs-3 text-success me-2"></i>' +
+                        '<div>' +
+                        '<div class="fw-bold">Reservation Inquiry Sent to Admin!</div>' +
+                        '<div class="small">The StayEase Concierge & Admin have received your request. We will contact you at <strong>' + escapeHtml(payload.phone) + '</strong> shortly.</div>' +
+                        '</div>' +
+                        '</div>';
+                    alertEl.classList.remove('d-none');
+                }
                 inquiryForm.classList.add('d-none');
 
                 setTimeout(function () {
                     if (inquiryModal) {
                         inquiryModal.hide();
                     }
-                }, 2500);
-            }, 600);
+                }, 3000);
+            })
+            .catch(function (err) {
+                console.error('Inquiry submission error:', err);
+                btnSubmit.innerHTML = originalBtnHtml;
+                btnSubmit.disabled = false;
+                alert('We could not send your inquiry right now. Please check your network or call the property directly.');
+            });
         });
     }
 

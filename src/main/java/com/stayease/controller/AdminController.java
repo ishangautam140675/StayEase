@@ -19,13 +19,37 @@ public class AdminController {
     private final UserRepository userRepository;
     private final DashboardService dashboardService;
     private final com.stayease.service.BookingExportService exportService;
+    private final com.stayease.service.AccommodationInquiryService inquiryService;
 
     public AdminController(UserRepository userRepository,
                            DashboardService dashboardService,
-                           com.stayease.service.BookingExportService exportService) {
+                           com.stayease.service.BookingExportService exportService,
+                           com.stayease.service.AccommodationInquiryService inquiryService) {
         this.userRepository = userRepository;
         this.dashboardService = dashboardService;
         this.exportService = exportService;
+        this.inquiryService = inquiryService;
+    }
+
+    @GetMapping("/admin/inquiries")
+    public String listInquiries(Model model, Principal principal) {
+        String userName = principal != null ? principal.getName() : "Administrator";
+        if (principal != null) {
+            userName = userRepository.findByEmail(principal.getName())
+                    .map(User::getFullName)
+                    .orElse(principal.getName());
+        }
+        model.addAttribute("userName", userName);
+        model.addAttribute("inquiries", inquiryService.getAllInquiries());
+        model.addAttribute("pendingCount", inquiryService.getPendingCount());
+        return "admin/inquiries";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/admin/inquiries/{id}/status")
+    public String updateInquiryStatus(@org.springframework.web.bind.annotation.PathVariable Long id,
+                                      @org.springframework.web.bind.annotation.RequestParam String status) {
+        inquiryService.updateStatus(id, status);
+        return "redirect:/admin/inquiries";
     }
 
     @GetMapping("/admin/dashboard")
