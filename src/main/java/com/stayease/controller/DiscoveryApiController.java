@@ -36,4 +36,16 @@ public class DiscoveryApiController {
         DiscoveryResponse response = discoveryService.discover(query, lat, lng, radius, Boolean.TRUE.equals(gps));
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * GET /api/discovery/suggest
+     * Returns typeahead location suggestions matching a keyword query (Google Maps / Uber style).
+     */
+    @GetMapping("/suggest")
+    public ResponseEntity<java.util.List<com.stayease.dto.LocationSuggestion>> suggest(
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "limit", required = false, defaultValue = "6") Integer limit) {
+
+        return ResponseEntity.ok(discoveryService.suggestLocations(query, limit != null ? limit : 6));
+    }
 }

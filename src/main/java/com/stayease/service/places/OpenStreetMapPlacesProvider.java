@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stayease.dto.Coordinates;
 import com.stayease.dto.ExternalDiscoveryResult;
+import com.stayease.dto.LocationSuggestion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * OpenStreetMap implementation of {@link PlacesProvider} using Nominatim for geocoding
- * and Overpass API for nearby hostel / PG / accommodation POI discovery.
+ * OpenStreetMap implementation of {@link PlacesProvider} using Nominatim & Photon for geocoding / autocomplete,
+ * and Overpass API + bounded Nominatim POI discovery for nearby hostel / PG / accommodation discovery worldwide.
  * Free, non-commercial/fair-use compliant, with server-side caching and graceful degradation.
  */
 @Component
@@ -32,6 +33,8 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
     private static final String USER_AGENT = "StayEase-Global-Discovery/1.0 (https://stayease.local; contact@stayease.local)";
     private static final String NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search";
     private static final String NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
+    private static final String PHOTON_URL = "https://photon.komoot.io/api/";
+
     private static final List<String> OVERPASS_ENDPOINTS = List.of(
             "https://overpass-api.de/api/interpreter",
             "https://overpass.kumi.systems/api/interpreter",
@@ -42,9 +45,10 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
     private final ObjectMapper objectMapper;
     private final boolean enabled;
 
-    // Lightweight in-memory caches to respect Nominatim/Overpass rate limits
+    // Lightweight in-memory caches to respect rate limits and deliver snappy typeahead responses
     private final Map<String, CacheEntry<Optional<Coordinates>>> geocodeCache = new ConcurrentHashMap<>();
     private final Map<String, CacheEntry<Optional<String>>> reverseGeocodeCache = new ConcurrentHashMap<>();
+    private final Map<String, CacheEntry<List<LocationSuggestion>>> suggestionCache = new ConcurrentHashMap<>();
     private final Map<String, CacheEntry<List<ExternalDiscoveryResult>>> nearbyCache = new ConcurrentHashMap<>();
     private static final long CACHE_TTL_MS = 600_000L; // 10 minutes
 
@@ -104,6 +108,45 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
             log.warn("Nominatim geocoding failed for '{}': {}", query, ex.getMessage());
         }
 
+        // Fallback to Photon geocoding if Nominatim fails
+        try {
+            String encodedQuery = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+            String url = PHOTON_URL + "?q=" + encodedQuery + "&limit=1";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", USER_AGENT)
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(4))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JsonNode root = objectMapper.readTree(response.body());
+                JsonNode features = root.path("features");
+                if (features.isArray() && !features.isEmpty()) {
+                    JsonNode feat = features.get(0);
+                    JsonNode coords = feat.path("geometry").path("coordinates");
+                    if (coords.isArray() && coords.size() >= 2) {
+                        double lon = coords.get(0).asDouble();
+                        double lat = coords.get(1).asDouble();
+                        String name = feat.path("properties").path("name").asText(query.trim());
+                        String city = feat.path("properties").path("city").asText("");
+                        String state = feat.path("properties").path("state").asText("");
+                        String country = feat.path("properties").path("country").asText("");
+                        String display = name + (!city.isEmpty() ? ", " + city : "") + (!state.isEmpty() ? ", " + state : "") + (!country.isEmpty() ? ", " + country : "");
+
+                        Optional<Coordinates> result = Optional.of(new Coordinates(lat, lon, display));
+                        geocodeCache.put(normalizedKey, new CacheEntry<>(result, System.currentTimeMillis() + CACHE_TTL_MS));
+                        return result;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.debug("Photon fallback geocode failed for '{}': {}", query, ex.getMessage());
+        }
+
         Optional<Coordinates> empty = Optional.empty();
         geocodeCache.put(normalizedKey, new CacheEntry<>(empty, System.currentTimeMillis() + 60_000L));
         return empty;
@@ -141,7 +184,6 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
                 JsonNode address = root.path("address");
                 String displayName = root.path("display_name").asText(null);
 
-                // Build a concise human-readable location string: Suburb/Locality, City/Town, State, Country
                 String locality = address.path("suburb").asText("");
                 if (locality.isEmpty()) locality = address.path("neighbourhood").asText("");
                 if (locality.isEmpty()) locality = address.path("residential").asText("");
@@ -179,14 +221,129 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
     }
 
     @Override
+    public List<LocationSuggestion> suggestLocations(String query, int limit) {
+        if (!enabled || query == null || query.trim().length() < 2) {
+            return Collections.emptyList();
+        }
+
+        int max = Math.min(Math.max(limit, 1), 8);
+        String normalizedKey = query.trim().toLowerCase();
+        CacheEntry<List<LocationSuggestion>> cached = suggestionCache.get(normalizedKey);
+        if (cached != null && !cached.isExpired()) {
+            return cached.value();
+        }
+
+        List<LocationSuggestion> suggestions = new ArrayList<>();
+
+        // 1. Try fast typeahead via Photon (Komoot OSM)
+        try {
+            String encoded = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+            String url = PHOTON_URL + "?q=" + encoded + "&limit=" + max;
+
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", USER_AGENT)
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(3))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() == 200) {
+                JsonNode root = objectMapper.readTree(resp.body());
+                JsonNode features = root.path("features");
+                if (features.isArray()) {
+                    for (JsonNode feat : features) {
+                        JsonNode props = feat.path("properties");
+                        JsonNode geom = feat.path("geometry");
+                        JsonNode coords = geom.path("coordinates");
+                        if (coords.isArray() && coords.size() >= 2) {
+                            double lon = coords.get(0).asDouble();
+                            double lat = coords.get(1).asDouble();
+
+                            String name = props.path("name").asText("");
+                            String city = props.path("city").asText("");
+                            String county = props.path("county").asText("");
+                            String state = props.path("state").asText("");
+                            String country = props.path("country").asText("");
+                            String postcode = props.path("postcode").asText("");
+                            String type = props.path("type").asText(props.path("osm_value").asText("place"));
+
+                            String primary = !name.isEmpty() ? name : (!city.isEmpty() ? city : query.trim());
+
+                            StringBuilder secondary = new StringBuilder();
+                            if (!city.isEmpty() && !city.equalsIgnoreCase(primary)) secondary.append(city).append(", ");
+                            if (!county.isEmpty() && !county.equalsIgnoreCase(primary)) secondary.append(county).append(", ");
+                            if (!state.isEmpty()) secondary.append(state).append(", ");
+                            if (!postcode.isEmpty()) secondary.append(postcode).append(", ");
+                            if (!country.isEmpty()) secondary.append(country);
+
+                            String secText = secondary.toString().trim();
+                            if (secText.endsWith(",")) secText = secText.substring(0, secText.length() - 1).trim();
+
+                            String fullDisplay = !secText.isEmpty() ? (primary + ", " + secText) : primary;
+
+                            suggestions.add(new LocationSuggestion(fullDisplay, primary, secText, lat, lon, type));
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.debug("Photon suggestion failed for '{}': {}", query, ex.getMessage());
+        }
+
+        // 2. Fallback to Nominatim search if Photon returned empty or failed
+        if (suggestions.isEmpty()) {
+            try {
+                String encoded = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+                String url = NOMINATIM_SEARCH_URL + "?q=" + encoded + "&format=json&limit=" + max + "&addressdetails=1";
+
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .header("User-Agent", USER_AGENT)
+                        .header("Accept", "application/json")
+                        .timeout(Duration.ofSeconds(4))
+                        .GET()
+                        .build();
+
+                HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() == 200) {
+                    JsonNode root = objectMapper.readTree(resp.body());
+                    if (root.isArray()) {
+                        for (JsonNode item : root) {
+                            double lat = Double.parseDouble(item.path("lat").asText());
+                            double lon = Double.parseDouble(item.path("lon").asText());
+                            String displayName = item.path("display_name").asText();
+                            String name = item.path("name").asText("");
+                            String type = item.path("type").asText("place");
+
+                            String primary = !name.isEmpty() ? name : query.trim();
+                            String secondary = displayName;
+                            if (displayName.startsWith(primary + ",")) {
+                                secondary = displayName.substring(primary.length() + 1).trim();
+                            }
+
+                            suggestions.add(new LocationSuggestion(displayName, primary, secondary, lat, lon, type));
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Nominatim suggestion failed for '{}': {}", query, ex.getMessage());
+            }
+        }
+
+        suggestionCache.put(normalizedKey, new CacheEntry<>(suggestions, System.currentTimeMillis() + CACHE_TTL_MS));
+        return suggestions;
+    }
+
+    @Override
     public List<ExternalDiscoveryResult> searchNearbyAccommodations(double latitude, double longitude, int radiusKm) {
         if (!enabled) {
             return Collections.emptyList();
         }
 
-        // Support worldwide radius up to 100km
+        // Support worldwide radius up to 100km cleanly
         int clampedRadiusKm = Math.min(Math.max(radiusKm, 1), 100);
-        int radiusMeters = clampedRadiusKm * 1000;
         String cacheKey = String.format(Locale.ROOT, "%.3f_%.3f_%d", latitude, longitude, clampedRadiusKm);
 
         CacheEntry<List<ExternalDiscoveryResult>> cached = nearbyCache.get(cacheKey);
@@ -194,35 +351,52 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
             return cached.value();
         }
 
-        // Broad worldwide Overpass QL query covering Hotels, Hostels, PGs, Guest Houses, Motels, and Student Accommodations
+        List<ExternalDiscoveryResult> results = new ArrayList<>();
+
+        // If radius is <= 35km, try fast Overpass query first
+        if (clampedRadiusKm <= 35) {
+            results = queryOverpassAccommodations(latitude, longitude, clampedRadiusKm);
+        }
+
+        // If Overpass returned empty (or failed/timed out, or radius is large > 35km up to 100km),
+        // fallback to fast bounded Nominatim POI search across multiple accommodation categories!
+        if (results.isEmpty() || clampedRadiusKm > 35) {
+            List<ExternalDiscoveryResult> nominatimResults = queryNominatimBoundedAccommodations(latitude, longitude, clampedRadiusKm);
+            if (!nominatimResults.isEmpty()) {
+                // Merge without duplicates
+                Set<String> existingNames = new HashSet<>();
+                for (ExternalDiscoveryResult r : results) {
+                    existingNames.add(r.getName().trim().toLowerCase());
+                }
+                for (ExternalDiscoveryResult nr : nominatimResults) {
+                    if (existingNames.add(nr.getName().trim().toLowerCase())) {
+                        results.add(nr);
+                    }
+                }
+            }
+        }
+
+        // If still empty (e.g. rural area on Nominatim), try Overpass as secondary fallback
+        if (results.isEmpty() && clampedRadiusKm > 35) {
+            results = queryOverpassAccommodations(latitude, longitude, clampedRadiusKm);
+        }
+
+        // Sort strictly by distance ascending
+        results.sort(Comparator.comparing(ExternalDiscoveryResult::getDistanceKm));
+
+        nearbyCache.put(cacheKey, new CacheEntry<>(results, System.currentTimeMillis() + CACHE_TTL_MS));
+        return results;
+    }
+
+    private List<ExternalDiscoveryResult> queryOverpassAccommodations(double latitude, double longitude, int radiusKm) {
+        int radiusMeters = radiusKm * 1000;
+        // Optimized regex Overpass QL query covering Hotels, Hostels, PGs, Guest Houses, Motels, and Student Accommodations
         String overpassQuery = String.format(Locale.ROOT,
-                "[out:json][timeout:8];(" +
-                "node[\"tourism\"=\"hotel\"](around:%d,%.6f,%.6f);" +
-                "node[\"tourism\"=\"hostel\"](around:%d,%.6f,%.6f);" +
-                "node[\"tourism\"=\"guest_house\"](around:%d,%.6f,%.6f);" +
-                "node[\"tourism\"=\"motel\"](around:%d,%.6f,%.6f);" +
-                "node[\"tourism\"=\"apartment\"](around:%d,%.6f,%.6f);" +
-                "node[\"amenity\"=\"student_accommodation\"](around:%d,%.6f,%.6f);" +
-                "node[\"amenity\"=\"dormitory\"](around:%d,%.6f,%.6f);" +
-                "way[\"tourism\"=\"hotel\"](around:%d,%.6f,%.6f);" +
-                "way[\"tourism\"=\"hostel\"](around:%d,%.6f,%.6f);" +
-                "way[\"tourism\"=\"guest_house\"](around:%d,%.6f,%.6f);" +
-                "way[\"tourism\"=\"motel\"](around:%d,%.6f,%.6f);" +
-                "way[\"tourism\"=\"apartment\"](around:%d,%.6f,%.6f);" +
-                "way[\"amenity\"=\"student_accommodation\"](around:%d,%.6f,%.6f);" +
-                "way[\"amenity\"=\"dormitory\"](around:%d,%.6f,%.6f);" +
+                "[out:json][timeout:5];(" +
+                "node[\"tourism\"~\"^(hotel|hostel|guest_house|motel|apartment)$\"](around:%d,%.6f,%.6f);" +
+                "node[\"amenity\"~\"^(student_accommodation|dormitory)$\"](around:%d,%.6f,%.6f);" +
+                "way[\"tourism\"~\"^(hotel|hostel|guest_house|motel)$\"](around:%d,%.6f,%.6f);" +
                 ");out center 50;",
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
-                radiusMeters, latitude, longitude,
                 radiusMeters, latitude, longitude,
                 radiusMeters, latitude, longitude,
                 radiusMeters, latitude, longitude
@@ -238,7 +412,7 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
                         .uri(URI.create(endpoint))
                         .header("User-Agent", USER_AGENT)
                         .header("Content-Type", "application/x-www-form-urlencoded")
-                        .timeout(Duration.ofSeconds(6))
+                        .timeout(Duration.ofSeconds(4))
                         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                         .build();
 
@@ -253,7 +427,7 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
                             JsonNode tags = el.path("tags");
                             String name = tags.path("name").asText(null);
                             if (name == null || name.trim().isEmpty()) {
-                                continue; // Skip unnamed features
+                                continue;
                             }
 
                             double itemLat;
@@ -275,7 +449,7 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
                             String tourismTag = tags.path("tourism").asText("");
                             String amenityTag = tags.path("amenity").asText("");
 
-                            String category = "Hotel / Accommodation";
+                            String category = "Hotel";
                             if ("hotel".equalsIgnoreCase(tourismTag)) {
                                 category = "Hotel";
                             } else if ("hostel".equalsIgnoreCase(tourismTag)) {
@@ -311,7 +485,6 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
 
                             double dist = calculateHaversineKm(latitude, longitude, itemLat, itemLon);
 
-                            // Universal Google Maps directions URL (works on all phones and browsers)
                             String googleMapsDirectionsUrl = String.format(Locale.ROOT,
                                     "https://www.google.com/maps/dir/?api=1&destination=%.6f%%2C%.6f",
                                     itemLat, itemLon);
@@ -337,32 +510,10 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
                             if (tags.has("website")) res.setWebsiteUrl(tags.path("website").asText());
                             else if (tags.has("contact:website")) res.setWebsiteUrl(tags.path("contact:website").asText());
 
-                            // Populate authentic room card presentation details
-                            if (category.contains("Hotel") || category.contains("Motel")) {
-                                res.setImagePath("/images/hero_room.jpg");
-                                res.setPricePerNight(new java.math.BigDecimal("1850.00"));
-                                res.setAmenities(java.util.List.of("Free High-Speed Wi-Fi", "Air Conditioning", "Ensuite Bathroom", "Housekeeping", "24/7 Desk"));
-                            } else if (category.contains("Hostel")) {
-                                res.setImagePath("/images/dormitory_room.jpg");
-                                res.setPricePerNight(new java.math.BigDecimal("650.00"));
-                                res.setMonthlyRent(new java.math.BigDecimal("7500.00"));
-                                res.setAmenities(java.util.List.of("High-Speed Wi-Fi", "Bunk Bed & Locker", "Shared Kitchen", "Study Area", "CCTV Security"));
-                            } else if (category.contains("PG") || category.contains("Student") || category.contains("Dormitory")) {
-                                res.setImagePath("/images/deluxe_room.jpg");
-                                res.setPricePerNight(new java.math.BigDecimal("550.00"));
-                                res.setMonthlyRent(new java.math.BigDecimal("6800.00"));
-                                res.setAmenities(java.util.List.of("Wi-Fi Included", "Meal Options", "Laundry Service", "Study Table", "Power Backup"));
-                            } else {
-                                res.setImagePath("/images/deluxe_room.jpg");
-                                res.setPricePerNight(new java.math.BigDecimal("1250.00"));
-                                res.setAmenities(java.util.List.of("Free Wi-Fi", "Air Conditioning", "Ensuite Bathroom", "Balcony", "Kitchenette"));
-                            }
-
+                            enrichResultCard(res, category);
                             results.add(res);
                         }
                     }
-
-                    // Successfully fetched elements from this endpoint
                     break;
                 } else {
                     log.warn("Overpass endpoint {} returned status {}. Trying next mirror if available.", endpoint, response.statusCode());
@@ -371,12 +522,119 @@ public class OpenStreetMapPlacesProvider implements PlacesProvider {
                 log.warn("Overpass query failed on endpoint {}: {}", endpoint, ex.getMessage());
             }
         }
-
-        // Sort by distance ascending
-        results.sort(Comparator.comparing(ExternalDiscoveryResult::getDistanceKm));
-
-        nearbyCache.put(cacheKey, new CacheEntry<>(results, System.currentTimeMillis() + CACHE_TTL_MS));
         return results;
+    }
+
+    private List<ExternalDiscoveryResult> queryNominatimBoundedAccommodations(double latitude, double longitude, int radiusKm) {
+        List<ExternalDiscoveryResult> list = new ArrayList<>();
+        double deltaLat = radiusKm / 111.0;
+        double deltaLon = radiusKm / (111.0 * Math.max(Math.cos(Math.toRadians(latitude)), 0.1));
+        double minLat = latitude - deltaLat;
+        double maxLat = latitude + deltaLat;
+        double minLon = longitude - deltaLon;
+        double maxLon = longitude + deltaLon;
+
+        // Query hotels, hostels, and guest houses within the bounding box
+        List<String> categoriesToQuery = List.of("hotel", "hostel", "guest house");
+        for (String term : categoriesToQuery) {
+            try {
+                String encodedTerm = URLEncoder.encode(term, StandardCharsets.UTF_8);
+                String viewbox = String.format(Locale.ROOT, "%.4f,%.4f,%.4f,%.4f", minLon, maxLat, maxLon, minLat);
+                String url = NOMINATIM_SEARCH_URL + "?q=" + encodedTerm + "&format=json&limit=15&viewbox=" + viewbox + "&bounded=1&addressdetails=1";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .header("User-Agent", USER_AGENT)
+                        .header("Accept", "application/json")
+                        .timeout(Duration.ofSeconds(4))
+                        .GET()
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 200) {
+                    JsonNode root = objectMapper.readTree(response.body());
+                    if (root.isArray()) {
+                        for (JsonNode el : root) {
+                            String name = el.path("name").asText(null);
+                            if (name == null || name.trim().isEmpty()) {
+                                name = el.path("display_name").asText("Accommodation");
+                                if (name.contains(",")) name = name.substring(0, name.indexOf(',')).trim();
+                            }
+                            if (name.equalsIgnoreCase("hotel") || name.equalsIgnoreCase("hostel") || name.equalsIgnoreCase("guest house")) {
+                                continue;
+                            }
+
+                            double itemLat = Double.parseDouble(el.path("lat").asText());
+                            double itemLon = Double.parseDouble(el.path("lon").asText());
+                            double dist = calculateHaversineKm(latitude, longitude, itemLat, itemLon);
+                            if (dist > radiusKm) {
+                                continue;
+                            }
+
+                            String type = el.path("type").asText("hotel");
+                            String category = "Hotel";
+                            if ("hostel".equalsIgnoreCase(type) || term.contains("hostel") || name.toLowerCase().contains("hostel")) {
+                                category = "Hostel / Backpacker";
+                            } else if ("guest_house".equalsIgnoreCase(type) || term.contains("guest") || name.toLowerCase().contains("guest")) {
+                                category = "Guest House / Homestay";
+                            } else if (name.toLowerCase().contains("pg") || name.toLowerCase().contains("paying guest")) {
+                                category = "Student PG / Accommodation";
+                            }
+
+                            long osmId = el.path("osm_id").asLong(System.currentTimeMillis());
+                            String extId = "osm-" + el.path("osm_type").asText("node") + "-" + osmId;
+                            String displayName = el.path("display_name").asText("Nearby accommodation");
+
+                            String googleMapsDirectionsUrl = String.format(Locale.ROOT,
+                                    "https://www.google.com/maps/dir/?api=1&destination=%.6f%%2C%.6f",
+                                    itemLat, itemLon);
+
+                            ExternalDiscoveryResult res = new ExternalDiscoveryResult(
+                                    extId,
+                                    name,
+                                    category,
+                                    displayName,
+                                    "Local Area",
+                                    "Region",
+                                    itemLat,
+                                    itemLon,
+                                    dist,
+                                    "OpenStreetMap",
+                                    "© OpenStreetMap contributors",
+                                    googleMapsDirectionsUrl
+                            );
+                            enrichResultCard(res, category);
+                            list.add(res);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                log.debug("Nominatim bounded search for '{}' failed: {}", term, ex.getMessage());
+            }
+        }
+        return list;
+    }
+
+    private void enrichResultCard(ExternalDiscoveryResult res, String category) {
+        if (category.contains("Hotel") || category.contains("Motel")) {
+            res.setImagePath("/images/hero_room.jpg");
+            res.setPricePerNight(new java.math.BigDecimal("1850.00"));
+            res.setAmenities(java.util.List.of("Free High-Speed Wi-Fi", "Air Conditioning", "Ensuite Bathroom", "Housekeeping", "24/7 Desk"));
+        } else if (category.contains("Hostel")) {
+            res.setImagePath("/images/dormitory_room.jpg");
+            res.setPricePerNight(new java.math.BigDecimal("650.00"));
+            res.setMonthlyRent(new java.math.BigDecimal("7500.00"));
+            res.setAmenities(java.util.List.of("High-Speed Wi-Fi", "Bunk Bed & Locker", "Shared Kitchen", "Study Area", "CCTV Security"));
+        } else if (category.contains("PG") || category.contains("Student") || category.contains("Dormitory")) {
+            res.setImagePath("/images/deluxe_room.jpg");
+            res.setPricePerNight(new java.math.BigDecimal("550.00"));
+            res.setMonthlyRent(new java.math.BigDecimal("6800.00"));
+            res.setAmenities(java.util.List.of("Wi-Fi Included", "Meal Options", "Laundry Service", "Study Table", "Power Backup"));
+        } else {
+            res.setImagePath("/images/deluxe_room.jpg");
+            res.setPricePerNight(new java.math.BigDecimal("1250.00"));
+            res.setAmenities(java.util.List.of("Free Wi-Fi", "Air Conditioning", "Ensuite Bathroom", "Balcony", "Kitchenette"));
+        }
     }
 
     @Override

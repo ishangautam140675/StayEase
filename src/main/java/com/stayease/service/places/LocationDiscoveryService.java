@@ -33,11 +33,32 @@ public class LocationDiscoveryService {
     }
 
     /**
+     * Retrieves interactive autocomplete / typeahead location suggestions for keyword queries.
+     *
+     * @param query search keyword (e.g. city, locality, landmark)
+     * @param limit maximum suggestions to return (default 6)
+     * @return list of matching location suggestions
+     */
+    public List<com.stayease.dto.LocationSuggestion> suggestLocations(String query, int limit) {
+        if (query == null || query.trim().length() < 2) {
+            return Collections.emptyList();
+        }
+        if (placesProvider != null && placesProvider.isAvailable()) {
+            try {
+                return placesProvider.suggestLocations(query.trim(), limit > 0 ? limit : 6);
+            } catch (Exception ex) {
+                log.warn("Location suggestion failed for query '{}': {}", query, ex.getMessage());
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * Executes accommodation discovery using manual text search and/or device coordinates.
      *
      * @param query text query (city, locality, landmark)
-     * @param lat device latitude (if GPS granted)
-     * @param lng device longitude (if GPS granted)
+     * @param lat device latitude (if GPS granted or autocomplete selected)
+     * @param lng device longitude (if GPS granted or autocomplete selected)
      * @param radiusKm search radius (default 10)
      * @param gpsUsed whether coordinates originated from user-authorized device GPS
      */

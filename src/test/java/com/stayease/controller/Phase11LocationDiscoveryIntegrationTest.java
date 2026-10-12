@@ -162,4 +162,16 @@ class Phase11LocationDiscoveryIntegrationTest {
         assertTrue(updated.isVerified());
         assertNotNull(updated.getLastVerifiedAt());
     }
+
+    @Test
+    @DisplayName("GET /api/discovery/suggest returns location suggestions list (Google Maps / Cab booking style)")
+    void testDiscoverySuggestApi() throws Exception {
+        mockMvc.perform(get("/api/discovery/suggest")
+                        .param("query", "Jaipur")
+                        .param("limit", "5")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray());
+    }
 }

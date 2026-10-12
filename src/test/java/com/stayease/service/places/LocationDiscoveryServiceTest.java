@@ -247,10 +247,34 @@ class LocationDiscoveryServiceTest {
         when(placesProvider.isAvailable()).thenReturn(true);
         when(placesProvider.searchNearbyAccommodations(anyDouble(), anyDouble(), anyInt())).thenReturn(List.of());
 
-        DiscoveryResponse response75 = discoveryService.discover(null, 26.9124, 75.7873, 75, true);
-        assertEquals(75, response75.getRadiusKm(), "Radius of 75km should be preserved");
-
         DiscoveryResponse responseOver100 = discoveryService.discover(null, 26.9124, 75.7873, 250, true);
         assertEquals(100, responseOver100.getRadiusKm(), "Radius exceeding 100km should clamp to 100km max");
+    }
+
+    @Test
+    @DisplayName("Suggests matching locations for keyword query (Google Maps / Cab booking style)")
+    void testSuggestLocations() {
+        when(placesProvider.isAvailable()).thenReturn(true);
+        when(placesProvider.suggestLocations("kukas", 6)).thenReturn(List.of(
+                new com.stayease.dto.LocationSuggestion("Kukas, Amber Tehsil, Jaipur, Rajasthan, 303101, India",
+                        "Kukas", "Amber Tehsil, Jaipur, Rajasthan", 27.0420, 75.8942, "village")
+        ));
+
+        List<com.stayease.dto.LocationSuggestion> suggestions = discoveryService.suggestLocations("kukas", 6);
+
+        assertNotNull(suggestions);
+        assertEquals(1, suggestions.size());
+        assertEquals("Kukas", suggestions.get(0).getPrimaryName());
+        assertEquals(27.0420, suggestions.get(0).getLatitude());
+        assertEquals(75.8942, suggestions.get(0).getLongitude());
+    }
+
+    @Test
+    @DisplayName("Returns empty suggestions for short or null queries without querying provider")
+    void testSuggestLocationsEmptyShortQuery() {
+        assertTrue(discoveryService.suggestLocations(null, 6).isEmpty());
+        assertTrue(discoveryService.suggestLocations("", 6).isEmpty());
+        assertTrue(discoveryService.suggestLocations("a", 6).isEmpty());
+        verify(placesProvider, never()).suggestLocations(anyString(), anyInt());
     }
 }

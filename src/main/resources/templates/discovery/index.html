@@ -38,6 +38,26 @@
             70% { box-shadow: 0 0 0 16px rgba(43, 108, 176, 0); }
             100% { box-shadow: 0 0 0 0 rgba(43, 108, 176, 0); }
         }
+        .suggestion-item {
+            transition: background-color 0.15s ease, border-left-color 0.15s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent !important;
+            text-align: left;
+        }
+        .suggestion-item:hover, .suggestion-item.active {
+            background-color: #f1f5f9 !important;
+            border-left-color: #2563eb !important;
+        }
+        .suggestion-item.active .suggestion-primary-name {
+            color: #1e3a8a !important;
+        }
+        #locationSuggestionsDropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+        #locationSuggestionsDropdown::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -87,10 +107,11 @@
                 <input type="hidden" name="lng" id="searchLng" th:value="${lng}"/>
                 <input type="hidden" name="gps" id="searchGps" th:value="${gps}"/>
 
-                <!-- Search Input: Any city / locality / landmark globally -->
-                <div class="col-12 col-md-5">
-                    <label for="locationQuery" class="form-label small fw-semibold text-secondary">
-                        <i class="bi bi-search me-1"></i>Search Any City, Locality, or Landmark Worldwide
+                <!-- Search Input: Any city / locality / landmark globally with Google Maps / Cab-style Autocomplete -->
+                <div class="col-12 col-md-5 position-relative">
+                    <label for="locationQuery" class="form-label small fw-semibold text-secondary d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-search me-1"></i>Search Any City, Locality, or Landmark Worldwide</span>
+                        <span id="autocompleteSpinner" class="spinner-border spinner-border-sm text-primary d-none" role="status" style="width: 0.85rem; height: 0.85rem;"></span>
                     </label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0">
@@ -101,8 +122,19 @@
                                 name="query"
                                 th:value="${query}"
                                 class="form-control border-start-0"
-                                placeholder="e.g. Jaipur, Delhi, Mumbai, Bengaluru, London, Tokyo, New York..."
-                                autocomplete="off"/>
+                                placeholder="e.g. Kukas, Jaipur, Indiranagar, Connaught Place, Whitefield..."
+                                autocomplete="off"
+                                aria-autocomplete="list"
+                                aria-expanded="false"/>
+                        <button type="button" id="btnClearLocationQuery" class="btn btn-light border border-start-0 text-muted d-none" title="Clear input">
+                            <i class="bi bi-x-lg small"></i>
+                        </button>
+                    </div>
+
+                    <!-- Interactive Live Autocomplete Dropdown (Google Maps / Cab Booking Style) -->
+                    <div id="locationSuggestionsDropdown"
+                         class="list-group position-absolute w-100 shadow-lg border-0 d-none"
+                         style="top: 100%; left: 0; z-index: 1055; border-radius: 12px; margin-top: 6px; max-height: 330px; overflow-y: auto; background: #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important;">
                     </div>
                 </div>
 
@@ -940,6 +972,205 @@ document.addEventListener('DOMContentLoaded', function () {
 
             tryGeolocation(true);
         });
+    }
+
+    // ── 1.1 Live Location Autocomplete (Google Maps / Cab Booking Style) ────────
+    const dropdown = document.getElementById('locationSuggestionsDropdown');
+    const spinner = document.getElementById('autocompleteSpinner');
+    const btnClear = document.getElementById('btnClearLocationQuery');
+    const autocompleteCache = {};
+    let debounceTimer = null;
+    let activeSuggestionIndex = -1;
+
+    if (locationQuery && dropdown) {
+        if (locationQuery.value && locationQuery.value.trim().length > 0 && btnClear) {
+            btnClear.classList.remove('d-none');
+        }
+
+        locationQuery.addEventListener('input', function () {
+            const query = this.value.trim();
+            activeSuggestionIndex = -1;
+
+            if (btnClear) {
+                if (query.length > 0) btnClear.classList.remove('d-none');
+                else btnClear.classList.add('d-none');
+            }
+
+            // User is changing query manually, so clear pre-set coordinates
+            searchLat.value = '';
+            searchLng.value = '';
+            searchGps.value = 'false';
+
+            if (debounceTimer) clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                dropdown.classList.add('d-none');
+                dropdown.innerHTML = '';
+                if (spinner) spinner.classList.add('d-none');
+                return;
+            }
+
+            if (autocompleteCache[query.toLowerCase()]) {
+                renderSuggestions(autocompleteCache[query.toLowerCase()], query);
+                return;
+            }
+
+            if (spinner) spinner.classList.remove('d-none');
+
+            debounceTimer = setTimeout(function () {
+                fetch('/api/discovery/suggest?query=' + encodeURIComponent(query) + '&limit=6')
+                    .then(function (res) {
+                        if (!res.ok) throw new Error('Suggestion network error');
+                        return res.json();
+                    })
+                    .then(function (data) {
+                        autocompleteCache[query.toLowerCase()] = data;
+                        renderSuggestions(data, query);
+                    })
+                    .catch(function (err) {
+                        console.debug('Autocomplete suggestion error:', err);
+                        dropdown.classList.add('d-none');
+                    })
+                    .finally(function () {
+                        if (spinner) spinner.classList.add('d-none');
+                    });
+            }, 220);
+        });
+
+        function renderSuggestions(items, queryText) {
+            dropdown.innerHTML = '';
+            if (!items || items.length === 0) {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'p-3 text-center text-muted small';
+                emptyItem.innerHTML = '<i class="bi bi-geo-alt me-1"></i>No matching places found. Try adding city or state.';
+                dropdown.appendChild(emptyItem);
+                dropdown.classList.remove('d-none');
+                return;
+            }
+
+            items.forEach(function (item, idx) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 border-0 suggestion-item';
+                btn.setAttribute('data-index', idx);
+
+                let iconClass = 'bi-geo-alt-fill text-danger';
+                const pType = (item.placeType || '').toLowerCase();
+                if (pType.includes('city') || pType.includes('town') || pType.includes('municipality')) {
+                    iconClass = 'bi-building text-primary';
+                } else if (pType.includes('station') || pType.includes('railway') || pType.includes('airport')) {
+                    iconClass = 'bi-signpost-split-fill text-warning';
+                } else if (pType.includes('village') || pType.includes('hamlet')) {
+                    iconClass = 'bi-houses-fill text-success';
+                }
+
+                btn.innerHTML =
+                    '<div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background: #EEF2F6;">' +
+                    '<i class="bi ' + iconClass + ' fs-6"></i>' +
+                    '</div>' +
+                    '<div class="flex-grow-1 text-start overflow-hidden">' +
+                    '<div class="fw-bold text-dark text-truncate suggestion-primary-name" style="font-size: 0.92rem;">' + escapeHtml(item.primaryName || '') + '</div>' +
+                    (item.secondaryText ? '<div class="small text-muted text-truncate suggestion-secondary-text" style="font-size: 0.78rem;">' + escapeHtml(item.secondaryText) + '</div>' : '') +
+                    '</div>' +
+                    (item.placeType ? '<span class="badge bg-light text-secondary border text-capitalize" style="font-size: 0.68rem;">' + escapeHtml(item.placeType) + '</span>' : '');
+
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    selectSuggestion(item);
+                });
+
+                dropdown.appendChild(btn);
+            });
+
+            dropdown.classList.remove('d-none');
+        }
+
+        function selectSuggestion(item) {
+            const locName = item.displayName || (item.primaryName + (item.secondaryText ? ', ' + item.secondaryText : ''));
+            locationQuery.value = locName;
+            searchLat.value = item.latitude != null ? item.latitude : '';
+            searchLng.value = item.longitude != null ? item.longitude : '';
+            searchGps.value = 'false';
+
+            dropdown.classList.add('d-none');
+            dropdown.innerHTML = '';
+            if (btnClear) btnClear.classList.remove('d-none');
+
+            // Visual feedback on search submit button
+            const btnSubmit = searchForm.querySelector('button[type="submit"]');
+            if (btnSubmit) {
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Locating...';
+                btnSubmit.disabled = true;
+            }
+
+            searchForm.submit();
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Keyboard navigation (ArrowDown, ArrowUp, Enter, Escape)
+        locationQuery.addEventListener('keydown', function (e) {
+            const items = dropdown.querySelectorAll('.suggestion-item');
+            if (!items || items.length === 0 || dropdown.classList.contains('d-none')) {
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+                updateActiveSuggestion(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+                updateActiveSuggestion(items);
+            } else if (e.key === 'Enter') {
+                if (activeSuggestionIndex >= 0 && activeSuggestionIndex < items.length) {
+                    e.preventDefault();
+                    items[activeSuggestionIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                dropdown.classList.add('d-none');
+            }
+        });
+
+        function updateActiveSuggestion(items) {
+            items.forEach(function (it, idx) {
+                if (idx === activeSuggestionIndex) {
+                    it.classList.add('active');
+                    it.scrollIntoView({ block: 'nearest' });
+                } else {
+                    it.classList.remove('active');
+                }
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!locationQuery.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('d-none');
+            }
+        });
+
+        // Clear query button handler
+        if (btnClear) {
+            btnClear.addEventListener('click', function () {
+                locationQuery.value = '';
+                searchLat.value = '';
+                searchLng.value = '';
+                searchGps.value = 'false';
+                btnClear.classList.add('d-none');
+                dropdown.classList.add('d-none');
+                dropdown.innerHTML = '';
+                locationQuery.focus();
+            });
+        }
     }
 
     // ── 2. Category Counts & Dynamic Tab Filtering ────────────────────────────
