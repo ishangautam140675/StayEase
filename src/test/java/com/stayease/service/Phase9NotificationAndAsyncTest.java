@@ -36,6 +36,7 @@ import java.util.concurrent.Executor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -95,6 +96,8 @@ public class Phase9NotificationAndAsyncTest {
             Room room = new Room("P9-101", RoomType.SINGLE, 2, new BigDecimal("3200.00"), "Phase 9 test suite room", true);
             return roomRepository.save(room);
         });
+
+        notificationRepository.deleteAll();
     }
 
     @Test
@@ -255,5 +258,71 @@ public class Phase9NotificationAndAsyncTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.unreadCount").value(0));
+    }
+
+    @Test
+    @DisplayName("API: DELETE /api/notifications/{id} deletes read notification, but rejects unread notification")
+    @WithMockUser(username = "phase9guest@stayease.com", roles = "CUSTOMER")
+    void api_DeleteNotification_ReadVsUnread() throws Exception {
+        InAppNotification unreadNotif = notificationService.notifyUser(
+                "phase9guest@stayease.com",
+                "Payment Alert",
+                "Payment pending.",
+                "PAYMENT",
+                "/customer/bookings"
+        );
+
+        // Attempting to delete an unread alert must be rejected
+        mockMvc.perform(delete("/api/notifications/" + unreadNotif.getId()).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value("Unread alerts cannot be deleted"));
+
+        // Now mark it as read via POST endpoint
+        mockMvc.perform(post("/api/notifications/" + unreadNotif.getId() + "/read").with(csrf()))
+                .andExpect(status().isOk());
+
+        // Deleting the read alert should now succeed
+        mockMvc.perform(delete("/api/notifications/" + unreadNotif.getId()).with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"));
+
+        // Verify it was deleted from DB
+        assertThat(notificationRepository.findById(unreadNotif.getId())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("API: DELETE /api/notifications/read deletes only read notifications and preserves unread alerts")
+    @WithMockUser(username = "phase9guest@stayease.com", roles = "CUSTOMER")
+    void api_DeleteAllReadNotifications_PreservesUnread() throws Exception {
+        InAppNotification readNotif = notificationService.notifyUser(
+                "phase9guest@stayease.com",
+                "Read Alert",
+                "This has been read.",
+                "INFO",
+                "/customer/bookings"
+        );
+        InAppNotification unreadNotif = notificationService.notifyUser(
+                "phase9guest@stayease.com",
+                "Unread Alert",
+                "This is not yet read.",
+                "INFO",
+                "/customer/bookings"
+        );
+
+        mockMvc.perform(post("/api/notifications/" + readNotif.getId() + "/read").with(csrf()))
+                .andExpect(status().isOk());
+
+        // Delete all read notifications
+        mockMvc.perform(delete("/api/notifications/read").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.deletedCount").value(1))
+                .andExpect(jsonPath("$.unreadCount").value(1));
+
+        // Read alert should be gone
+        assertThat(notificationRepository.findById(readNotif.getId())).isEmpty();
+        // Unread alert must still be intact
+        assertThat(notificationRepository.findById(unreadNotif.getId())).isPresent();
     }
 }

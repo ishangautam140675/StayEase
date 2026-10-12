@@ -3,8 +3,10 @@ package com.stayease.controller;
 import com.stayease.model.InAppNotification;
 import com.stayease.service.InAppNotificationService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -91,5 +93,56 @@ public class NotificationApiController {
     public ResponseEntity<Map<String, Object>> markAllAsRead(Authentication authentication) {
         notificationService.markAllAsRead(authentication);
         return ResponseEntity.ok(Map.of("status", "success", "unreadCount", 0));
+    }
+
+    /**
+     * Delete a single notification. ONLY read notifications can be deleted.
+     * Unread notifications cannot be deleted and return 400 Bad Request.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteNotification(
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        }
+
+        try {
+            boolean deleted = notificationService.deleteReadNotification(id, authentication);
+            if (!deleted) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("status", "error", "message", "Alert not found"));
+            }
+            long unreadCount = notificationService.getUnreadCount(authentication);
+            return ResponseEntity.ok(Map.of("status", "success", "unreadCount", unreadCount));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/delete")
+    public ResponseEntity<Map<String, Object>> deleteNotificationPost(
+            @PathVariable("id") Long id,
+            Authentication authentication) {
+        return deleteNotification(id, authentication);
+    }
+
+    /**
+     * Delete all read notifications for current user. Unread alerts cannot be deleted.
+     */
+    @DeleteMapping("/read")
+    public ResponseEntity<Map<String, Object>> deleteAllReadNotifications(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        }
+
+        int count = notificationService.deleteAllReadNotifications(authentication);
+        long unreadCount = notificationService.getUnreadCount(authentication);
+        return ResponseEntity.ok(Map.of("status", "success", "deletedCount", count, "unreadCount", unreadCount));
+    }
+
+    @PostMapping("/delete-read")
+    public ResponseEntity<Map<String, Object>> deleteAllReadNotificationsPost(Authentication authentication) {
+        return deleteAllReadNotifications(authentication);
     }
 }

@@ -35,17 +35,29 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
                                             @Param("role") String role,
                                             @Param("since") LocalDateTime since);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE InAppNotification n SET n.read = true " +
            "WHERE (n.recipientEmail = :email OR (n.targetRole IS NOT NULL AND n.targetRole = :role)) " +
            "AND n.read = false")
     void markAllReadForUser(@Param("email") String email,
                             @Param("role") String role);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE InAppNotification n SET n.read = true " +
            "WHERE n.id = :id AND (n.recipientEmail = :email OR (n.targetRole IS NOT NULL AND n.targetRole = :role))")
     void markReadForUser(@Param("id") Long id,
                          @Param("email") String email,
                          @Param("role") String role);
+
+    @Query("SELECT n FROM InAppNotification n " +
+           "WHERE n.id = :id AND (n.recipientEmail = :email OR (n.targetRole IS NOT NULL AND n.targetRole = :role))")
+    java.util.Optional<InAppNotification> findByIdForUser(@Param("id") Long id,
+                                                          @Param("email") String email,
+                                                          @Param("role") String role);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM InAppNotification n " +
+           "WHERE n.read = true AND (n.recipientEmail = :email OR (n.targetRole IS NOT NULL AND n.targetRole = :role))")
+    int deleteAllReadForUser(@Param("email") String email,
+                             @Param("role") String role);
 }

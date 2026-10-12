@@ -112,7 +112,13 @@
                         <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="adminNotificationBell" style="position: absolute; top: 100%; right: 0; left: auto; width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15); z-index: 1060;">
                             <div class="d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light rounded-top">
                                 <span class="fw-bold small text-dark"><i class="bi bi-bell me-1 text-primary"></i>Admin Alerts</span>
-                                <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
+                                    <span class="text-muted" style="font-size: 0.75rem;">•</span>
+                                    <button type="button" class="btn btn-link btn-sm text-danger text-decoration-none p-0 small delete-all-read-notifications" style="font-size: 0.75rem;" title="Delete all read alerts" aria-label="Delete all read alerts">
+                                        <i class="bi bi-trash3 me-1"></i>Delete read
+                                    </button>
+                                </div>
                             </div>
                             <div id="adminNotificationList" class="notification-scroll-list" style="max-height: 320px; overflow-y: auto;">
                                 <div class="text-center text-muted py-4 small">No notifications yet</div>
@@ -203,7 +209,13 @@
                             <div class="dropdown-menu dropdown-menu-end shadow-lg p-0" aria-labelledby="userNotificationBell" style="position: absolute; top: 100%; right: 0; left: auto; width: 320px; max-width: 90vw; border-radius: 10px; border: 1px solid rgba(0,0,0,0.15); z-index: 1060;">
                                 <div class="d-flex align-items-center justify-content-between p-2 px-3 border-bottom bg-light rounded-top">
                                     <span class="fw-bold small text-dark"><i class="bi bi-bell me-1 text-primary"></i>My Notifications</span>
-                                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 small mark-all-notifications-read" style="font-size: 0.75rem;">Mark all read</button>
+                                        <span class="text-muted" style="font-size: 0.75rem;">•</span>
+                                        <button type="button" class="btn btn-link btn-sm text-danger text-decoration-none p-0 small delete-all-read-notifications" style="font-size: 0.75rem;" title="Delete all read alerts" aria-label="Delete all read alerts">
+                                            <i class="bi bi-trash3 me-1"></i>Delete read
+                                        </button>
+                                    </div>
                                 </div>
                                 <div id="userNotificationList" class="notification-scroll-list" style="max-height: 320px; overflow-y: auto;">
                                     <div class="text-center text-muted py-4 small">No notifications yet</div>
@@ -481,11 +493,17 @@
                     const bgClass = n.read ? 'bg-white text-muted' : 'bg-light text-dark fw-medium border-start border-3 border-primary';
                     const icon = n.read ? 'bi-envelope-open' : 'bi-envelope-fill text-primary';
                     const urlParam = n.linkUrl ? `'${n.linkUrl}'` : 'null';
+                    const deleteBtn = n.read
+                        ? `<button type="button" class="btn btn-link btn-sm text-danger p-0 ms-2 delete-single-notif-btn" style="font-size: 0.75rem; text-decoration: none;" title="Delete read alert" aria-label="Delete read alert" onclick="event.stopPropagation(); window.StayEaseNotifications.deleteSingle(${n.id});"><i class="bi bi-trash3"></i></button>`
+                        : '';
                     html += `
                         <div class="p-2 px-3 border-bottom notification-item ${bgClass}" style="cursor: pointer;" onclick="window.StayEaseNotifications.markRead(${n.id}, ${urlParam})">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="small fw-semibold text-truncate text-dark" style="max-width: 200px;"><i class="bi ${icon} me-1"></i>${escapeHtml(n.title)}</span>
-                                <span class="text-muted" style="font-size: 0.7rem;">${formatTime(n.createdAt)}</span>
+                                <span class="small fw-semibold text-truncate text-dark" style="max-width: 175px;"><i class="bi ${icon} me-1"></i>${escapeHtml(n.title)}</span>
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted" style="font-size: 0.7rem;">${formatTime(n.createdAt)}</span>
+                                    ${deleteBtn}
+                                </div>
                             </div>
                             <div style="font-size: 0.8rem; line-height: 1.3;" class="mb-1 text-secondary">${escapeHtml(n.message)}</div>
                         </div>
@@ -557,10 +575,38 @@
                 .catch(err => {});
             }
 
+            function deleteSingle(id) {
+                fetch('/api/notifications/' + id, {
+                    method: 'DELETE',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getCsrfHeader()),
+                    credentials: 'same-origin'
+                })
+                .then(res => res.json())
+                .then(() => {
+                    fetchRecentNotifications();
+                })
+                .catch(err => {});
+            }
+
+            function deleteAllRead() {
+                fetch('/api/notifications/read', {
+                    method: 'DELETE',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getCsrfHeader()),
+                    credentials: 'same-origin'
+                })
+                .then(res => res.json())
+                .then(() => {
+                    fetchRecentNotifications();
+                })
+                .catch(err => {});
+            }
+
             // Expose global notification helpers
             window.StayEaseNotifications = {
                 fetchRecent: fetchRecentNotifications,
                 markAllRead: markAllRead,
+                deleteSingle: deleteSingle,
+                deleteAllRead: deleteAllRead,
                 markRead: function(id, linkUrl) {
                     fetch('/api/notifications/' + id + '/read', {
                         method: 'POST',
@@ -632,6 +678,13 @@
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         markAllRead();
+                    });
+                });
+
+                document.querySelectorAll('.delete-all-read-notifications').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        deleteAllRead();
                     });
                 });
 

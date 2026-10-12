@@ -129,6 +129,46 @@ public class InAppNotificationService {
         notificationRepository.markAllReadForUser(email, role);
     }
 
+    /**
+     * Delete a single notification ONLY if it has been marked as read.
+     * Unread notifications cannot be deleted and will trigger an IllegalStateException.
+     */
+    @Transactional
+    public boolean deleteReadNotification(Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        String email = authentication.getName();
+        String role = resolveTargetRole(authentication.getAuthorities());
+
+        java.util.Optional<InAppNotification> opt = notificationRepository.findByIdForUser(id, email, role);
+        if (opt.isEmpty()) {
+            return false;
+        }
+        InAppNotification notif = opt.get();
+        if (!notif.isRead()) {
+            throw new IllegalStateException("Unread alerts cannot be deleted");
+        }
+        notificationRepository.delete(notif);
+        log.info("Deleted read notification id={} for user={}", id, email);
+        return true;
+    }
+
+    /**
+     * Delete all read notifications for current user. Unread notifications are retained.
+     */
+    @Transactional
+    public int deleteAllReadNotifications(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return 0;
+        }
+        String email = authentication.getName();
+        String role = resolveTargetRole(authentication.getAuthorities());
+        int count = notificationRepository.deleteAllReadForUser(email, role);
+        log.info("Deleted {} read notifications for user={}", count, email);
+        return count;
+    }
+
     private String resolveTargetRole(Collection<? extends GrantedAuthority> authorities) {
         if (authorities == null) return null;
         for (GrantedAuthority ga : authorities) {
