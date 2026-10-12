@@ -25,6 +25,21 @@
             <p class="text-secondary mb-0">Browse our curated selection of comfortable, modern hostel and PG rooms.</p>
         </div>
 
+        <!-- Phase 11: Real-World Location Discovery Banner -->
+        <div class="alert alert-light border shadow-sm d-flex flex-column flex-md-row align-items-md-center justify-content-between p-3 mb-4 rounded-3"
+             style="border-left: 4px solid var(--brand-cobalt) !important; background: #ffffff;">
+            <div class="d-flex align-items-center mb-2 mb-md-0">
+                <i class="bi bi-geo-alt-fill text-danger fs-3 me-3"></i>
+                <div>
+                    <span class="fw-bold small d-block" style="color: var(--text-primary);">Looking for Hostels or PGs by Location or GPS?</span>
+                    <span class="small text-secondary">Discover verified StayEase properties and explore nearby accommodations on our new interactive discovery portal.</span>
+                </div>
+            </div>
+            <a th:href="@{/discovery}" class="btn btn-outline-primary btn-sm px-3 fw-semibold text-nowrap ms-md-3">
+                <i class="bi bi-compass me-1"></i>Location Discovery →
+            </a>
+        </div>
+
         <!-- Filter Card: Advanced Room Search -->
         <div class="card border-0 shadow-sm p-4 mb-5" style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
             <form th:action="@{/rooms}" method="get" class="row g-3 align-items-end">

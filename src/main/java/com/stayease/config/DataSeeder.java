@@ -127,19 +127,113 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedSampleRooms() {
         if (roomRepository.count() == 0) {
-            List<Room> sampleRooms = List.of(
-                    new Room("101", RoomType.SINGLE, 1, new BigDecimal("550.00"), "Cozy single room with a dedicated study desk and quiet garden view.", true, false, "High-Speed Wi-Fi, Study Desk, Garden View"),
-                    new Room("102", RoomType.DOUBLE, 2, new BigDecimal("850.00"), "Spacious double bedroom with twin beds and high-speed Wi-Fi.", true, false, "High-Speed Wi-Fi, Air Conditioning, Twin Beds"),
-                    new Room("103", RoomType.TRIPLE, 3, new BigDecimal("1150.00"), "Well-ventilated triple room perfect for small student groups.", true, false, "Wi-Fi, Attached Bath, Study Desks"),
-                    new Room("104", RoomType.DORMITORY, 4, new BigDecimal("1450.00"), "Modern dormitory accommodation with private lockers and ensuite bath.", true, false, "Wi-Fi, Lockers, Ensuite Bath"),
-                    new Room("201", RoomType.SINGLE, 1, new BigDecimal("650.00"), "Quiet executive single room with natural sunlight and ergonomic chair.", true, false, "High-Speed Wi-Fi, Ergonomic Chair, Sunlit Balcony"),
-                    new Room("202", RoomType.DOUBLE, 2, new BigDecimal("950.00"), "Premium double room featuring air conditioning and attached balcony.", true, false, "Air Conditioning, Balcony, Wi-Fi"),
-                    new Room("203", RoomType.TRIPLE, 3, new BigDecimal("1250.00"), "Deluxe triple sharing accommodation with individual wardrobes.", true, false, "Wardrobes, Wi-Fi, Study Lamp"),
-                    new Room("204", RoomType.DOUBLE, 2, new BigDecimal("800.00"), "Under maintenance room for testing maintenance filtering.", true, true, "Wi-Fi, AC")
-            );
+            Room r101 = new Room("101", RoomType.SINGLE, 1, new BigDecimal("550.00"), "Cozy single room with a dedicated study desk and quiet garden view.", true, false, "High-Speed Wi-Fi, Study Desk, Garden View");
+            r101.setPropertyName("Greenview Student Hostel");
+            r101.setAccommodationType(com.stayease.model.AccommodationType.HOSTEL);
+            r101.setAddress("12th Cross, Koramangala 4th Block");
+            r101.setLocality("Koramangala");
+            r101.setCity("Bengaluru");
+            r101.setPostalCode("560034");
+            r101.setLatitude(12.9352);
+            r101.setLongitude(77.6245);
+            r101.setMonthlyRent(new BigDecimal("8500.00"));
+            r101.setVerified(true);
+            r101.setLastVerifiedAt(java.time.LocalDateTime.now());
 
+            Room r102 = new Room("102", RoomType.DOUBLE, 2, new BigDecimal("850.00"), "Spacious double bedroom with twin beds and high-speed Wi-Fi.", true, false, "High-Speed Wi-Fi, Air Conditioning, Twin Beds");
+            r102.setPropertyName("StayEase Luxury PG for Women");
+            r102.setAccommodationType(com.stayease.model.AccommodationType.PG);
+            r102.setAddress("80 Feet Road, Indiranagar");
+            r102.setLocality("Indiranagar");
+            r102.setCity("Bengaluru");
+            r102.setPostalCode("560038");
+            r102.setLatitude(12.9784);
+            r102.setLongitude(77.6408);
+            r102.setMonthlyRent(new BigDecimal("12000.00"));
+            r102.setVerified(true);
+            r102.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            Room r103 = new Room("103", RoomType.TRIPLE, 3, new BigDecimal("1150.00"), "Well-ventilated triple room perfect for small student groups.", true, false, "Wi-Fi, Attached Bath, Study Desks");
+            r103.setPropertyName("HSR Scholars Co-Living");
+            r103.setAccommodationType(com.stayease.model.AccommodationType.COLIVING);
+            r103.setAddress("27th Main, Sector 1, HSR Layout");
+            r103.setLocality("HSR Layout");
+            r103.setCity("Bengaluru");
+            r103.setPostalCode("560102");
+            r103.setLatitude(12.9116);
+            r103.setLongitude(77.6389);
+            r103.setMonthlyRent(new BigDecimal("9500.00"));
+            r103.setVerified(true);
+            r103.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            Room r104 = new Room("104", RoomType.DORMITORY, 4, new BigDecimal("1450.00"), "Modern dormitory accommodation with private lockers and ensuite bath.", true, false, "Wi-Fi, Lockers, Ensuite Bath");
+            r104.setPropertyName("Whitefield Tech Youth Hostel");
+            r104.setAccommodationType(com.stayease.model.AccommodationType.HOSTEL);
+            r104.setAddress("ITPL Main Road, Whitefield");
+            r104.setLocality("Whitefield");
+            r104.setCity("Bengaluru");
+            r104.setPostalCode("560066");
+            r104.setLatitude(12.9698);
+            r104.setLongitude(77.7499);
+            r104.setMonthlyRent(new BigDecimal("7000.00"));
+            r104.setVerified(true);
+            r104.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            Room r201 = new Room("201", RoomType.SINGLE, 1, new BigDecimal("650.00"), "Quiet executive single room with natural sunlight and ergonomic chair.", true, false, "High-Speed Wi-Fi, Ergonomic Chair, Sunlit Balcony");
+            r201.setPropertyName("Koramangala Executive Residency");
+            r201.setAccommodationType(com.stayease.model.AccommodationType.PG);
+            r201.setAddress("5th Block, Near Jyoti Nivas College");
+            r201.setLocality("Koramangala");
+            r201.setCity("Bengaluru");
+            r201.setPostalCode("560095");
+            r201.setLatitude(12.9340);
+            r201.setLongitude(77.6180);
+            r201.setMonthlyRent(new BigDecimal("11000.00"));
+            r201.setVerified(true);
+            r201.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            Room r202 = new Room("202", RoomType.DOUBLE, 2, new BigDecimal("950.00"), "Premium double room featuring air conditioning and attached balcony.", true, false, "Air Conditioning, Balcony, Wi-Fi");
+            r202.setPropertyName("Indiranagar Central Co-Living");
+            r202.setAccommodationType(com.stayease.model.AccommodationType.COLIVING);
+            r202.setAddress("100 Feet Road, HAL 2nd Stage");
+            r202.setLocality("Indiranagar");
+            r202.setCity("Bengaluru");
+            r202.setPostalCode("560008");
+            r202.setLatitude(12.9719);
+            r202.setLongitude(77.6412);
+            r202.setMonthlyRent(new BigDecimal("14000.00"));
+            r202.setVerified(true);
+            r202.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            Room r203 = new Room("203", RoomType.TRIPLE, 3, new BigDecimal("1250.00"), "Deluxe triple sharing accommodation with individual wardrobes.", true, false, "Wardrobes, Wi-Fi, Study Lamp");
+            r203.setPropertyName("BTM Lakeview Student PG");
+            r203.setAccommodationType(com.stayease.model.AccommodationType.PG);
+            r203.setAddress("Outer Ring Road, BTM 2nd Stage");
+            r203.setLocality("BTM Layout");
+            r203.setCity("Bengaluru");
+            r203.setPostalCode("560076");
+            r203.setLatitude(12.9166);
+            r203.setLongitude(77.6101);
+            r203.setMonthlyRent(new BigDecimal("8000.00"));
+            r203.setVerified(true);
+            r203.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            Room r204 = new Room("204", RoomType.DOUBLE, 2, new BigDecimal("800.00"), "Under maintenance room for testing maintenance filtering.", true, true, "Wi-Fi, AC");
+            r204.setPropertyName("Jayanagar Premium Hostel");
+            r204.setAccommodationType(com.stayease.model.AccommodationType.HOSTEL);
+            r204.setAddress("4th Block, Near Jayanagar Complex");
+            r204.setLocality("Jayanagar");
+            r204.setCity("Bengaluru");
+            r204.setPostalCode("560011");
+            r204.setLatitude(12.9299);
+            r204.setLongitude(77.5824);
+            r204.setMonthlyRent(new BigDecimal("9000.00"));
+            r204.setVerified(true);
+            r204.setLastVerifiedAt(java.time.LocalDateTime.now());
+
+            List<Room> sampleRooms = List.of(r101, r102, r103, r104, r201, r202, r203, r204);
             roomRepository.saveAll(sampleRooms);
-            logger.info("Successfully seeded {} sample rooms into the database.", sampleRooms.size());
+            logger.info("Successfully seeded {} sample rooms with real-world location metadata into the database.", sampleRooms.size());
         }
     }
 

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Hostel & PG Discovery | StayEase')}"></head>
+
+<body class="d-flex flex-column min-vh-100" style="background: var(--surface-page, #f8fafc);">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: flash}"></div>
+
+<!-- ── Main Discovery Content ─────────────────────────────────────────── -->
+<main class="flex-grow-1 py-4 py-md-5">
+    <div class="container se-container">
+
+        <!-- Header Banner -->
+        <div class="card border-0 shadow-sm p-4 p-md-5 mb-4 text-white position-relative overflow-hidden"
+             style="background: linear-gradient(135deg, #1A365D 0%, #2B6CB0 100%); border-radius: 16px;">
+            <div class="row align-items-center position-relative z-1">
+                <div class="col-12 col-lg-8">
+                    <span class="badge bg-warning text-dark px-3 py-1 text-uppercase fw-bold mb-3" style="letter-spacing: 0.08em; font-size: 0.75rem;">
+                        <i class="bi bi-geo-alt-fill me-1"></i>Location Intelligence & Discovery
+                    </span>
+                    <h1 class="display-6 fw-bold mb-2" style="font-family: 'DM Sans', sans-serif;">
+                        Find Hostels & PGs Near You
+                    </h1>
+                    <p class="lead mb-0 text-white-50 fs-6">
+                        Discover verified StayEase accommodations with instant booking, or explore registered local hostels and student PGs around your college, office, or landmark.
+                    </p>
+                </div>
+                <div class="col-12 col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <div class="p-3 bg-white bg-opacity-10 rounded-3 text-start d-inline-block">
+                        <div class="small fw-semibold text-warning mb-1">
+                            <i class="bi bi-shield-check me-1"></i>StayEase Guarantee
+                        </div>
+                        <div class="small text-white-75" style="font-size: 0.8rem;">
+                            Only verified StayEase listings are bookable on our platform. External listings are provided for local guidance only.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & GPS Controls Card -->
+        <div class="card border-0 shadow-sm p-3 p-md-4 mb-4" style="background: var(--surface-card, #ffffff); border-radius: 14px;">
+            <form th:action="@{/discovery}" method="get" id="discoverySearchForm" class="row g-3 align-items-end">
+                
+                <!-- Hidden inputs for coordinates and GPS flag -->
+                <input type="hidden" name="lat" id="searchLat" th:value="${lat}"/>
+                <input type="hidden" name="lng" id="searchLng" th:value="${lng}"/>
+                <input type="hidden" name="gps" id="searchGps" th:value="${gps}"/>
+
+                <!-- Search Input -->
+                <div class="col-12 col-md-5">
+                    <label for="locationQuery" class="form-label small fw-semibold text-secondary">
+                        <i class="bi bi-search me-1"></i>Search City, Locality, or Landmark
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="bi bi-geo-alt text-muted"></i>
+                        </span>
+                        <input type="text"
+                               id="locationQuery"
+                               name="query"
+                               th:value="${query}"
+                               class="form-control border-start-0"
+                               placeholder="e.g. Koramangala, BTM Layout, Bengaluru, Pune..."
+                               autocomplete="off"/>
+                    </div>
+                </div>
+
+                <!-- Radius Selector -->
+                <div class="col-6 col-md-2">
+                    <label for="radiusSelector" class="form-label small fw-semibold text-secondary">
+                        <i class="bi bi-radar me-1"></i>Radius
+                    </label>
+                    <select id="radiusSelector" name="radius" class="form-select">
+                        <option value="2" th:selected="${radius == 2}">2 km</option>
+                        <option value="5" th:selected="${radius == 5}">5 km</option>
+                        <option value="10" th:selected="${radius == 10}">10 km</option>
+                        <option value="25" th:selected="${radius == 25}">25 km</option>
+                        <option value="50" th:selected="${radius == 50}">50 km</option>
+                    </select>
+                </div>
+
+                <!-- Search Submit Button -->
+                <div class="col-6 col-md-2">
+                    <button type="submit" class="btn btn-cobalt w-100 fw-semibold py-2">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+
+                <!-- Device GPS Action Button -->
+                <div class="col-12 col-md-3">
+                    <button type="button" id="btnUseGps" class="btn btn-outline-success w-100 fw-semibold py-2 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-crosshair2 me-2 fs-6"></i>
+                        <span id="gpsButtonText">Use My Location</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- GPS Feedback & Permission Notice Alert (Hidden by default, shown via JS) -->
+            <div id="gpsAlertBox" class="alert mt-3 mb-0 d-none" role="alert">
+                <div class="d-flex align-items-center">
+                    <i id="gpsAlertIcon" class="bi me-2 fs-5"></i>
+                    <div id="gpsAlertMessage" class="small"></div>
+                </div>
+            </div>
+
+            <!-- Active Filter Chips -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top" style="border-color: var(--border-default) !important;">
+                <span class="small text-secondary me-1">Active Search:</span>
+                <span th:if="${discovery.resolvedLocationName != null and !discovery.resolvedLocationName.isEmpty()}"
+                      class="badge bg-light text-dark border px-3 py-2 fw-medium">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                    <span th:text="${discovery.resolvedLocationName}">Bengaluru</span>
+                </span>
+                <span th:if="${discovery.gpsUsed}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-medium">
+                    <i class="bi bi-broadcast me-1"></i>Device GPS Coordinates
+                </span>
+                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fw-medium">
+                    <i class="bi bi-bullseye me-1"></i>Within <span th:text="${discovery.radiusKm}">10</span> km
+                </span>
+                <a th:href="@{/discovery(query='Bengaluru')}" class="btn btn-link btn-sm text-decoration-none p-0 ms-auto small text-muted">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Default
+                </a>
+            </div>
+        </div>
+
+        <!-- Provider Notice (if any) -->
+        <div th:if="${discovery.noticeMessage != null}" class="alert alert-warning alert-dismissible fade show mb-4 small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${discovery.noticeMessage}">Notice</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- ── Section 1: StayEase Verified Properties (Bookable) ─────────────── -->
+        <div class="mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 class="h4 fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                        <i class="bi bi-shield-fill-check text-success me-2"></i>StayEase Verified Accommodations
+                    </h2>
+                    <p class="small text-secondary mb-0">
+                        Admin-managed, physically verified properties available for secure online booking with instant confirmation.
+                    </p>
+                </div>
+                <span class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
+                    <span th:text="${discovery.stayEaseListings.size()}">0</span> Properties
+                </span>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${discovery.stayEaseListings.isEmpty()}" class="card border-0 shadow-sm p-5 text-center" style="border-radius: 14px;">
+                <i class="bi bi-building-exclamation fs-1 text-muted mb-3"></i>
+                <h5 class="fw-semibold text-secondary">No StayEase Properties within this radius</h5>
+                <p class="small text-muted mb-3">
+                    Try expanding your search radius (e.g. 25km or 50km) or searching for a larger city center.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a th:href="@{/discovery(query='Bengaluru', radius=50)}" class="btn btn-outline-primary btn-sm px-3">
+                        Search wider Bengaluru area
+                    </a>
+                    <a th:href="@{/rooms}" class="btn btn-cobalt btn-sm px-3">
+                        Browse all StayEase rooms
+                    </a>
+                </div>
+            </div>
+
+            <!-- Listing Cards Grid -->
+            <div th:unless="${discovery.stayEaseListings.isEmpty()}" class="row g-4">
+                <div th:each="item : ${discovery.stayEaseListings}" class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden d-flex flex-column"
+                         style="background: var(--surface-card); border-radius: 14px; transition: transform 0.2s, box-shadow 0.2s;">
+                        
+                        <!-- Image Container with Badges -->
+                        <div class="position-relative" style="height: 200px; background: #e2e8f0;">
+                            <img th:src="${item.imagePath}"
+                                 class="w-100 h-100 object-fit-cover"
+                                 alt="Accommodation Photograph"/>
+                            
+                            <!-- Badges Overlay -->
+                            <div class="position-absolute top-0 start-0 m-3 d-flex flex-column gap-1">
+                                <span class="badge bg-success text-white shadow-sm px-2 py-1 small fw-semibold">
+                                    <i class="bi bi-patch-check-fill me-1"></i>Verified StayEase
+                                </span>
+                                <span class="badge bg-dark bg-opacity-75 text-white shadow-sm px-2 py-1 small fw-medium"
+                                      th:text="${item.accommodationType}">
+                                    Hostel
+                                </span>
+                            </div>
+
+                            <!-- Distance Badge -->
+                            <div th:if="${item.distanceKm != null}" class="position-absolute bottom-0 end-0 m-3">
+                                <span class="badge bg-white text-dark shadow-sm px-2 py-1 small fw-bold">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i><span th:text="${item.distanceKm}">1.5</span> km away
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1" style="color: var(--text-primary);" th:text="${item.propertyName}">
+                                        StayEase Premier Living
+                                    </h5>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0 small"
+                                          th:text="'Room #' + ${item.roomNumber}">Room 101</span>
+                                </div>
+                            </div>
+
+                            <!-- Address & Locality -->
+                            <p class="small text-secondary mb-3">
+                                <i class="bi bi-geo-alt me-1 text-danger"></i>
+                                <span th:if="${item.locality != null}" th:text="${item.locality + ', '}">Koramangala, </span>
+                                <span th:text="${item.city}">Bengaluru</span>
+                            </p>
+
+                            <!-- Pricing -->
+                            <div class="p-2 mb-3 rounded-2 bg-light d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">DAILY RATE</small>
+                                    <span class="fw-bold text-dark fs-6">₹<span th:text="${#numbers.formatDecimal(item.pricePerNight, 1, 2)}">750.00</span></span>
+                                    <small class="text-muted">/night</small>
+                                </div>
+                                <div th:if="${item.monthlyRent != null}" class="text-end border-start ps-3">
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">MONTHLY RENT</small>
+                                    <span class="fw-bold text-success fs-6">₹<span th:text="${#numbers.formatDecimal(item.monthlyRent, 1, 0)}">8500</span></span>
+                                    <small class="text-muted">/mo</small>
+                                </div>
+                            </div>
+
+                            <!-- Amenities Snippet -->
+                            <div class="mb-3 flex-grow-1">
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span th:each="a : ${item.amenities}"
+                                          th:if="${aStat.index < 3}"
+                                          class="badge bg-light text-secondary border px-2 py-1 small"
+                                          style="font-size: 0.75rem;"
+                                          th:text="${a}">Wi-Fi</span>
+                                    <span th:if="${item.amenities != null and item.amenities.size() > 3}"
+                                          class="badge bg-light text-secondary border px-2 py-1 small"
+                                          style="font-size: 0.75rem;"
+                                          th:text="'+' + (${item.amenities.size()} - 3)">+2</span>
+                                </div>
+                            </div>
+
+                            <!-- Action -->
+                            <div class="mt-auto pt-2 border-top">
+                                <a th:href="@{/rooms/{id}(id=${item.id})}" class="btn btn-cobalt w-100 fw-semibold py-2">
+                                    <i class="bi bi-calendar-check me-1"></i>View & Book Now
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 2: External Places & Businesses Discovery ──────────────── -->
+        <div class="mb-5">
+            <div class="card border-0 shadow-sm p-4 p-md-4 mb-4" style="background: var(--surface-card); border-radius: 14px;">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                                <i class="bi bi-globe-americas text-primary me-2"></i>External Accommodation Businesses
+                            </h2>
+                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">Informational Only</span>
+                        </div>
+                        <p class="small text-secondary mb-0">
+                            Registered local hostels, guest houses, and PGs nearby discovered via OpenStreetMap. These properties have not joined StayEase and cannot be booked directly.
+                        </p>
+                    </div>
+                    <span th:if="${discovery.attribution != null}" class="small text-muted text-md-end" style="font-size: 0.75rem;">
+                        <span th:text="${discovery.attribution}">Map data © OpenStreetMap contributors</span>
+                    </span>
+                </div>
+
+                <!-- Empty External Results -->
+                <div th:if="${discovery.externalListings.isEmpty()}" class="py-4 text-center text-muted">
+                    <i class="bi bi-compass fs-2 d-block mb-2 text-secondary"></i>
+                    <span class="small">No external accommodation businesses found around this exact radius. Search with a larger radius or different location to discover local options.</span>
+                </div>
+
+                <!-- External Listings Table / List -->
+                <div th:unless="${discovery.externalListings.isEmpty()}" class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Business Name</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Type</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Address / Region</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Distance</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Contact / Web</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary text-end">Directions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ext : ${discovery.externalListings}">
+                                <td class="py-3 px-3">
+                                    <div class="fw-semibold text-dark" th:text="${ext.name}">External Hostel</div>
+                                    <span class="badge bg-light text-muted border py-0 px-2" style="font-size: 0.7rem;">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>External Discovery
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <span class="badge bg-secondary-subtle text-secondary px-2 py-1 small" th:text="${ext.accommodationType}">Hostel</span>
+                                </td>
+                                <td class="py-3 px-3 small text-secondary" style="max-width: 250px;">
+                                    <span th:text="${ext.address}">Address</span>
+                                </td>
+                                <td class="py-3 px-3 fw-medium text-dark small">
+                                    <span th:if="${ext.distanceKm != null}">
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i><span th:text="${ext.distanceKm}">2.4</span> km
+                                    </span>
+                                    <span th:unless="${ext.distanceKm != null}">—</span>
+                                </td>
+                                <td class="py-3 px-3 small text-secondary">
+                                    <div th:if="${ext.contactPhone != 'Not provided'}" class="mb-1">
+                                        <i class="bi bi-telephone me-1"></i><span th:text="${ext.contactPhone}">+91 9876543210</span>
+                                    </div>
+                                    <div th:if="${ext.websiteUrl != null}">
+                                        <a th:href="${ext.websiteUrl}" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none">
+                                            <i class="bi bi-globe me-1"></i>Website
+                                        </a>
+                                    </div>
+                                    <div th:if="${ext.contactPhone == 'Not provided' and ext.websiteUrl == null}" class="text-muted fst-italic">
+                                        Not provided
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 text-end">
+                                    <a th:href="${ext.directionsUrl}" target="_blank" rel="noopener noreferrer"
+                                       class="btn btn-outline-secondary btn-sm px-3 fw-medium">
+                                        <i class="bi bi-map me-1"></i>Map / Directions
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- ── Permission-Based Device GPS Script ────────────────────────────── -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnGps = document.getElementById('btnUseGps');
+    const gpsButtonText = document.getElementById('gpsButtonText');
+    const alertBox = document.getElementById('gpsAlertBox');
+    const alertIcon = document.getElementById('gpsAlertIcon');
+    const alertMessage = document.getElementById('gpsAlertMessage');
+    const searchLat = document.getElementById('searchLat');
+    const searchLng = document.getElementById('searchLng');
+    const searchGps = document.getElementById('searchGps');
+    const searchForm = document.getElementById('discoverySearchForm');
+    const locationQuery = document.getElementById('locationQuery');
+
+    function showAlert(message, type, iconClass) {
+        alertBox.className = 'alert mt-3 mb-0 alert-' + type;
+        alertIcon.className = 'bi me-2 fs-5 ' + iconClass;
+        alertMessage.innerHTML = message;
+        alertBox.classList.remove('d-none');
+    }
+
+    if (btnGps) {
+        btnGps.addEventListener('click', function () {
+            if (!navigator.geolocation) {
+                showAlert('Geolocation is not supported by your current browser. Please search by typing a city or locality.', 'warning', 'bi-exclamation-triangle-fill');
+                return;
+            }
+
+            gpsButtonText.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Requesting GPS...';
+            btnGps.disabled = true;
+
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    searchLat.value = lat;
+                    searchLng.value = lng;
+                    searchGps.value = 'true';
+                    locationQuery.value = ''; // Clear text query to rely on coordinates
+
+                    gpsButtonText.innerText = 'Location Acquired';
+                    showAlert('GPS location acquired successfully! Refreshing discovery results around you...', 'success', 'bi-check-circle-fill');
+
+                    setTimeout(function () {
+                        searchForm.submit();
+                    }, 500);
+                },
+                function (error) {
+                    btnGps.disabled = false;
+                    gpsButtonText.innerText = 'Use My Location';
+
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            showAlert('<strong>Location permission was denied.</strong> StayEase respects your privacy. You can discover properties at any time by typing a city or locality name above.', 'info', 'bi-shield-lock');
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            showAlert('Location information is currently unavailable on your device or network. Please use manual location search.', 'warning', 'bi-exclamation-triangle');
+                            break;
+                        case error.TIMEOUT:
+                            showAlert('Location request timed out. Please try again or search by city name.', 'warning', 'bi-clock-history');
+                            break;
+                        default:
+                            showAlert('An unexpected error occurred while requesting device location. Please search manually.', 'secondary', 'bi-info-circle');
+                            break;
+                    }
+                },
+                options
+            );
+        });
+    }
+});
+</script>
+
+</body>
+</html>

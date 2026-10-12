@@ -142,7 +142,7 @@
                         </div>
 
                         <!-- Amenities -->
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="amenities" class="form-label small fw-semibold" style="color: var(--text-primary);">
                                 Amenities <span class="text-secondary fw-normal">(comma-separated, e.g. Wi-Fi, AC, Balcony, Workspace)</span>
                             </label>
@@ -155,6 +155,168 @@
                                    maxlength="500"/>
                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('amenities')}">
                                 <span th:errors="*{amenities}"></span>
+                            </div>
+                        </div>
+
+                        <!-- ── Phase 11: Real-World Property & Location Details ──────────────── -->
+                        <div class="p-3 mb-4 rounded-3 border" style="background: var(--surface-secondary, #f8fafc); border-color: var(--border-default) !important;">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-geo-alt-fill text-danger me-2 fs-5"></i>
+                                <div>
+                                    <h6 class="mb-0 fw-bold" style="color: var(--text-primary);">Property & Location Intelligence</h6>
+                                    <small class="text-secondary">Specify real-world accommodation details, GPS coordinates, and verification status.</small>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <!-- Property Name -->
+                                <div class="col-12 col-md-7">
+                                    <label for="propertyName" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Property / Hostel / PG Name
+                                    </label>
+                                    <input type="text"
+                                           id="propertyName"
+                                           th:field="*{propertyName}"
+                                           class="form-control"
+                                           placeholder="e.g. Greenview Student Hostel, Stayease Luxury PG"
+                                           maxlength="150"/>
+                                </div>
+
+                                <!-- Accommodation Type -->
+                                <div class="col-12 col-md-5">
+                                    <label for="accommodationType" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Accommodation Type
+                                    </label>
+                                    <select id="accommodationType"
+                                            th:field="*{accommodationType}"
+                                            class="form-select">
+                                        <option th:each="at : ${accommodationTypes}"
+                                                th:value="${at}"
+                                                th:text="${at.displayName}"></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <!-- Monthly Rent -->
+                                <div class="col-12 col-md-6">
+                                    <label for="monthlyRent" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Monthly Rent (₹) <span class="text-secondary fw-normal">(Optional for long-term / PG)</span>
+                                    </label>
+                                    <input type="number"
+                                           step="0.01"
+                                           id="monthlyRent"
+                                           th:field="*{monthlyRent}"
+                                           class="form-control"
+                                           placeholder="e.g. 8500.00"/>
+                                </div>
+
+                                <!-- Photo URL -->
+                                <div class="col-12 col-md-6">
+                                    <label for="photoUrl" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Custom Photo URL
+                                    </label>
+                                    <input type="text"
+                                           id="photoUrl"
+                                           th:field="*{photoUrl}"
+                                           class="form-control"
+                                           placeholder="https://images.unsplash.com/... or /images/..."
+                                           maxlength="500"/>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <!-- Full Address -->
+                                <div class="col-12 col-md-6">
+                                    <label for="address" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Full Address / Street
+                                    </label>
+                                    <input type="text"
+                                           id="address"
+                                           th:field="*{address}"
+                                           class="form-control"
+                                           placeholder="e.g. #42, 5th Main Road, Near Jyoti Nivas College"
+                                           maxlength="255"/>
+                                </div>
+
+                                <!-- Locality -->
+                                <div class="col-12 col-md-3">
+                                    <label for="locality" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Locality / Area
+                                    </label>
+                                    <input type="text"
+                                           id="locality"
+                                           th:field="*{locality}"
+                                           class="form-control"
+                                           placeholder="e.g. Koramangala"
+                                           maxlength="100"/>
+                                </div>
+
+                                <!-- City -->
+                                <div class="col-12 col-md-3">
+                                    <label for="city" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        City
+                                    </label>
+                                    <input type="text"
+                                           id="city"
+                                           th:field="*{city}"
+                                           class="form-control"
+                                           placeholder="e.g. Bengaluru"
+                                           maxlength="100"/>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-2">
+                                <!-- Postal Code -->
+                                <div class="col-12 col-md-4">
+                                    <label for="postalCode" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Postal Code / PIN
+                                    </label>
+                                    <input type="text"
+                                           id="postalCode"
+                                           th:field="*{postalCode}"
+                                           class="form-control"
+                                           placeholder="e.g. 560034"
+                                           maxlength="20"/>
+                                </div>
+
+                                <!-- Latitude -->
+                                <div class="col-12 col-md-4">
+                                    <label for="latitude" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Latitude (GPS)
+                                    </label>
+                                    <input type="number"
+                                           step="any"
+                                           id="latitude"
+                                           th:field="*{latitude}"
+                                           class="form-control"
+                                           placeholder="e.g. 12.9352"/>
+                                </div>
+
+                                <!-- Longitude -->
+                                <div class="col-12 col-md-4">
+                                    <label for="longitude" class="form-label small fw-semibold" style="color: var(--text-primary);">
+                                        Longitude (GPS)
+                                    </label>
+                                    <input type="number"
+                                           step="any"
+                                           id="longitude"
+                                           th:field="*{longitude}"
+                                           class="form-control"
+                                           placeholder="e.g. 77.6245"/>
+                                </div>
+                            </div>
+
+                            <!-- Verified Listing Checkbox -->
+                            <div class="form-check form-switch mt-3">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       id="verified"
+                                       th:field="*{verified}"/>
+                                <label class="form-check-label fw-semibold small text-success" for="verified">
+                                    <i class="bi bi-patch-check-fill me-1"></i>Verified StayEase Listing (Physical property inspected & verified)
+                                </label>
                             </div>
                         </div>
 

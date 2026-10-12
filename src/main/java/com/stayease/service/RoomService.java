@@ -147,6 +147,26 @@ public class RoomService {
                 form.isUnderMaintenance(),
                 form.getAmenities() != null ? form.getAmenities().trim() : null
         );
+        if (form.getPropertyName() != null && !form.getPropertyName().trim().isEmpty()) {
+            room.setPropertyName(form.getPropertyName().trim());
+        }
+        if (form.getAccommodationType() != null) {
+            room.setAccommodationType(form.getAccommodationType());
+        }
+        room.setAddress(form.getAddress() != null ? form.getAddress().trim() : null);
+        room.setLocality(form.getLocality() != null ? form.getLocality().trim() : null);
+        if (form.getCity() != null && !form.getCity().trim().isEmpty()) {
+            room.setCity(form.getCity().trim());
+        }
+        room.setPostalCode(form.getPostalCode() != null ? form.getPostalCode().trim() : null);
+        room.setLatitude(form.getLatitude());
+        room.setLongitude(form.getLongitude());
+        room.setMonthlyRent(form.getMonthlyRent());
+        room.setVerified(form.isVerified());
+        if (form.isVerified()) {
+            room.setLastVerifiedAt(java.time.LocalDateTime.now());
+        }
+        room.setPhotoUrl(form.getPhotoUrl() != null ? form.getPhotoUrl().trim() : null);
 
         return roomRepository.save(room);
     }
@@ -175,6 +195,28 @@ public class RoomService {
         room.setActive(form.isActive());
         room.setUnderMaintenance(form.isUnderMaintenance());
         room.setAmenities(form.getAmenities() != null ? form.getAmenities().trim() : null);
+
+        if (form.getPropertyName() != null && !form.getPropertyName().trim().isEmpty()) {
+            room.setPropertyName(form.getPropertyName().trim());
+        }
+        if (form.getAccommodationType() != null) {
+            room.setAccommodationType(form.getAccommodationType());
+        }
+        room.setAddress(form.getAddress() != null ? form.getAddress().trim() : null);
+        room.setLocality(form.getLocality() != null ? form.getLocality().trim() : null);
+        if (form.getCity() != null && !form.getCity().trim().isEmpty()) {
+            room.setCity(form.getCity().trim());
+        }
+        room.setPostalCode(form.getPostalCode() != null ? form.getPostalCode().trim() : null);
+        room.setLatitude(form.getLatitude());
+        room.setLongitude(form.getLongitude());
+        room.setMonthlyRent(form.getMonthlyRent());
+        boolean wasVerified = room.isVerified();
+        room.setVerified(form.isVerified());
+        if (form.isVerified() && (!wasVerified || room.getLastVerifiedAt() == null)) {
+            room.setLastVerifiedAt(java.time.LocalDateTime.now());
+        }
+        room.setPhotoUrl(form.getPhotoUrl() != null ? form.getPhotoUrl().trim() : null);
 
         return roomRepository.save(room);
     }

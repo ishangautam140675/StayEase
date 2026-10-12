@@ -51,6 +51,43 @@ public class Room {
     @Column(name = "amenities", length = 500)
     private String amenities;
 
+    @Column(name = "property_name", length = 150)
+    private String propertyName = "StayEase Premier Living";
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "accommodation_type", length = 30)
+    private AccommodationType accommodationType = AccommodationType.HOSTEL;
+
+    @Column(name = "address", length = 255)
+    private String address;
+
+    @Column(name = "locality", length = 100)
+    private String locality;
+
+    @Column(name = "city", length = 100)
+    private String city = "Bengaluru";
+
+    @Column(name = "postal_code", length = 20)
+    private String postalCode;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "monthly_rent", precision = 10, scale = 2)
+    private BigDecimal monthlyRent;
+
+    @Column(name = "verified", nullable = false)
+    private boolean verified = true;
+
+    @Column(name = "last_verified_at")
+    private java.time.LocalDateTime lastVerifiedAt;
+
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
     public Room() {
     }
 
@@ -160,6 +197,9 @@ public class Room {
     }
 
     public String getImagePath() {
+        if (photoUrl != null && !photoUrl.trim().isEmpty()) {
+            return photoUrl;
+        }
         if (type == RoomType.DORMITORY) {
             return "/images/dormitory_room.jpg";
         }
@@ -167,6 +207,124 @@ public class Room {
             return "/images/deluxe_room.jpg";
         }
         return "/images/hero_room.jpg";
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+    }
+
+    public AccommodationType getAccommodationType() {
+        return accommodationType;
+    }
+
+    public void setAccommodationType(AccommodationType accommodationType) {
+        this.accommodationType = accommodationType;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getLocality() {
+        return locality;
+    }
+
+    public void setLocality(String locality) {
+        this.locality = locality;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public BigDecimal getMonthlyRent() {
+        return monthlyRent;
+    }
+
+    public void setMonthlyRent(BigDecimal monthlyRent) {
+        this.monthlyRent = monthlyRent;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public java.time.LocalDateTime getLastVerifiedAt() {
+        return lastVerifiedAt;
+    }
+
+    public void setLastVerifiedAt(java.time.LocalDateTime lastVerifiedAt) {
+        this.lastVerifiedAt = lastVerifiedAt;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public boolean isLocationAvailable() {
+        return latitude != null && longitude != null;
+    }
+
+    /**
+     * Calculates distance to this property from a given user latitude and longitude in kilometers
+     * using the Haversine formula. Returns null if property coordinates are missing.
+     */
+    public Double calculateDistanceKm(Double userLat, Double userLng) {
+        if (userLat == null || userLng == null || latitude == null || longitude == null) {
+            return null;
+        }
+        final double R = 6371.0; // Earth radius in km
+        double latDistance = Math.toRadians(latitude - userLat);
+        double lonDistance = Math.toRadians(longitude - userLng);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(latitude))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round(R * c * 100.0) / 100.0;
     }
 
     @Override

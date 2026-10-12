@@ -111,6 +111,51 @@
                             </div>
                         </div>
 
+                        <!-- ── Phase 11: Real-World Property & Location Intelligence ──── -->
+                        <div class="p-4 my-4 rounded-3 border" style="background: var(--surface-page); border-color: var(--border-default) !important;">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-building-check text-primary fs-4"></i>
+                                    <div>
+                                        <h3 class="h6 fw-bold mb-0" style="color: var(--text-primary);" th:text="${room.propertyName}">StayEase Premier Living</h3>
+                                        <small class="text-secondary" th:text="${room.accommodationType != null ? room.accommodationType.displayName : 'Hostel'}">Hostel</small>
+                                    </div>
+                                </div>
+                                <span th:if="${room.verified}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small">
+                                    <i class="bi bi-patch-check-fill me-1"></i>Verified StayEase Property
+                                </span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-8">
+                                    <span class="small text-secondary d-block"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Address & Locality</span>
+                                    <div class="small fw-medium text-dark mt-1">
+                                        <span th:if="${room.address != null}" th:text="${room.address + ', '}">42, 5th Cross, </span>
+                                        <span th:if="${room.locality != null}" th:text="${room.locality + ', '}">Koramangala, </span>
+                                        <span th:text="${room.city != null ? room.city : 'Bengaluru'}">Bengaluru</span>
+                                        <span th:if="${room.postalCode != null}" th:text="' - ' + ${room.postalCode}"> - 560034</span>
+                                    </div>
+                                    <div th:if="${room.latitude != null and room.longitude != null}" class="mt-2">
+                                        <a th:href="'https://www.openstreetmap.org/directions?to=' + ${room.latitude} + '%2C' + ${room.longitude}"
+                                           target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm small py-1 px-2">
+                                            <i class="bi bi-map me-1"></i>View on Map / Get Directions
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4 text-md-end border-start-md ps-md-3">
+                                    <span class="small text-secondary d-block">Monthly PG Rent</span>
+                                    <div class="fw-bold fs-5 text-success">
+                                        <span th:if="${room.monthlyRent != null}">
+                                            ₹<span th:text="${#numbers.formatDecimal(room.monthlyRent, 1, 0)}">8500</span><span class="small text-muted fw-normal"> /mo</span>
+                                        </span>
+                                        <span th:unless="${room.monthlyRent != null}" class="small text-muted fw-normal">
+                                            Daily booking only
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Description -->
                         <div class="my-4">
                             <h2 class="h5 fw-bold mb-3" style="color: var(--text-primary); font-family: var(--font-heading);">About This Room</h2>

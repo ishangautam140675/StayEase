@@ -87,6 +87,7 @@ public class AdminRoomController {
     public String newRoomForm(Model model) {
         model.addAttribute("roomForm", new RoomForm());
         model.addAttribute("roomTypes", RoomType.values());
+        model.addAttribute("accommodationTypes", com.stayease.model.AccommodationType.values());
         model.addAttribute("isEdit", false);
         model.addAttribute("activePage", "admin");
         return "admin/rooms/form";
@@ -103,6 +104,7 @@ public class AdminRoomController {
                              Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("roomTypes", RoomType.values());
+            model.addAttribute("accommodationTypes", com.stayease.model.AccommodationType.values());
             model.addAttribute("isEdit", false);
             model.addAttribute("activePage", "admin");
             return "admin/rooms/form";
@@ -121,6 +123,7 @@ public class AdminRoomController {
         } catch (DuplicateRoomNumberException ex) {
             bindingResult.rejectValue("roomNumber", "duplicate", ex.getMessage());
             model.addAttribute("roomTypes", RoomType.values());
+            model.addAttribute("accommodationTypes", com.stayease.model.AccommodationType.values());
             model.addAttribute("isEdit", false);
             model.addAttribute("activePage", "admin");
             return "admin/rooms/form";
@@ -136,6 +139,7 @@ public class AdminRoomController {
         model.addAttribute("roomForm", RoomForm.from(room));
         model.addAttribute("roomId", id);
         model.addAttribute("roomTypes", RoomType.values());
+        model.addAttribute("accommodationTypes", com.stayease.model.AccommodationType.values());
         model.addAttribute("isEdit", true);
         model.addAttribute("activePage", "admin");
         return "admin/rooms/form";
@@ -154,6 +158,7 @@ public class AdminRoomController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("roomId", id);
             model.addAttribute("roomTypes", RoomType.values());
+            model.addAttribute("accommodationTypes", com.stayease.model.AccommodationType.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activePage", "admin");
             return "admin/rooms/form";
@@ -173,6 +178,7 @@ public class AdminRoomController {
             bindingResult.rejectValue("roomNumber", "duplicate", ex.getMessage());
             model.addAttribute("roomId", id);
             model.addAttribute("roomTypes", RoomType.values());
+            model.addAttribute("accommodationTypes", com.stayease.model.AccommodationType.values());
             model.addAttribute("isEdit", true);
             model.addAttribute("activePage", "admin");
             return "admin/rooms/form";

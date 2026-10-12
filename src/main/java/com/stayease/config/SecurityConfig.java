@@ -81,6 +81,7 @@ public class SecurityConfig {
                 // Publicly accessible pages & webhook listeners
                 .requestMatchers(
                     "/", "/rooms", "/rooms/**",
+                    "/discovery", "/discovery/**", "/api/discovery", "/api/discovery/**",
                     "/register", "/login",
                     "/forgot-password", "/reset-password", "/verify-email",
                     "/api/webhooks/**", "/webhooks/**",

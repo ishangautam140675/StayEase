@@ -96,8 +96,17 @@
                             </tr>
                             <tr th:each="r : ${rooms}">
                                 <td class="py-3 px-4">
-                                    <span class="fw-bold fs-6" style="color: var(--text-primary);" th:text="${r.roomNumber}">101</span>
-                                    <div class="small text-secondary text-truncate" style="max-width: 250px;" th:text="${r.description}">Description</div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="fw-bold fs-6" style="color: var(--text-primary);" th:text="${r.roomNumber}">101</span>
+                                        <span th:if="${r.verified}" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill py-0 px-2 small" title="Verified StayEase Listing">
+                                            <i class="bi bi-patch-check-fill me-1"></i>Verified
+                                        </span>
+                                    </div>
+                                    <div class="fw-medium small text-primary-emphasis text-truncate" style="max-width: 250px;" th:text="${r.propertyName}">StayEase Premier Living</div>
+                                    <div class="small text-secondary text-truncate" style="max-width: 250px;">
+                                        <span th:if="${r.locality != null or r.city != null}" th:text="${(r.locality != null ? r.locality + ', ' : '') + (r.city != null ? r.city : '')}">Bengaluru</span>
+                                        <span th:unless="${r.locality != null or r.city != null}" th:text="${r.description}">Description</span>
+                                    </div>
                                 </td>
                                 <td class="py-3 px-4">
                                     <span class="badge px-2 py-1 rounded-pill"

@@ -99,6 +99,11 @@
                         </ul>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white-50" th:href="@{/discovery}" target="_blank" title="Preview Discovery Portal">
+                            <i class="bi bi-geo-alt me-1 small"></i>Discovery
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-nowrap px-3 py-2 rounded text-white-50" th:href="@{/rooms}" target="_blank" title="Preview Public Catalog">
                             <i class="bi bi-box-arrow-up-right me-1 small"></i>Catalog
                         </a>
@@ -169,6 +174,11 @@
                     <li class="nav-item">
                         <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/rooms}">
                             <i class="bi bi-compass me-1"></i>Explore Rooms
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-nowrap px-3 py-2 rounded text-white" th:href="@{/discovery}">
+                            <i class="bi bi-geo-alt-fill me-1 text-warning"></i>Find Hostels & PGs
                         </a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">

@@ -42,6 +42,35 @@ public class RoomForm {
     @Size(max = 500, message = "Amenities must not exceed 500 characters")
     private String amenities;
 
+    @Size(max = 150, message = "Property name must not exceed 150 characters")
+    private String propertyName = "StayEase Premier Living";
+
+    private com.stayease.model.AccommodationType accommodationType = com.stayease.model.AccommodationType.HOSTEL;
+
+    @Size(max = 255, message = "Address must not exceed 255 characters")
+    private String address;
+
+    @Size(max = 100, message = "Locality must not exceed 100 characters")
+    private String locality;
+
+    @Size(max = 100, message = "City must not exceed 100 characters")
+    private String city = "Bengaluru";
+
+    @Size(max = 20, message = "Postal code must not exceed 20 characters")
+    private String postalCode;
+
+    private Double latitude;
+
+    private Double longitude;
+
+    @DecimalMin(value = "0.00", message = "Monthly rent must be positive or zero")
+    private BigDecimal monthlyRent;
+
+    private boolean verified = true;
+
+    @Size(max = 500, message = "Photo URL must not exceed 500 characters")
+    private String photoUrl;
+
     public RoomForm() {
     }
 
@@ -61,7 +90,7 @@ public class RoomForm {
     }
 
     public static RoomForm from(Room room) {
-        return new RoomForm(
+        RoomForm form = new RoomForm(
                 room.getRoomNumber(),
                 room.getType(),
                 room.getCapacity(),
@@ -71,6 +100,18 @@ public class RoomForm {
                 room.isUnderMaintenance(),
                 room.getAmenities()
         );
+        form.setPropertyName(room.getPropertyName());
+        form.setAccommodationType(room.getAccommodationType());
+        form.setAddress(room.getAddress());
+        form.setLocality(room.getLocality());
+        form.setCity(room.getCity());
+        form.setPostalCode(room.getPostalCode());
+        form.setLatitude(room.getLatitude());
+        form.setLongitude(room.getLongitude());
+        form.setMonthlyRent(room.getMonthlyRent());
+        form.setVerified(room.isVerified());
+        form.setPhotoUrl(room.getPhotoUrl());
+        return form;
     }
 
     public String getRoomNumber() {
@@ -135,5 +176,93 @@ public class RoomForm {
 
     public void setAmenities(String amenities) {
         this.amenities = amenities;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+    }
+
+    public com.stayease.model.AccommodationType getAccommodationType() {
+        return accommodationType;
+    }
+
+    public void setAccommodationType(com.stayease.model.AccommodationType accommodationType) {
+        this.accommodationType = accommodationType;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getLocality() {
+        return locality;
+    }
+
+    public void setLocality(String locality) {
+        this.locality = locality;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public BigDecimal getMonthlyRent() {
+        return monthlyRent;
+    }
+
+    public void setMonthlyRent(BigDecimal monthlyRent) {
+        this.monthlyRent = monthlyRent;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 }
