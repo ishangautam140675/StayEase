@@ -56,14 +56,13 @@ public class NotificationApiController {
     @GetMapping("/poll")
     public ResponseEntity<Map<String, Object>> pollUnreadNotifications(
             Authentication authentication,
-            @RequestParam(name = "since", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since) {
+            @RequestParam(name = "since", required = false) String since) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.ok(Map.of("unreadCount", 0, "newNotifications", List.of()));
         }
 
-        LocalDateTime sinceTime = since != null ? since : LocalDateTime.now().minusSeconds(15);
+        LocalDateTime sinceTime = parseSinceTime(since);
         List<InAppNotification> newNotifications = notificationService.getUnreadSince(authentication, sinceTime);
         long unreadCount = notificationService.getUnreadCount(authentication);
 
@@ -71,6 +70,28 @@ public class NotificationApiController {
         response.put("unreadCount", unreadCount);
         response.put("newNotifications", newNotifications);
         return ResponseEntity.ok(response);
+    }
+
+    private LocalDateTime parseSinceTime(String since) {
+        if (since == null || since.isBlank()) {
+            return LocalDateTime.now().minusSeconds(15);
+        }
+        try {
+            if (since.endsWith("Z") || since.contains("+") || (since.length() > 19 && since.indexOf('-', 10) != -1)) {
+                return java.time.Instant.parse(since)
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDateTime();
+            }
+            return LocalDateTime.parse(since);
+        } catch (Exception e) {
+            try {
+                return java.time.OffsetDateTime.parse(since)
+                        .atZoneSameInstant(java.time.ZoneId.systemDefault())
+                        .toLocalDateTime();
+            } catch (Exception ignored) {
+                return LocalDateTime.now().minusSeconds(15);
+            }
+        }
     }
 
     /**

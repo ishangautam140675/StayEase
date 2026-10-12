@@ -26,9 +26,12 @@ LABEL maintainer="StayEase Operations <ops@stayease.com>"
 LABEL app="stayease"
 LABEL version="1.0.0"
 
-# Install curl for container health check
+# Install curl and tzdata for container health check and timezone synchronization
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates && \
+    apt-get install -y --no-install-recommends curl ca-certificates tzdata && \
+    ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && \
+    echo "Asia/Kolkata" > /etc/timezone && \
+    dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
 
 # Create non-root system group and user
@@ -52,7 +55,8 @@ EXPOSE 8080
 # Environment defaults
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV PORT=8080
-ENV JAVA_OPTS="-XX:+UseSerialGC -Xmx320m -Xms128m -XX:MaxMetaspaceSize=160m -Djava.security.egd=file:/dev/./urandom"
+ENV TZ=Asia/Kolkata
+ENV JAVA_OPTS="-Duser.timezone=Asia/Kolkata -XX:+UseSerialGC -Xmx320m -Xms128m -XX:MaxMetaspaceSize=160m -Djava.security.egd=file:/dev/./urandom"
 
 # Container Healthcheck via Spring Boot Actuator with cloud-resilient startup window
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \

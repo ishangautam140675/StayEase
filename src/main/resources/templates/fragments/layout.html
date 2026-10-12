@@ -397,7 +397,12 @@
     <!-- Real-time In-App Notifications & Floating Toast Client -->
     <script sec:authorize="isAuthenticated()">
         (function() {
-            let lastPollTime = new Date(Date.now() - 30000).toISOString();
+            function toLocalIso(d) {
+                const pad = n => String(n).padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+            }
+
+            let lastPollTime = toLocalIso(new Date(Date.now() - 30000));
             const toastContainer = document.getElementById('stayeaseToastContainer');
 
             function getCsrfHeader() {
@@ -427,7 +432,18 @@
             function formatTime(isoStr) {
                 if (!isoStr) return '';
                 try {
-                    const d = new Date(isoStr);
+                    let d;
+                    if (typeof isoStr === 'string' && isoStr.indexOf('Z') === -1 && isoStr.indexOf('+') === -1 && isoStr.indexOf('-', 10) === -1) {
+                        const parts = isoStr.split(/[-T:.]/);
+                        if (parts.length >= 5) {
+                            d = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5] || 0);
+                        } else {
+                            d = new Date(isoStr);
+                        }
+                    } else {
+                        d = new Date(isoStr);
+                    }
+                    if (isNaN(d.getTime())) return isoStr;
                     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 } catch(e) { return ''; }
             }
@@ -549,7 +565,7 @@
 
             function pollNewNotifications() {
                 const url = '/api/notifications/poll?since=' + encodeURIComponent(lastPollTime);
-                lastPollTime = new Date().toISOString();
+                lastPollTime = toLocalIso(new Date());
 
                 fetch(url, { credentials: 'same-origin' })
                     .then(res => res.json())
