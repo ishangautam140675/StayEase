@@ -146,6 +146,31 @@ h1, h2, h3, h4, h5, h6,
   font-weight: 700;
 }
 
+/* Ensure headings inside dark or text-white containers are always high-contrast bright white */
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6,
+.bg-dark h1,
+.bg-dark h2,
+.bg-dark h3,
+.bg-dark h4,
+.bg-dark h5,
+.bg-dark h6,
+.hero-banner h1,
+.hero-banner h2,
+.hero-banner h3,
+h1.text-white,
+h2.text-white,
+h3.text-white,
+h4.text-white,
+h5.text-white,
+h6.text-white {
+  color: #FFFFFF !important;
+}
+
 a {
   color: var(--brand-cobalt);
   text-decoration: none;
