@@ -84,46 +84,48 @@ public class LocationDiscoveryService {
             }
         }
 
+        boolean locationSpecified = (searchLat != null && searchLng != null) || (query != null && !query.trim().isEmpty());
         response.setSearchLatitude(searchLat);
         response.setSearchLongitude(searchLng);
-        response.setResolvedLocationName(resolvedLocation != null ? resolvedLocation : (query != null && !query.trim().isEmpty() ? query.trim() : "All Available Locations"));
+        response.setResolvedLocationName(resolvedLocation != null ? resolvedLocation : (query != null && !query.trim().isEmpty() ? query.trim() : null));
 
-        // 2. Discover StayEase-managed inventory
+        // 2. Discover StayEase-managed inventory (only when a location is queried or GPS coordinates provided)
         List<Room> activeRooms = roomRepository.findAll().stream()
                 .filter(Room::isActive)
                 .toList();
 
         List<StayEaseListingItem> stayEaseMatches = new ArrayList<>();
 
-        for (Room room : activeRooms) {
-            boolean matchesQuery = true;
-            if (query != null && !query.trim().isEmpty()) {
-                String q = query.trim().toLowerCase();
-                boolean matchesLocality = room.getLocality() != null && room.getLocality().toLowerCase().contains(q);
-                boolean matchesCity = room.getCity() != null && room.getCity().toLowerCase().contains(q);
-                boolean matchesAddress = room.getAddress() != null && room.getAddress().toLowerCase().contains(q);
-                boolean matchesPropName = room.getPropertyName() != null && room.getPropertyName().toLowerCase().contains(q);
-                matchesQuery = matchesLocality || matchesCity || matchesAddress || matchesPropName;
-            }
+        if (locationSpecified) {
+            for (Room room : activeRooms) {
+                boolean matchesQuery = false;
+                if (query != null && !query.trim().isEmpty()) {
+                    String q = query.trim().toLowerCase();
+                    boolean matchesLocality = room.getLocality() != null && room.getLocality().toLowerCase().contains(q);
+                    boolean matchesCity = room.getCity() != null && room.getCity().toLowerCase().contains(q);
+                    boolean matchesAddress = room.getAddress() != null && room.getAddress().toLowerCase().contains(q);
+                    boolean matchesPropName = room.getPropertyName() != null && room.getPropertyName().toLowerCase().contains(q);
+                    matchesQuery = matchesLocality || matchesCity || matchesAddress || matchesPropName;
+                }
 
-            Double dist = null;
-            if (searchLat != null && searchLng != null && room.isLocationAvailable()) {
-                dist = room.calculateDistanceKm(searchLat, searchLng);
-            }
+                Double dist = null;
+                if (searchLat != null && searchLng != null && room.isLocationAvailable()) {
+                    dist = room.calculateDistanceKm(searchLat, searchLng);
+                }
 
-            // If coordinates are active, filter by radius; or include if explicitly matched by text query
-            if (searchLat != null && searchLng != null) {
-                if (dist != null && dist <= radius) {
-                    StayEaseListingItem item = StayEaseListingItem.fromRoom(room, searchLat, searchLng);
-                    stayEaseMatches.add(item);
-                } else if (matchesQuery && dist == null) {
-                    // Property has no coordinates yet, but matched the search keyword
-                    StayEaseListingItem item = StayEaseListingItem.fromRoom(room, searchLat, searchLng);
+                // If coordinates are active, filter strictly by radius; or require explicit text query match if coordinates missing
+                if (searchLat != null && searchLng != null) {
+                    if (dist != null && dist <= radius) {
+                        StayEaseListingItem item = StayEaseListingItem.fromRoom(room, searchLat, searchLng);
+                        stayEaseMatches.add(item);
+                    } else if (dist == null && query != null && !query.trim().isEmpty() && matchesQuery) {
+                        StayEaseListingItem item = StayEaseListingItem.fromRoom(room, searchLat, searchLng);
+                        stayEaseMatches.add(item);
+                    }
+                } else if (query != null && !query.trim().isEmpty() && matchesQuery) {
+                    StayEaseListingItem item = StayEaseListingItem.fromRoom(room, null, null);
                     stayEaseMatches.add(item);
                 }
-            } else if (matchesQuery) {
-                StayEaseListingItem item = StayEaseListingItem.fromRoom(room, null, null);
-                stayEaseMatches.add(item);
             }
         }
 

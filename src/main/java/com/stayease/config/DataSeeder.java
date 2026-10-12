@@ -234,6 +234,42 @@ public class DataSeeder implements CommandLineRunner {
             List<Room> sampleRooms = List.of(r101, r102, r103, r104, r201, r202, r203, r204);
             roomRepository.saveAll(sampleRooms);
             logger.info("Successfully seeded {} sample rooms with real-world location metadata into the database.", sampleRooms.size());
+        } else {
+            List<Room> all = roomRepository.findAll();
+            boolean updated = false;
+            for (Room r : all) {
+                if (r.getLatitude() == null || r.getLongitude() == null) {
+                    if ("101".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9352); r.setLongitude(77.6245); r.setCity("Bengaluru"); r.setLocality("Koramangala");
+                        updated = true;
+                    } else if ("102".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9784); r.setLongitude(77.6408); r.setCity("Bengaluru"); r.setLocality("Indiranagar");
+                        updated = true;
+                    } else if ("103".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9116); r.setLongitude(77.6389); r.setCity("Bengaluru"); r.setLocality("HSR Layout");
+                        updated = true;
+                    } else if ("104".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9698); r.setLongitude(77.7499); r.setCity("Bengaluru"); r.setLocality("Whitefield");
+                        updated = true;
+                    } else if ("201".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9304); r.setLongitude(77.6186); r.setCity("Bengaluru"); r.setLocality("BTM Layout");
+                        updated = true;
+                    } else if ("202".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9716); r.setLongitude(77.5946); r.setCity("Bengaluru"); r.setLocality("MG Road");
+                        updated = true;
+                    } else if ("203".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9166); r.setLongitude(77.6101); r.setCity("Bengaluru"); r.setLocality("Bannerghatta Road");
+                        updated = true;
+                    } else if ("204".equalsIgnoreCase(r.getRoomNumber())) {
+                        r.setLatitude(12.9299); r.setLongitude(77.5824); r.setCity("Bengaluru"); r.setLocality("Jayanagar");
+                        updated = true;
+                    }
+                }
+            }
+            if (updated) {
+                roomRepository.saveAll(all);
+                logger.info("Updated existing room listings with real-world location coordinates.");
+            }
         }
     }
 

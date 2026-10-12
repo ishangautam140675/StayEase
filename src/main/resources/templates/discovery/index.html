@@ -198,61 +198,205 @@
             <div id="discoveryMap"></div>
         </div>
 
-        <!-- ── Accommodation Type Filter Tabs ─────────────────────────────────── -->
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
-            <span class="small fw-semibold text-secondary me-2">Filter Category:</span>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip active" data-category="ALL">
-                All Accommodations (<span id="countAll">0</span>)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="HOTEL">
-                <i class="bi bi-building me-1"></i>Hotels (<span id="countHotel">0</span>)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="HOSTEL">
-                <i class="bi bi-backpack2-fill me-1"></i>Hostels &amp; Backpackers (<span id="countHostel">0</span>)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="PG">
-                <i class="bi bi-mortarboard-fill me-1"></i>PGs &amp; Student Housing (<span id="countPg">0</span>)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="GUESTHOUSE">
-                <i class="bi bi-house-door-fill me-1"></i>Guest Houses (<span id="countGuestHouse">0</span>)
-            </button>
+        <!-- ── UNLOCATED STATE: Beautiful StayEase Promotional Advertisement Showcase ────────── -->
+        <div th:unless="${discovery.locationSet}" class="mb-5" id="stayEasePromoSection">
+            <!-- Hero Advertisement Banner -->
+            <div class="card border-0 shadow-lg text-white overflow-hidden mb-4"
+                 style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0284c7 100%); border-radius: 20px;">
+                <div class="card-body p-4 p-md-5 position-relative">
+                    <div class="position-absolute end-0 top-0 m-4 opacity-10 d-none d-lg-block" style="font-size: 10rem; pointer-events: none;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+
+                    <div class="row align-items-center position-relative">
+                        <div class="col-lg-8">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                                <i class="bi bi-star-fill me-1"></i>India's Trusted Student &amp; Youth Housing Platform
+                            </span>
+                            <h2 class="display-6 fw-bold mb-3" style="font-family: 'DM Sans', sans-serif;">
+                                Welcome to StayEase — Smart Stays, Zero Brokerage
+                            </h2>
+                            <p class="lead mb-4 text-white-50" style="font-size: 1.15rem; max-width: 650px;">
+                                Discover <strong>StayEase Verified Accommodations</strong> and thousands of <strong>External Accommodation Businesses</strong> worldwide. Physically audited rooms with guaranteed Wi-Fi, study spaces, CCTV security, and instant digital booking.
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-3">
+                                <button type="button" class="btn btn-warning btn-lg fw-bold px-4 py-3 rounded-pill shadow-sm" onclick="document.getElementById('btnUseGps').click()">
+                                    <i class="bi bi-crosshair me-2"></i>Use My Current Location
+                                </button>
+                                <a th:href="@{/rooms}" class="btn btn-outline-light btn-lg fw-semibold px-4 py-3 rounded-pill">
+                                    <i class="bi bi-building-check me-2"></i>Browse All Verified Rooms
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 mt-4 mt-lg-0 text-center text-lg-end">
+                            <div class="d-inline-flex flex-column gap-3 bg-white bg-opacity-10 p-4 rounded-4 backdrop-blur border border-white border-opacity-25 text-start w-100" style="max-width: 320px;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="fs-2 text-warning"><i class="bi bi-shield-fill-check"></i></div>
+                                    <div>
+                                        <div class="fw-bold fs-5">100% Verified</div>
+                                        <div class="small text-white-50">Audited quality &amp; safety</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="fs-2 text-warning"><i class="bi bi-cash-coin"></i></div>
+                                    <div>
+                                        <div class="fw-bold fs-5">0% Brokerage</div>
+                                        <div class="small text-white-50">Direct resident pricing</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="fs-2 text-warning"><i class="bi bi-lightning-charge-fill"></i></div>
+                                    <div>
+                                        <div class="fw-bold fs-5">Instant Booking</div>
+                                        <div class="small text-white-50">Real-time room allocation</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Value Proposition Pillars Grid -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-4" style="background: var(--surface-card);">
+                        <div class="rounded-circle bg-primary-subtle text-primary p-3 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-patch-check-fill fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Physically Audited</h5>
+                        <p class="small text-secondary mb-0">Every verified property is personally checked by auditors for cleanliness, Wi-Fi speed, and security.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-4" style="background: var(--surface-card);">
+                        <div class="rounded-circle bg-success-subtle text-success p-3 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-wallet2 fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Zero Brokerage</h5>
+                        <p class="small text-secondary mb-0">No middleman fees or hidden commissions. Transparent daily tariffs and monthly student rents.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-4" style="background: var(--surface-card);">
+                        <div class="rounded-circle bg-info-subtle text-info p-3 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-geo-alt-fill fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Live GPS Tracking</h5>
+                        <p class="small text-secondary mb-0">Find accommodations wherever you are in the world with real-time distance calculation.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-4" style="background: var(--surface-card);">
+                        <div class="rounded-circle bg-warning-subtle text-warning p-3 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-people-fill fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Student Community</h5>
+                        <p class="small text-secondary mb-0">Curated accommodations near top universities, colleges, and IT tech parks across major hubs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Student Accommodation Hubs -->
+            <div class="card border-0 shadow-sm p-4 rounded-4 text-center mb-2" style="background: var(--surface-card);">
+                <div class="small fw-bold text-uppercase text-secondary mb-2 letter-spacing-1">Popular Student &amp; Youth Accommodation Hubs — Tap to Discover</div>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a th:href="@{/discovery(query='Jaipur', radius=15)}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium">
+                        <i class="bi bi-geo-alt text-danger me-1"></i>Jaipur (Hotels, Hostels &amp; PGs)
+                    </a>
+                    <a th:href="@{/discovery(query='Bengaluru', radius=10)}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium">
+                        <i class="bi bi-patch-check-fill text-success me-1"></i>Bengaluru (StayEase Verified)
+                    </a>
+                    <a th:href="@{/discovery(query='Delhi', radius=15)}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium">
+                        <i class="bi bi-geo-alt text-danger me-1"></i>Delhi NCR
+                    </a>
+                    <a th:href="@{/discovery(query='Kota', radius=10)}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium">
+                        <i class="bi bi-mortarboard-fill text-primary me-1"></i>Kota Coaching Hub
+                    </a>
+                    <a th:href="@{/discovery(query='Pune', radius=15)}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium">
+                        <i class="bi bi-geo-alt text-danger me-1"></i>Pune
+                    </a>
+                    <a th:href="@{/discovery(query='Mumbai', radius=15)}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium">
+                        <i class="bi bi-geo-alt text-danger me-1"></i>Mumbai
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <!-- ── Section 1: StayEase Verified Properties (Bookable) ─────────────── -->
-        <div class="mb-5" id="stayEaseSection">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <div>
-                    <h2 class="h4 fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
-                        <i class="bi bi-shield-fill-check text-success me-2"></i>StayEase Verified Accommodations
-                    </h2>
-                    <p class="small text-secondary mb-0">
-                        Admin-managed, physically verified properties available for secure online booking with instant confirmation.
-                    </p>
-                </div>
-                <span class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
-                    <span th:text="${discovery.stayEaseListings.size()}">0</span> Properties
-                </span>
+        <!-- ── LOCATED STATE: Accommodation Discovery & Filter Tabs ────────────── -->
+        <div th:if="${discovery.locationSet}" id="locatedAccommodationsSection">
+
+            <!-- ── Accommodation Type Filter Tabs ─────────────────────────────────── -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                <span class="small fw-semibold text-secondary me-2">Filter Category:</span>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip active" data-category="ALL">
+                    All Accommodations (<span id="countAll">0</span>)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="HOTEL">
+                    <i class="bi bi-building me-1"></i>Hotels (<span id="countHotel">0</span>)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="HOSTEL">
+                    <i class="bi bi-backpack2-fill me-1"></i>Hostels &amp; Backpackers (<span id="countHostel">0</span>)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="PG">
+                    <i class="bi bi-mortarboard-fill me-1"></i>PGs &amp; Student Housing (<span id="countPg">0</span>)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="GUESTHOUSE">
+                    <i class="bi bi-house-door-fill me-1"></i>Guest Houses (<span id="countGuestHouse">0</span>)
+                </button>
             </div>
 
-            <!-- Empty State for StayEase Listings -->
-            <div th:if="${discovery.stayEaseListings.isEmpty()}" class="card border-0 shadow-sm p-4 p-md-5 text-center mb-4" style="border-radius: 14px;">
-                <i class="bi bi-building-exclamation fs-1 text-muted mb-3"></i>
-                <h5 class="fw-semibold text-secondary">No StayEase Properties within this exact radius</h5>
-                <p class="small text-muted mb-3">
-                    Try expanding your search radius (e.g. 25 km, 50 km, or 100 km). You can also explore the registered local hotels, hostels, and PGs discovered below.
-                </p>
-                <div class="d-flex justify-content-center gap-2">
-                    <a th:href="@{/discovery(lat=${discovery.searchLatitude}, lng=${discovery.searchLongitude}, query=${discovery.query}, radius=50)}" class="btn btn-outline-primary btn-sm px-3">
-                        <i class="bi bi-arrows-angle-expand me-1"></i>Search Wider Area (50 km)
-                    </a>
-                    <a th:href="@{/rooms}" class="btn btn-cobalt btn-sm px-3">
-                        Browse all StayEase rooms
-                    </a>
+            <!-- ── Section 1: StayEase Verified Properties (Bookable) ─────────────── -->
+            <div class="mb-5" id="stayEaseSection">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                            <i class="bi bi-shield-fill-check text-success me-2"></i>StayEase Verified Accommodations
+                        </h2>
+                        <p class="small text-secondary mb-0">
+                            Admin-managed, physically verified properties available for secure online booking with instant confirmation.
+                        </p>
+                    </div>
+                    <span th:if="${!discovery.stayEaseListings.isEmpty()}" class="badge bg-success px-3 py-2 rounded-pill fw-semibold">
+                        <span th:text="${discovery.stayEaseListings.size()}">0</span> Properties
+                    </span>
                 </div>
-            </div>
 
-            <!-- Listing Cards Grid -->
-            <div th:unless="${discovery.stayEaseListings.isEmpty()}" class="row g-4" id="stayEaseGrid">
+                <!-- Expansion Notice when StayEase has no verified properties in this city yet (e.g. Jaipur) -->
+                <div th:if="${discovery.stayEaseListings.isEmpty()}" class="card border-0 shadow-sm p-4 mb-4"
+                     style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 14px; border-left: 4px solid #10b981;">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-white shadow-sm p-2 p-md-3 d-flex align-items-center justify-content-center text-success fs-3">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark">
+                                    StayEase Verified Accommodations — Expanding to <span th:text="${discovery.resolvedLocationName}">Selected City</span> Soon!
+                                </h6>
+                                <p class="small text-secondary mb-0">
+                                    Our physical audit team is currently onboarding verified student rooms in this area. In the meantime, explore all <strong th:text="${discovery.externalListings.size()}">0</strong> registered local accommodations detected nearby below.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/discovery(lat=${discovery.searchLatitude}, lng=${discovery.searchLongitude}, query=${discovery.query}, radius=50)}" class="btn btn-outline-primary btn-sm px-3 rounded-pill text-nowrap">
+                                <i class="bi bi-arrows-angle-expand me-1"></i>Search 50 km
+                            </a>
+                            <a th:href="@{/rooms}" class="btn btn-cobalt btn-sm px-3 rounded-pill text-nowrap">
+                                Browse All Verified Rooms
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Listing Cards Grid -->
+                <div th:unless="${discovery.stayEaseListings.isEmpty()}" class="row g-4" id="stayEaseGrid">
                 <div th:each="item : ${discovery.stayEaseListings}"
                      class="col-12 col-md-6 col-lg-4 stayease-card-col"
                      th:attr="data-category=${item.accommodationType}">
@@ -571,6 +715,7 @@
 
             </div>
         </div>
+        </div>
 
         <!-- ── Interactive Reservation / Inquiry Modal ───────────────────────── -->
         <div class="modal fade" id="inquiryModal" tabindex="-1" aria-labelledby="inquiryModalLabel" aria-hidden="true">
@@ -818,11 +963,16 @@ document.addEventListener('DOMContentLoaded', function () {
         else totalGuestHouse++;
     });
 
-    document.getElementById('countAll').innerText = totalAll;
-    document.getElementById('countHotel').innerText = totalHotel;
-    document.getElementById('countHostel').innerText = totalHostel;
-    document.getElementById('countPg').innerText = totalPg;
-    document.getElementById('countGuestHouse').innerText = totalGuestHouse;
+    const elCountAll = document.getElementById('countAll');
+    if (elCountAll) elCountAll.innerText = totalAll;
+    const elCountHotel = document.getElementById('countHotel');
+    if (elCountHotel) elCountHotel.innerText = totalHotel;
+    const elCountHostel = document.getElementById('countHostel');
+    if (elCountHostel) elCountHostel.innerText = totalHostel;
+    const elCountPg = document.getElementById('countPg');
+    if (elCountPg) elCountPg.innerText = totalPg;
+    const elCountGuestHouse = document.getElementById('countGuestHouse');
+    if (elCountGuestHouse) elCountGuestHouse.innerText = totalGuestHouse;
 
     const filterChips = document.querySelectorAll('.filter-chip');
     filterChips.forEach(function (chip) {

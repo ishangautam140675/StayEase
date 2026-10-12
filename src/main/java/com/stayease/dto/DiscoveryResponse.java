@@ -116,4 +116,8 @@ public class DiscoveryResponse implements Serializable {
     public int getTotalResults() {
         return stayEaseListings.size() + externalListings.size();
     }
+
+    public boolean isLocationSet() {
+        return (searchLatitude != null && searchLongitude != null) || (query != null && !query.trim().isEmpty());
+    }
 }
