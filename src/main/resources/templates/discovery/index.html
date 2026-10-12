@@ -3,7 +3,43 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head th:replace="~{fragments/layout :: head('Hostel & PG Discovery | StayEase')}"></head>
+<head>
+    <th:block th:replace="~{fragments/layout :: head('Global Accommodation Discovery | StayEase')}"></th:block>
+    <!-- Leaflet Interactive Maps CSS (Free, Open-Source) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #discoveryMap {
+            height: 460px;
+            width: 100%;
+            border-radius: 14px;
+            z-index: 1;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            font-family: inherit;
+        }
+        .filter-chip {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .filter-chip.active {
+            background-color: var(--primary, #1A365D) !important;
+            color: #ffffff !important;
+            border-color: var(--primary, #1A365D) !important;
+        }
+        .pulse-marker {
+            box-shadow: 0 0 0 rgba(43, 108, 176, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(43, 108, 176, 0.6); }
+            70% { box-shadow: 0 0 0 16px rgba(43, 108, 176, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(43, 108, 176, 0); }
+        }
+    </style>
+</head>
 
 <body class="d-flex flex-column min-vh-100" style="background: var(--surface-page, #f8fafc);">
 
@@ -14,35 +50,35 @@
 <main class="flex-grow-1 py-4 py-md-5">
     <div class="container se-container">
 
-        <!-- Header Banner -->
+        <!-- Header Banner: Global Accommodation Discovery -->
         <div class="card border-0 shadow-sm p-4 p-md-5 mb-4 text-white position-relative overflow-hidden"
-             style="background: linear-gradient(135deg, #1A365D 0%, #2B6CB0 100%); border-radius: 16px;">
+             style="background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #2563EB 100%); border-radius: 16px;">
             <div class="row align-items-center position-relative z-1">
                 <div class="col-12 col-lg-8">
                     <span class="badge bg-warning text-dark px-3 py-1 text-uppercase fw-bold mb-3" style="letter-spacing: 0.08em; font-size: 0.75rem;">
-                        <i class="bi bi-geo-alt-fill me-1"></i>Location Intelligence & Discovery
+                        <i class="bi bi-globe-americas me-1"></i>Global Location Intelligence
                     </span>
                     <h1 class="display-6 fw-bold mb-2" style="font-family: 'DM Sans', sans-serif;">
-                        Find Hostels & PGs Near You
+                        Find Hostels, Hotels &amp; PGs Worldwide
                     </h1>
-                    <p class="lead mb-0 text-white-50 fs-6">
-                        Discover verified StayEase accommodations with instant booking, or explore registered local hostels and student PGs around your college, office, or landmark.
+                    <p class="lead mb-0 text-white-75 fs-6">
+                        Access real-time accommodation discovery wherever you are in the world. Search any city, town, or landmark across the globe, or tap into your device GPS to detect verified StayEase properties and registered local accommodations within your chosen distance.
                     </p>
                 </div>
                 <div class="col-12 col-lg-4 text-lg-end mt-4 mt-lg-0">
-                    <div class="p-3 bg-white bg-opacity-10 rounded-3 text-start d-inline-block">
+                    <div class="p-3 bg-white bg-opacity-10 rounded-3 text-start d-inline-block backdrop-blur">
                         <div class="small fw-semibold text-warning mb-1">
                             <i class="bi bi-shield-check me-1"></i>StayEase Guarantee
                         </div>
                         <div class="small text-white-75" style="font-size: 0.8rem;">
-                            Only verified StayEase listings are bookable on our platform. External listings are provided for local guidance only.
+                            Verified StayEase listings support instant reservation. External establishments are mapped for local guidance and directions.
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Search & GPS Controls Card -->
+        <!-- Search & Range Controls Card -->
         <div class="card border-0 shadow-sm p-3 p-md-4 mb-4" style="background: var(--surface-card, #ffffff); border-radius: 14px;">
             <form th:action="@{/discovery}" method="get" id="discoverySearchForm" class="row g-3 align-items-end">
                 
@@ -51,36 +87,39 @@
                 <input type="hidden" name="lng" id="searchLng" th:value="${lng}"/>
                 <input type="hidden" name="gps" id="searchGps" th:value="${gps}"/>
 
-                <!-- Search Input -->
+                <!-- Search Input: Any city / locality / landmark globally -->
                 <div class="col-12 col-md-5">
                     <label for="locationQuery" class="form-label small fw-semibold text-secondary">
-                        <i class="bi bi-search me-1"></i>Search City, Locality, or Landmark
+                        <i class="bi bi-search me-1"></i>Search Any City, Locality, or Landmark Worldwide
                     </label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0">
                             <i class="bi bi-geo-alt text-muted"></i>
                         </span>
                         <input type="text"
-                               id="locationQuery"
-                               name="query"
-                               th:value="${query}"
-                               class="form-control border-start-0"
-                               placeholder="e.g. Koramangala, BTM Layout, Bengaluru, Pune..."
-                               autocomplete="off"/>
+                                id="locationQuery"
+                                name="query"
+                                th:value="${query}"
+                                class="form-control border-start-0"
+                                placeholder="e.g. Jaipur, Delhi, Mumbai, Bengaluru, London, Tokyo, New York..."
+                                autocomplete="off"/>
                     </div>
                 </div>
 
-                <!-- Radius Selector -->
+                <!-- Radius Selector with broad range -->
                 <div class="col-6 col-md-2">
                     <label for="radiusSelector" class="form-label small fw-semibold text-secondary">
-                        <i class="bi bi-radar me-1"></i>Radius
+                        <i class="bi bi-radar me-1"></i>Search Radius
                     </label>
                     <select id="radiusSelector" name="radius" class="form-select">
+                        <option value="1" th:selected="${radius == 1}">1 km</option>
                         <option value="2" th:selected="${radius == 2}">2 km</option>
                         <option value="5" th:selected="${radius == 5}">5 km</option>
                         <option value="10" th:selected="${radius == 10}">10 km</option>
+                        <option value="15" th:selected="${radius == 15}">15 km</option>
                         <option value="25" th:selected="${radius == 25}">25 km</option>
                         <option value="50" th:selected="${radius == 50}">50 km</option>
+                        <option value="100" th:selected="${radius == 100}">100 km</option>
                     </select>
                 </div>
 
@@ -110,11 +149,11 @@
 
             <!-- Active Filter Chips -->
             <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top" style="border-color: var(--border-default) !important;">
-                <span class="small text-secondary me-1">Active Search:</span>
+                <span class="small text-secondary me-1">Active Location:</span>
                 <span th:if="${discovery.resolvedLocationName != null and !discovery.resolvedLocationName.isEmpty()}"
                       class="badge bg-light text-dark border px-3 py-2 fw-medium">
                     <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                    <span th:text="${discovery.resolvedLocationName}">Bengaluru</span>
+                    <span th:text="${discovery.resolvedLocationName}">Worldwide</span>
                 </span>
                 <span th:if="${discovery.gpsUsed}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-medium">
                     <i class="bi bi-broadcast me-1"></i>Device GPS Coordinates
@@ -122,8 +161,8 @@
                 <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fw-medium">
                     <i class="bi bi-bullseye me-1"></i>Within <span th:text="${discovery.radiusKm}">10</span> km
                 </span>
-                <a th:href="@{/discovery(query='Bengaluru')}" class="btn btn-link btn-sm text-decoration-none p-0 ms-auto small text-muted">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Default
+                <a th:href="@{/discovery}" class="btn btn-link btn-sm text-decoration-none p-0 ms-auto small text-muted">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Clear / Worldwide View
                 </a>
             </div>
         </div>
@@ -135,8 +174,52 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
+        <!-- ── Interactive Map Section ───────────────────────────────────────── -->
+        <div class="card border-0 shadow-sm p-3 p-md-4 mb-5 overflow-hidden" style="background: var(--surface-card); border-radius: 14px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+                <div>
+                    <h2 class="h5 fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
+                        <i class="bi bi-map-fill text-primary me-2"></i>Interactive Geographic Map
+                    </h2>
+                    <p class="small text-secondary mb-0">
+                        Explore places visually. Click pins to view accommodation details, distance, and instant turn-by-turn directions.
+                    </p>
+                </div>
+                <!-- Map Legend -->
+                <div class="d-flex flex-wrap gap-2 small">
+                    <span class="badge bg-success text-white px-2 py-1"><i class="bi bi-patch-check-fill me-1"></i>StayEase</span>
+                    <span class="badge bg-primary text-white px-2 py-1"><i class="bi bi-building me-1"></i>Hotels</span>
+                    <span class="badge bg-info text-dark px-2 py-1"><i class="bi bi-backpack2-fill me-1"></i>Hostels</span>
+                    <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-mortarboard-fill me-1"></i>PG / Student</span>
+                    <span class="badge bg-secondary text-white px-2 py-1"><i class="bi bi-house-door-fill me-1"></i>Guest Houses</span>
+                </div>
+            </div>
+
+            <div id="discoveryMap"></div>
+        </div>
+
+        <!-- ── Accommodation Type Filter Tabs ─────────────────────────────────── -->
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+            <span class="small fw-semibold text-secondary me-2">Filter Category:</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip active" data-category="ALL">
+                All Accommodations (<span id="countAll">0</span>)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="HOTEL">
+                <i class="bi bi-building me-1"></i>Hotels (<span id="countHotel">0</span>)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="HOSTEL">
+                <i class="bi bi-backpack2-fill me-1"></i>Hostels &amp; Backpackers (<span id="countHostel">0</span>)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="PG">
+                <i class="bi bi-mortarboard-fill me-1"></i>PGs &amp; Student Housing (<span id="countPg">0</span>)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill filter-chip" data-category="GUESTHOUSE">
+                <i class="bi bi-house-door-fill me-1"></i>Guest Houses (<span id="countGuestHouse">0</span>)
+            </button>
+        </div>
+
         <!-- ── Section 1: StayEase Verified Properties (Bookable) ─────────────── -->
-        <div class="mb-5">
+        <div class="mb-5" id="stayEaseSection">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div>
                     <h2 class="h4 fw-bold mb-1" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
@@ -151,16 +234,16 @@
                 </span>
             </div>
 
-            <!-- Empty State -->
-            <div th:if="${discovery.stayEaseListings.isEmpty()}" class="card border-0 shadow-sm p-5 text-center" style="border-radius: 14px;">
+            <!-- Empty State for StayEase Listings -->
+            <div th:if="${discovery.stayEaseListings.isEmpty()}" class="card border-0 shadow-sm p-4 p-md-5 text-center mb-4" style="border-radius: 14px;">
                 <i class="bi bi-building-exclamation fs-1 text-muted mb-3"></i>
-                <h5 class="fw-semibold text-secondary">No StayEase Properties within this radius</h5>
+                <h5 class="fw-semibold text-secondary">No StayEase Properties within this exact radius</h5>
                 <p class="small text-muted mb-3">
-                    Try expanding your search radius (e.g. 25km or 50km) or searching for a larger city center.
+                    Try expanding your search radius (e.g. 25 km, 50 km, or 100 km). You can also explore the registered local hotels, hostels, and PGs discovered below.
                 </p>
                 <div class="d-flex justify-content-center gap-2">
-                    <a th:href="@{/discovery(query='Bengaluru', radius=50)}" class="btn btn-outline-primary btn-sm px-3">
-                        Search wider Bengaluru area
+                    <a th:href="@{/discovery(lat=${discovery.searchLatitude}, lng=${discovery.searchLongitude}, query=${discovery.query}, radius=50)}" class="btn btn-outline-primary btn-sm px-3">
+                        <i class="bi bi-arrows-angle-expand me-1"></i>Search Wider Area (50 km)
                     </a>
                     <a th:href="@{/rooms}" class="btn btn-cobalt btn-sm px-3">
                         Browse all StayEase rooms
@@ -169,8 +252,10 @@
             </div>
 
             <!-- Listing Cards Grid -->
-            <div th:unless="${discovery.stayEaseListings.isEmpty()}" class="row g-4">
-                <div th:each="item : ${discovery.stayEaseListings}" class="col-12 col-md-6 col-lg-4">
+            <div th:unless="${discovery.stayEaseListings.isEmpty()}" class="row g-4" id="stayEaseGrid">
+                <div th:each="item : ${discovery.stayEaseListings}"
+                     class="col-12 col-md-6 col-lg-4 stayease-card-col"
+                     th:attr="data-category=${item.accommodationType}">
                     <div class="card h-100 border-0 shadow-sm overflow-hidden d-flex flex-column"
                          style="background: var(--surface-card); border-radius: 14px; transition: transform 0.2s, box-shadow 0.2s;">
                         
@@ -214,8 +299,8 @@
                             <!-- Address & Locality -->
                             <p class="small text-secondary mb-3">
                                 <i class="bi bi-geo-alt me-1 text-danger"></i>
-                                <span th:if="${item.locality != null}" th:text="${item.locality + ', '}">Koramangala, </span>
-                                <span th:text="${item.city}">Bengaluru</span>
+                                <span th:if="${item.locality != null}" th:text="${item.locality + ', '}">Locality, </span>
+                                <span th:text="${item.city}">City</span>
                             </p>
 
                             <!-- Pricing -->
@@ -250,7 +335,7 @@
                             <!-- Action -->
                             <div class="mt-auto pt-2 border-top">
                                 <a th:href="@{/rooms/{id}(id=${item.id})}" class="btn btn-cobalt w-100 fw-semibold py-2">
-                                    <i class="bi bi-calendar-check me-1"></i>View & Book Now
+                                    <i class="bi bi-calendar-check me-1"></i>View &amp; Book Now
                                 </a>
                             </div>
                         </div>
@@ -261,18 +346,18 @@
         </div>
 
         <!-- ── Section 2: External Places & Businesses Discovery ──────────────── -->
-        <div class="mb-5">
+        <div class="mb-5" id="externalSection">
             <div class="card border-0 shadow-sm p-4 p-md-4 mb-4" style="background: var(--surface-card); border-radius: 14px;">
                 <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <h2 class="h5 fw-bold mb-0" style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
-                                <i class="bi bi-globe-americas text-primary me-2"></i>External Accommodation Businesses
+                                <i class="bi bi-buildings text-primary me-2"></i>External Accommodation Businesses (Hotels, Hostels &amp; PGs)
                             </h2>
-                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">Informational Only</span>
+                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">Local Directory</span>
                         </div>
                         <p class="small text-secondary mb-0">
-                            Registered local hostels, guest houses, and PGs nearby discovered via OpenStreetMap. These properties have not joined StayEase and cannot be booked directly.
+                            Registered local accommodations discovered in real time around your location via global OpenStreetMap data.
                         </p>
                     </div>
                     <span th:if="${discovery.attribution != null}" class="small text-muted text-md-end" style="font-size: 0.75rem;">
@@ -283,32 +368,36 @@
                 <!-- Empty External Results -->
                 <div th:if="${discovery.externalListings.isEmpty()}" class="py-4 text-center text-muted">
                     <i class="bi bi-compass fs-2 d-block mb-2 text-secondary"></i>
-                    <span class="small">No external accommodation businesses found around this exact radius. Search with a larger radius or different location to discover local options.</span>
+                    <span class="small">No external accommodation establishments discovered within this exact radius. Try increasing the radius slider or entering a nearby city or locality.</span>
                 </div>
 
-                <!-- External Listings Table / List -->
+                <!-- External Listings Table -->
                 <div th:unless="${discovery.externalListings.isEmpty()}" class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0" id="externalTable">
                         <thead class="bg-light">
                             <tr>
-                                <th class="py-3 px-3 small text-uppercase text-secondary">Business Name</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Establishment Name</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Type</th>
-                                <th class="py-3 px-3 small text-uppercase text-secondary">Address / Region</th>
+                                <th class="py-3 px-3 small text-uppercase text-secondary">Address / Locality</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Distance</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary">Contact / Web</th>
                                 <th class="py-3 px-3 small text-uppercase text-secondary text-end">Directions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="ext : ${discovery.externalListings}">
+                            <tr th:each="ext : ${discovery.externalListings}"
+                                class="external-item-row"
+                                th:attr="data-category=${ext.accommodationType}">
                                 <td class="py-3 px-3">
-                                    <div class="fw-semibold text-dark" th:text="${ext.name}">External Hostel</div>
+                                    <div class="fw-semibold text-dark" th:text="${ext.name}">Business Name</div>
                                     <span class="badge bg-light text-muted border py-0 px-2" style="font-size: 0.7rem;">
-                                        <i class="bi bi-box-arrow-up-right me-1"></i>External Discovery
+                                        <i class="bi bi-geo-alt me-1"></i>Nearby Place
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">
-                                    <span class="badge bg-secondary-subtle text-secondary px-2 py-1 small" th:text="${ext.accommodationType}">Hostel</span>
+                                    <span class="badge px-2 py-1 small"
+                                          th:classappend="${#strings.containsIgnoreCase(ext.accommodationType, 'Hotel') ? 'bg-primary text-white' : (#strings.containsIgnoreCase(ext.accommodationType, 'Hostel') ? 'bg-info text-dark' : (#strings.containsIgnoreCase(ext.accommodationType, 'PG') ? 'bg-warning text-dark' : 'bg-secondary text-white'))}"
+                                          th:text="${ext.accommodationType}">Hostel</span>
                                 </td>
                                 <td class="py-3 px-3 small text-secondary" style="max-width: 250px;">
                                     <span th:text="${ext.address}">Address</span>
@@ -321,7 +410,9 @@
                                 </td>
                                 <td class="py-3 px-3 small text-secondary">
                                     <div th:if="${ext.contactPhone != 'Not provided'}" class="mb-1">
-                                        <i class="bi bi-telephone me-1"></i><span th:text="${ext.contactPhone}">+91 9876543210</span>
+                                        <a th:href="'tel:' + ${ext.contactPhone}" class="text-decoration-none text-dark">
+                                            <i class="bi bi-telephone me-1 text-primary"></i><span th:text="${ext.contactPhone}">+91 9876543210</span>
+                                        </a>
                                     </div>
                                     <div th:if="${ext.websiteUrl != null}">
                                         <a th:href="${ext.websiteUrl}" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none">
@@ -334,8 +425,8 @@
                                 </td>
                                 <td class="py-3 px-3 text-end">
                                     <a th:href="${ext.directionsUrl}" target="_blank" rel="noopener noreferrer"
-                                       class="btn btn-outline-secondary btn-sm px-3 fw-medium">
-                                        <i class="bi bi-map me-1"></i>Map / Directions
+                                       class="btn btn-outline-primary btn-sm px-3 fw-medium">
+                                        <i class="bi bi-map me-1"></i>Directions
                                     </a>
                                 </td>
                             </tr>
@@ -352,7 +443,55 @@
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
 
-<!-- ── Permission-Based Device GPS Script ────────────────────────────── -->
+<!-- Leaflet Interactive Maps JS (Free, Open-Source) -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Embedded Discovery Data for Leaflet Map Rendering -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+    const discoveryData = {
+        searchLat: /*[[${discovery.searchLatitude}]]*/ null,
+        searchLng: /*[[${discovery.searchLongitude}]]*/ null,
+        radiusKm: /*[[${discovery.radiusKm}]]*/ 10,
+        resolvedLocation: /*[[${discovery.resolvedLocationName}]]*/ 'Selected Location',
+        stayEaseListings: [
+            /*[# th:each="s : ${discovery.stayEaseListings}"]*/
+            {
+                id: /*[[${s.id}]]*/ 0,
+                name: /*[[${s.propertyName}]]*/ 'StayEase Property',
+                roomNumber: /*[[${s.roomNumber}]]*/ '101',
+                type: /*[[${s.accommodationType}]]*/ 'HOSTEL',
+                price: /*[[${s.pricePerNight}]]*/ 0,
+                address: /*[[${s.address}]]*/ '',
+                city: /*[[${s.city}]]*/ '',
+                lat: /*[[${s.latitude}]]*/ null,
+                lng: /*[[${s.longitude}]]*/ null,
+                dist: /*[[${s.distanceKm}]]*/ null,
+                url: /*[[@{'/rooms/' + ${s.id}}]]*/ '/rooms'
+            },
+            /*[/]*/
+        ],
+        externalListings: [
+            /*[# th:each="e : ${discovery.externalListings}"]*/
+            {
+                id: /*[[${e.externalId}]]*/ '',
+                name: /*[[${e.name}]]*/ 'Accommodation',
+                type: /*[[${e.accommodationType}]]*/ 'Hostel',
+                address: /*[[${e.address}]]*/ '',
+                lat: /*[[${e.latitude}]]*/ null,
+                lng: /*[[${e.longitude}]]*/ null,
+                dist: /*[[${e.distanceKm}]]*/ null,
+                phone: /*[[${e.contactPhone}]]*/ '',
+                website: /*[[${e.websiteUrl}]]*/ null,
+                directionsUrl: /*[[${e.directionsUrl}]]*/ '#'
+            },
+            /*[/]*/
+        ]
+    };
+/*]]>*/
+</script>
+
+<!-- Discovery Controller & Leaflet Map Initialization Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const btnGps = document.getElementById('btnUseGps');
@@ -373,14 +512,15 @@ document.addEventListener('DOMContentLoaded', function () {
         alertBox.classList.remove('d-none');
     }
 
+    // ── 1. Device GPS Location Handler ─────────────────────────────────────────
     if (btnGps) {
         btnGps.addEventListener('click', function () {
             if (!navigator.geolocation) {
-                showAlert('Geolocation is not supported by your current browser. Please search by typing a city or locality.', 'warning', 'bi-exclamation-triangle-fill');
+                showAlert('Geolocation is not supported by your browser. Please search by typing any city or location name.', 'warning', 'bi-exclamation-triangle-fill');
                 return;
             }
 
-            gpsButtonText.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Requesting GPS...';
+            gpsButtonText.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Detecting GPS...';
             btnGps.disabled = true;
 
             function onPositionSuccess(position) {
@@ -390,10 +530,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 searchLat.value = lat;
                 searchLng.value = lng;
                 searchGps.value = 'true';
-                locationQuery.value = ''; // Rely on precise coordinates
+                locationQuery.value = ''; // Let coordinates drive exact discovery
 
                 gpsButtonText.innerText = 'Location Acquired';
-                showAlert('Location acquired (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')! Refreshing accommodations around you...', 'success', 'bi-check-circle-fill');
+                showAlert('Acquired coordinates (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + '). Scanning nearby hotels, hostels & PGs...', 'success', 'bi-check-circle-fill');
 
                 setTimeout(function () {
                     searchForm.submit();
@@ -415,10 +555,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         switch (error.code) {
                             case error.PERMISSION_DENIED:
-                                showAlert('<strong>Location permission was denied or blocked.</strong> Please allow location access in your browser address bar (tune/lock icon next to the URL), or search by city name.', 'info', 'bi-shield-lock');
+                                showAlert('<strong>Location access was denied.</strong> Please click the lock or settings icon in your browser address bar to allow location permissions, or search by city name.', 'info', 'bi-shield-lock');
                                 break;
                             case error.POSITION_UNAVAILABLE:
-                                showAlert('Location is unavailable on this device. Please check your system location settings, or search manually.', 'warning', 'bi-exclamation-triangle');
+                                showAlert('Location is unavailable on this device. Please check your system location services, or search by city name.', 'warning', 'bi-exclamation-triangle');
                                 break;
                             case error.TIMEOUT:
                                 showAlert('Location request timed out. Please try again or search by city name.', 'warning', 'bi-clock-history');
@@ -437,6 +577,204 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             tryGeolocation(true);
+        });
+    }
+
+    // ── 2. Category Counts & Dynamic Tab Filtering ────────────────────────────
+    let totalAll = 0, totalHotel = 0, totalHostel = 0, totalPg = 0, totalGuestHouse = 0;
+
+    discoveryData.stayEaseListings.forEach(function (s) {
+        totalAll++;
+        const t = (s.type || '').toUpperCase();
+        if (t.includes('HOTEL')) totalHotel++;
+        else if (t.includes('HOSTEL')) totalHostel++;
+        else if (t.includes('PG')) totalPg++;
+        else totalGuestHouse++;
+    });
+
+    discoveryData.externalListings.forEach(function (e) {
+        totalAll++;
+        const t = (e.type || '').toUpperCase();
+        if (t.includes('HOTEL') || t.includes('MOTEL')) totalHotel++;
+        else if (t.includes('HOSTEL')) totalHostel++;
+        else if (t.includes('PG') || t.includes('STUDENT') || t.includes('DORMITORY')) totalPg++;
+        else totalGuestHouse++;
+    });
+
+    document.getElementById('countAll').innerText = totalAll;
+    document.getElementById('countHotel').innerText = totalHotel;
+    document.getElementById('countHostel').innerText = totalHostel;
+    document.getElementById('countPg').innerText = totalPg;
+    document.getElementById('countGuestHouse').innerText = totalGuestHouse;
+
+    const filterChips = document.querySelectorAll('.filter-chip');
+    filterChips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            filterChips.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            const category = this.getAttribute('data-category');
+            applyCategoryFilter(category);
+        });
+    });
+
+    function applyCategoryFilter(category) {
+        // Filter StayEase Cards
+        const seCards = document.querySelectorAll('.stayease-card-col');
+        seCards.forEach(function (card) {
+            const cat = (card.getAttribute('data-category') || '').toUpperCase();
+            if (category === 'ALL') {
+                card.classList.remove('d-none');
+            } else if (category === 'HOTEL' && cat.includes('HOTEL')) {
+                card.classList.remove('d-none');
+            } else if (category === 'HOSTEL' && cat.includes('HOSTEL')) {
+                card.classList.remove('d-none');
+            } else if (category === 'PG' && cat.includes('PG')) {
+                card.classList.remove('d-none');
+            } else if (category === 'GUESTHOUSE' && !cat.includes('HOTEL') && !cat.includes('HOSTEL') && !cat.includes('PG')) {
+                card.classList.remove('d-none');
+            } else {
+                card.classList.add('d-none');
+            }
+        });
+
+        // Filter External Table Rows
+        const extRows = document.querySelectorAll('.external-item-row');
+        extRows.forEach(function (row) {
+            const cat = (row.getAttribute('data-category') || '').toUpperCase();
+            if (category === 'ALL') {
+                row.classList.remove('d-none');
+            } else if (category === 'HOTEL' && (cat.includes('HOTEL') || cat.includes('MOTEL'))) {
+                row.classList.remove('d-none');
+            } else if (category === 'HOSTEL' && cat.includes('HOSTEL')) {
+                row.classList.remove('d-none');
+            } else if (category === 'PG' && (cat.includes('PG') || cat.includes('STUDENT') || cat.includes('DORMITORY'))) {
+                row.classList.remove('d-none');
+            } else if (category === 'GUESTHOUSE' && (cat.includes('GUEST') || cat.includes('HOMESTAY') || cat.includes('APARTMENT'))) {
+                row.classList.remove('d-none');
+            } else {
+                row.classList.add('d-none');
+            }
+        });
+
+        // Filter Map Markers
+        if (window.mapMarkers) {
+            window.mapMarkers.forEach(function (item) {
+                const cat = (item.type || '').toUpperCase();
+                let show = false;
+                if (category === 'ALL') show = true;
+                else if (category === 'HOTEL' && (cat.includes('HOTEL') || cat.includes('MOTEL'))) show = true;
+                else if (category === 'HOSTEL' && cat.includes('HOSTEL')) show = true;
+                else if (category === 'PG' && (cat.includes('PG') || cat.includes('STUDENT') || cat.includes('DORMITORY'))) show = true;
+                else if (category === 'GUESTHOUSE' && (cat.includes('GUEST') || cat.includes('HOMESTAY') || cat.includes('APARTMENT'))) show = true;
+
+                if (show) {
+                    if (!window.mapInstance.hasLayer(item.marker)) {
+                        window.mapInstance.addLayer(item.marker);
+                    }
+                } else {
+                    if (window.mapInstance.hasLayer(item.marker)) {
+                        window.mapInstance.removeLayer(item.marker);
+                    }
+                }
+            });
+        }
+    }
+
+    // ── 3. Leaflet Interactive Map Initialization ─────────────────────────────
+    const mapElement = document.getElementById('discoveryMap');
+    if (mapElement && typeof L !== 'undefined') {
+        let centerLat = 20.5937; // Default India/Global center
+        let centerLng = 78.9629;
+        let zoomLevel = 5;
+
+        if (discoveryData.searchLat != null && discoveryData.searchLng != null) {
+            centerLat = discoveryData.searchLat;
+            centerLng = discoveryData.searchLng;
+            zoomLevel = discoveryData.radiusKm <= 5 ? 14 : (discoveryData.radiusKm <= 15 ? 13 : (discoveryData.radiusKm <= 35 ? 11 : 10));
+        } else if (discoveryData.stayEaseListings.length > 0 && discoveryData.stayEaseListings[0].lat != null) {
+            centerLat = discoveryData.stayEaseListings[0].lat;
+            centerLng = discoveryData.stayEaseListings[0].lng;
+            zoomLevel = 12;
+        }
+
+        const map = L.map('discoveryMap').setView([centerLat, centerLng], zoomLevel);
+        window.mapInstance = map;
+        window.mapMarkers = [];
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Marker for Search / Current Location with Radar Radius Circle
+        if (discoveryData.searchLat != null && discoveryData.searchLng != null) {
+            const userIcon = L.divIcon({
+                className: 'pulse-marker',
+                html: '<div style="background-color: #2563EB; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #ffffff;"></div>',
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+            });
+
+            L.marker([discoveryData.searchLat, discoveryData.searchLng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup('<strong>' + (discoveryData.resolvedLocation || 'Your Location') + '</strong><br><small class="text-muted">Center point of search</small>');
+
+            L.circle([discoveryData.searchLat, discoveryData.searchLng], {
+                color: '#2563EB',
+                fillColor: '#3B82F6',
+                fillOpacity: 0.08,
+                radius: (discoveryData.radiusKm || 10) * 1000
+            }).addTo(map);
+        }
+
+        // Custom marker builder
+        function createColorIcon(colorHex) {
+            return L.divIcon({
+                className: 'custom-pin',
+                html: '<div style="background-color: ' + colorHex + '; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
+        }
+
+        // Add StayEase Listings Markers
+        discoveryData.stayEaseListings.forEach(function (s) {
+            if (s.lat != null && s.lng != null) {
+                const marker = L.marker([s.lat, s.lng], { icon: createColorIcon('#16A34A') }).addTo(map);
+                const popupContent =
+                    '<div style="min-width: 180px;">' +
+                    '<span class="badge bg-success mb-1">StayEase Verified</span>' +
+                    '<h6 class="fw-bold mb-1">' + s.name + '</h6>' +
+                    '<p class="small text-muted mb-1">' + (s.city || '') + ' • Room #' + s.roomNumber + '</p>' +
+                    '<div class="fw-bold text-dark mb-2">₹' + s.price + '/night' + (s.dist ? ' • ' + s.dist + ' km' : '') + '</div>' +
+                    '<a href="' + s.url + '" class="btn btn-sm btn-primary w-100 py-1">View & Book</a>' +
+                    '</div>';
+                marker.bindPopup(popupContent);
+                window.mapMarkers.push({ marker: marker, type: s.type });
+            }
+        });
+
+        // Add External Accommodation Markers
+        discoveryData.externalListings.forEach(function (e) {
+            if (e.lat != null && e.lng != null) {
+                let color = '#2563EB'; // Blue for Hotel
+                const t = (e.type || '').toUpperCase();
+                if (t.includes('HOSTEL')) color = '#0284C7'; // Cyan for Hostel
+                else if (t.includes('PG') || t.includes('STUDENT') || t.includes('DORMITORY')) color = '#D97706'; // Orange for PG
+                else if (t.includes('GUEST') || t.includes('HOMESTAY')) color = '#4B5563'; // Gray for Guest House
+
+                const marker = L.marker([e.lat, e.lng], { icon: createColorIcon(color) }).addTo(map);
+                const popupContent =
+                    '<div style="min-width: 180px;">' +
+                    '<span class="badge bg-secondary mb-1">' + e.type + '</span>' +
+                    '<h6 class="fw-bold mb-1">' + e.name + '</h6>' +
+                    '<p class="small text-muted mb-1">' + e.address + '</p>' +
+                    (e.dist ? '<div class="small fw-semibold text-danger mb-2">' + e.dist + ' km away</div>' : '') +
+                    '<a href="' + e.directionsUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary w-100 py-1">Get Directions</a>' +
+                    '</div>';
+                marker.bindPopup(popupContent);
+                window.mapMarkers.push({ marker: marker, type: e.type });
+            }
         });
     }
 });

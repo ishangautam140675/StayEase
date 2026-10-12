@@ -34,11 +34,9 @@ public class DiscoveryController {
             @RequestParam(value = "gps", required = false, defaultValue = "false") Boolean gps,
             Model model) {
 
-        // Default search if nothing provided: check for properties in Bengaluru or active query
+        // If neither query nor coordinates are provided, do not restrict to any single city.
+        // Instead, discover globally across all inventory and allow worldwide search and GPS discovery.
         String effectiveQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
-        if (effectiveQuery == null && lat == null && lng == null) {
-            effectiveQuery = "Bengaluru";
-        }
 
         DiscoveryResponse response = discoveryService.discover(
                 effectiveQuery,

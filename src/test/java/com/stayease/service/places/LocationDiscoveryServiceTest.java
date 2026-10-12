@@ -220,4 +220,37 @@ class LocationDiscoveryServiceTest {
         assertEquals(77.6245, response.getSearchLongitude());
         assertEquals("Koramangala, Bengaluru, Karnataka, India", response.getResolvedLocationName());
     }
+
+    @Test
+    @DisplayName("Reverse geocodes device GPS coordinates anywhere globally (e.g. Jaipur)")
+    void testWorldwideReverseGeocodingForGpsCoordinates() {
+        when(roomRepository.findAll()).thenReturn(List.of());
+        when(placesProvider.isAvailable()).thenReturn(true);
+        when(placesProvider.reverseGeocode(26.9124, 75.7873))
+                .thenReturn(Optional.of("Malviya Nagar, Jaipur, Rajasthan, India"));
+        when(placesProvider.searchNearbyAccommodations(26.9124, 75.7873, 15)).thenReturn(List.of());
+
+        DiscoveryResponse response = discoveryService.discover(null, 26.9124, 75.7873, 15, true);
+
+        assertNotNull(response);
+        assertEquals(26.9124, response.getSearchLatitude());
+        assertEquals(75.7873, response.getSearchLongitude());
+        assertEquals("Malviya Nagar, Jaipur, Rajasthan, India", response.getResolvedLocationName());
+        assertTrue(response.isGpsUsed());
+        assertEquals(15, response.getRadiusKm());
+    }
+
+    @Test
+    @DisplayName("Supports extended search radius up to 100 km")
+    void testRadiusClampedUpTo100Km() {
+        when(roomRepository.findAll()).thenReturn(List.of());
+        when(placesProvider.isAvailable()).thenReturn(true);
+        when(placesProvider.searchNearbyAccommodations(anyDouble(), anyDouble(), anyInt())).thenReturn(List.of());
+
+        DiscoveryResponse response75 = discoveryService.discover(null, 26.9124, 75.7873, 75, true);
+        assertEquals(75, response75.getRadiusKm(), "Radius of 75km should be preserved");
+
+        DiscoveryResponse responseOver100 = discoveryService.discover(null, 26.9124, 75.7873, 250, true);
+        assertEquals(100, responseOver100.getRadiusKm(), "Radius exceeding 100km should clamp to 100km max");
+    }
 }

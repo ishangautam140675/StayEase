@@ -139,6 +139,13 @@ public class ExternalDiscoveryResult implements Serializable {
             return directionsUrl;
         }
         if (latitude != null && longitude != null) {
+            return "https://www.google.com/maps/dir/?api=1&destination=" + latitude + "%2C" + longitude;
+        }
+        return null;
+    }
+
+    public String getOsmDirectionsUrl() {
+        if (latitude != null && longitude != null) {
             return "https://www.openstreetmap.org/directions?to=" + latitude + "%2C" + longitude;
         }
         return null;

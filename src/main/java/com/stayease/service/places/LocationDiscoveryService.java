@@ -42,7 +42,7 @@ public class LocationDiscoveryService {
      * @param gpsUsed whether coordinates originated from user-authorized device GPS
      */
     public DiscoveryResponse discover(String query, Double lat, Double lng, Integer radiusKm, boolean gpsUsed) {
-        int radius = (radiusKm != null && radiusKm > 0) ? Math.min(radiusKm, 50) : 10;
+        int radius = (radiusKm != null && radiusKm > 0) ? Math.min(radiusKm, 100) : 10;
         DiscoveryResponse response = new DiscoveryResponse();
         response.setRadiusKm(radius);
         response.setGpsUsed(gpsUsed);
@@ -67,11 +67,26 @@ public class LocationDiscoveryService {
                     log.warn("Geocoding failed for query '{}': {}", query, e.getMessage());
                 }
             }
+        } else if (searchLat != null && searchLng != null && (query == null || query.trim().isEmpty())) {
+            // User provided GPS coordinates — reverse geocode to human readable locality/city
+            if (placesProvider != null && placesProvider.isAvailable()) {
+                try {
+                    Optional<String> rev = placesProvider.reverseGeocode(searchLat, searchLng);
+                    if (rev.isPresent()) {
+                        resolvedLocation = rev.get();
+                    }
+                } catch (Exception e) {
+                    log.debug("Reverse geocoding failed: {}", e.getMessage());
+                }
+            }
+            if (resolvedLocation == null) {
+                resolvedLocation = String.format(Locale.ROOT, "Current Location (%.4f, %.4f)", searchLat, searchLng);
+            }
         }
 
         response.setSearchLatitude(searchLat);
         response.setSearchLongitude(searchLng);
-        response.setResolvedLocationName(resolvedLocation != null ? resolvedLocation : (query != null ? query.trim() : "Current Location"));
+        response.setResolvedLocationName(resolvedLocation != null ? resolvedLocation : (query != null && !query.trim().isEmpty() ? query.trim() : "All Available Locations"));
 
         // 2. Discover StayEase-managed inventory
         List<Room> activeRooms = roomRepository.findAll().stream()

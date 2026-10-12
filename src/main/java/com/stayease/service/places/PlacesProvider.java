@@ -17,7 +17,14 @@ public interface PlacesProvider {
     Optional<Coordinates> geocode(String query);
 
     /**
-     * Searches for external accommodation businesses (hostels, PGs, guest houses) around given coordinates.
+     * Resolves geographic coordinates into a human-readable location name (e.g. city, locality, state).
+     */
+    default Optional<String> reverseGeocode(double latitude, double longitude) {
+        return Optional.empty();
+    }
+
+    /**
+     * Searches for external accommodation businesses (hotels, hostels, PGs, guest houses) around given coordinates.
      *
      * @param latitude user or query latitude
      * @param longitude user or query longitude
