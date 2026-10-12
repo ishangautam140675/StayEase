@@ -57,19 +57,19 @@
                                placeholder="e.g. John, SE-202610, 101" th:value="${query}"/>
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-3 col-md-3">
+                <div class="col-sm-6 col-lg-2 col-md-3">
                     <label class="form-label small fw-semibold text-secondary mb-1">Check-in from</label>
                     <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}"/>
                 </div>
-                <div class="col-sm-6 col-lg-2 col-md-3">
+                <div class="col-sm-6 col-lg-2 col-md-2">
                     <label class="form-label small fw-semibold text-secondary mb-1">Checkout to</label>
                     <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}"/>
                 </div>
-                <div class="col-lg-2 col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-cobalt btn-sm w-100">
+                <div class="col-lg-3 col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-cobalt btn-sm flex-grow-1 text-nowrap">
                         <i class="bi bi-funnel me-1"></i>Filter
                     </button>
-                    <a th:href="@{/admin/bookings(status=${selectedStatus})}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+                    <a th:href="@{/admin/bookings(status=${selectedStatus})}" class="btn btn-outline-secondary btn-sm flex-shrink-0 d-inline-flex align-items-center justify-content-center px-3" title="Reset Filters" aria-label="Reset Filters">
                         <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 </div>
