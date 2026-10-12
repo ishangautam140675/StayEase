@@ -55,19 +55,39 @@
                 </div>
                 <div class="col-md-5">
                     <label class="form-label small fw-semibold text-secondary mb-1">Action Type</label>
-                    <select name="action" class="form-select form-select-sm">
-                        <option value="ALL" th:selected="${filterAction == 'ALL'}">All Actions</option>
-                        <option value="BOOKING_APPROVED" th:selected="${filterAction == 'BOOKING_APPROVED'}">Booking Approved</option>
-                        <option value="BOOKING_REJECTED" th:selected="${filterAction == 'BOOKING_REJECTED'}">Booking Rejected</option>
-                        <option value="GUEST_CHECKED_IN" th:selected="${filterAction == 'GUEST_CHECKED_IN'}">Guest Checked In</option>
-                        <option value="GUEST_CHECKED_OUT" th:selected="${filterAction == 'GUEST_CHECKED_OUT'}">Guest Checked Out</option>
-                        <option value="BOOKING_NO_SHOW" th:selected="${filterAction == 'BOOKING_NO_SHOW'}">Booking No-Show</option>
-                        <option value="OPERATIONAL_NOTES_UPDATED" th:selected="${filterAction == 'OPERATIONAL_NOTES_UPDATED'}">Notes Updated</option>
-                        <option value="MAINTENANCE_SCHEDULED" th:selected="${filterAction == 'MAINTENANCE_SCHEDULED'}">Maintenance Scheduled</option>
-                        <option value="MAINTENANCE_CANCELLED" th:selected="${filterAction == 'MAINTENANCE_CANCELLED'}">Maintenance Cancelled</option>
-                        <option value="SEASONAL_PRICE_CREATED" th:selected="${filterAction == 'SEASONAL_PRICE_CREATED'}">Seasonal Rate Created</option>
-                        <option value="SEASONAL_PRICE_DELETED" th:selected="${filterAction == 'SEASONAL_PRICE_DELETED'}">Seasonal Rate Deleted</option>
-                    </select>
+                    <input type="hidden" name="action" id="actionTypeInput" th:value="${filterAction != null ? filterAction : 'ALL'}"/>
+                    <div class="dropdown">
+                        <button class="form-select form-select-sm text-start d-flex justify-content-between align-items-center w-100 bg-white"
+                                type="button" id="actionTypeDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span id="actionTypeSelectedLabel" class="text-truncate"
+                                  th:text="${filterAction == 'BOOKING_APPROVED' ? 'Booking Approved' :
+                                           (filterAction == 'BOOKING_REJECTED' ? 'Booking Rejected' :
+                                           (filterAction == 'GUEST_CHECKED_IN' ? 'Guest Checked In' :
+                                           (filterAction == 'GUEST_CHECKED_OUT' ? 'Guest Checked Out' :
+                                           (filterAction == 'BOOKING_NO_SHOW' ? 'Booking No-Show' :
+                                           (filterAction == 'OPERATIONAL_NOTES_UPDATED' ? 'Notes Updated' :
+                                           (filterAction == 'MAINTENANCE_SCHEDULED' ? 'Maintenance Scheduled' :
+                                           (filterAction == 'MAINTENANCE_CANCELLED' ? 'Maintenance Cancelled' :
+                                           (filterAction == 'SEASONAL_PRICE_CREATED' ? 'Seasonal Rate Created' :
+                                           (filterAction == 'SEASONAL_PRICE_DELETED' ? 'Seasonal Rate Deleted' : 'All Actions')))))))))}">All Actions</span>
+                        </button>
+                        <ul class="dropdown-menu shadow-sm w-100 border text-start py-1"
+                            id="actionTypeDropdownMenu"
+                            aria-labelledby="actionTypeDropdownBtn"
+                            style="max-height: 250px; overflow-y: auto; font-size: 0.82rem; border-radius: 8px;">
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="ALL" th:classappend="${filterAction == 'ALL' or filterAction == null} ? ' active' : ''">All Actions</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_APPROVED" th:classappend="${filterAction == 'BOOKING_APPROVED'} ? ' active' : ''">Booking Approved</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_REJECTED" th:classappend="${filterAction == 'BOOKING_REJECTED'} ? ' active' : ''">Booking Rejected</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="GUEST_CHECKED_IN" th:classappend="${filterAction == 'GUEST_CHECKED_IN'} ? ' active' : ''">Guest Checked In</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="GUEST_CHECKED_OUT" th:classappend="${filterAction == 'GUEST_CHECKED_OUT'} ? ' active' : ''">Guest Checked Out</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_NO_SHOW" th:classappend="${filterAction == 'BOOKING_NO_SHOW'} ? ' active' : ''">Booking No-Show</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="OPERATIONAL_NOTES_UPDATED" th:classappend="${filterAction == 'OPERATIONAL_NOTES_UPDATED'} ? ' active' : ''">Notes Updated</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="MAINTENANCE_SCHEDULED" th:classappend="${filterAction == 'MAINTENANCE_SCHEDULED'} ? ' active' : ''">Maintenance Scheduled</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="MAINTENANCE_CANCELLED" th:classappend="${filterAction == 'MAINTENANCE_CANCELLED'} ? ' active' : ''">Maintenance Cancelled</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="SEASONAL_PRICE_CREATED" th:classappend="${filterAction == 'SEASONAL_PRICE_CREATED'} ? ' active' : ''">Seasonal Rate Created</button></li>
+                            <li><button type="button" class="dropdown-item py-1.5" data-value="SEASONAL_PRICE_DELETED" th:classappend="${filterAction == 'SEASONAL_PRICE_DELETED'} ? ' active' : ''">Seasonal Rate Deleted</button></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="col-md-2 d-grid">
                     <button type="submit" class="btn btn-cobalt btn-sm">Filter</button>
@@ -320,6 +340,22 @@ document.addEventListener('DOMContentLoaded', function() {
     checkboxes.forEach(c => {
         c.addEventListener('change', updateBulkState);
     });
+
+    const actionMenu = document.getElementById('actionTypeDropdownMenu');
+    const actionInput = document.getElementById('actionTypeInput');
+    const actionLabel = document.getElementById('actionTypeSelectedLabel');
+    if (actionMenu && actionInput && actionLabel) {
+        actionMenu.querySelectorAll('.dropdown-item').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const val = this.getAttribute('data-value');
+                actionInput.value = val;
+                actionLabel.textContent = this.textContent.trim();
+                actionMenu.querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    }
 });
 </script>
 
