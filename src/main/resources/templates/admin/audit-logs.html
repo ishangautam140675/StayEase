@@ -43,7 +43,7 @@
 
         <!-- Filter Card -->
         <div class="card border-0 shadow-sm p-3 mb-4"
-             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important;">
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important; position: relative; z-index: 1050;">
             <form th:action="@{/admin/operations/audit-logs}" method="get" class="row g-2 align-items-end">
                 <div class="col-md-5">
                     <label class="form-label small fw-semibold text-secondary mb-1">Admin Email</label>
@@ -56,9 +56,9 @@
                 <div class="col-md-5">
                     <label class="form-label small fw-semibold text-secondary mb-1">Action Type</label>
                     <input type="hidden" name="action" id="actionTypeInput" th:value="${filterAction != null ? filterAction : 'ALL'}"/>
-                    <div class="dropdown">
+                    <div class="dropdown" style="position: relative; z-index: 1060;">
                         <button class="form-select form-select-sm text-start d-flex justify-content-between align-items-center w-100 bg-white"
-                                type="button" id="actionTypeDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                type="button" id="actionTypeDropdownBtn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                             <span id="actionTypeSelectedLabel" class="text-truncate"
                                   th:text="${filterAction == 'BOOKING_APPROVED' ? 'Booking Approved' :
                                            (filterAction == 'BOOKING_REJECTED' ? 'Booking Rejected' :
@@ -71,10 +71,10 @@
                                            (filterAction == 'SEASONAL_PRICE_CREATED' ? 'Seasonal Rate Created' :
                                            (filterAction == 'SEASONAL_PRICE_DELETED' ? 'Seasonal Rate Deleted' : 'All Actions')))))))))}">All Actions</span>
                         </button>
-                        <ul class="dropdown-menu shadow-sm w-100 border text-start py-1"
+                        <ul class="dropdown-menu shadow w-100 border text-start py-1"
                             id="actionTypeDropdownMenu"
                             aria-labelledby="actionTypeDropdownBtn"
-                            style="max-height: 250px; overflow-y: auto; font-size: 0.82rem; border-radius: 8px;">
+                            style="max-height: 250px; overflow-y: auto; font-size: 0.82rem; border-radius: 8px; z-index: 1070;">
                             <li><button type="button" class="dropdown-item py-1.5" data-value="ALL" th:classappend="${filterAction == 'ALL' or filterAction == null} ? ' active' : ''">All Actions</button></li>
                             <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_APPROVED" th:classappend="${filterAction == 'BOOKING_APPROVED'} ? ' active' : ''">Booking Approved</button></li>
                             <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_REJECTED" th:classappend="${filterAction == 'BOOKING_REJECTED'} ? ' active' : ''">Booking Rejected</button></li>
@@ -97,7 +97,7 @@
 
         <!-- Audit Table Container -->
         <div class="card border-0 shadow-sm"
-             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden;">
+             style="background: var(--surface-card); border-radius: 14px; border: 1px solid var(--border-default) !important; overflow: hidden; position: relative; z-index: 1;">
             <div class="p-4 border-bottom d-flex justify-content-between align-items-center"
                  style="background: var(--surface-page);">
                 <div>
