@@ -237,70 +237,6 @@
                                         <i class="bi bi-receipt" style="font-size: 0.85rem;"></i>
                                     </button>
                                 </div>
-
-                                <!-- Payment Details Modal for Admin -->
-                                <div class="modal fade text-start" th:id="'paymentModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content border-0 shadow">
-                                            <div class="modal-header bg-light">
-                                                <h5 class="modal-title h6 fw-bold">
-                                                    <i class="bi bi-credit-card-2-front me-2 text-primary"></i>Payment Details &mdash; <span th:text="${b.bookingReference}">SE-001</span>
-                                                </h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body p-4">
-                                                <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
-                                                    <div>
-                                                        <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Amount Due / Received</div>
-                                                        <div class="h5 fw-bold mb-0" style="color: var(--brand-oxblood);">
-                                                            ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">0.00</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="text-end">
-                                                        <span class="badge px-2 py-1"
-                                                              th:classappend="${b.paymentStatus.name() == 'SUCCESSFUL'} ? 'bg-success' : (${b.paymentStatus.name() == 'REFUNDED'} ? 'bg-info text-dark' : 'bg-warning text-dark')"
-                                                              th:text="${b.paymentStatus}">UNPAID</span>
-                                                    </div>
-                                                </div>
-
-                                                <h6 class="small fw-bold text-uppercase text-secondary mb-2" style="font-size: 0.75rem;">Payment Transactions / History</h6>
-                                                <div th:if="${transactionsByBookingId != null and transactionsByBookingId.get(b.id) != null and !transactionsByBookingId.get(b.id).isEmpty()}">
-                                                    <div class="list-group list-group-flush border rounded-3 mb-3">
-                                                        <div class="list-group-item p-3" th:each="txn : ${transactionsByBookingId.get(b.id)}">
-                                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                                <span class="fw-semibold small text-dark font-monospace" th:text="${txn.transactionReference}">TXN-123</span>
-                                                                <span class="badge" th:classappend="${txn.status.name() == 'SUCCESSFUL'} ? 'bg-success' : (${txn.status.name() == 'REFUNDED'} ? 'bg-info text-dark' : 'bg-secondary')" th:text="${txn.status}">SUCCESSFUL</span>
-                                                            </div>
-                                                            <div class="small text-muted mb-1">
-                                                                <strong>Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(txn.amount, 1, 2)}">0.00</span> |
-                                                                <strong>Method:</strong> <span th:text="${txn.paymentMethod != null ? txn.paymentMethod : 'UPI/Online'}">UPI</span>
-                                                            </div>
-                                                            <div class="small text-muted mb-1">
-                                                                <strong>Gateway Ref:</strong> <code th:text="${txn.gatewayReference != null ? txn.gatewayReference : 'N/A'}">pay_123</code>
-                                                            </div>
-                                                            <div th:if="${txn.refundReference != null}" class="small text-danger mb-1">
-                                                                <strong>Refund Ref:</strong> <code th:text="${txn.refundReference}">ref_123</code> (₹<span th:text="${#numbers.formatDecimal(txn.refundAmount, 1, 2)}">0.00</span>)
-                                                            </div>
-                                                            <div class="small text-muted" style="font-size: 0.75rem;">
-                                                                <i class="bi bi-clock me-1"></i><span th:text="${#temporals.format(txn.createdAt, 'MMM d, yyyy h:mm a')}">Date</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div th:unless="${transactionsByBookingId != null and transactionsByBookingId.get(b.id) != null and !transactionsByBookingId.get(b.id).isEmpty()}" class="p-3 text-center text-muted small bg-light rounded-3 mb-3">
-                                                    No transaction records yet. Guest has not submitted payment.
-                                                </div>
-
-                                                <div class="small text-muted">
-                                                    <strong>Guest:</strong> <span th:text="${b.user != null ? b.user.fullName : 'Guest'}">Name</span> (<span th:text="${b.user != null ? b.user.email : ''}">email</span>)
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </td>
 
                             <!-- Booking Status Badge -->
@@ -330,32 +266,6 @@
                                 <div th:if="${b.adminRemark != null and !b.adminRemark.isEmpty()}" class="small text-danger mt-1 text-truncate" style="max-width: 120px;"
                                      th:title="${b.adminRemark}">
                                     <i class="bi bi-info-circle me-1"></i><span th:text="${b.adminRemark}">Remark</span>
-                                </div>
-
-                                <!-- Note Edit Modal -->
-                                <div class="modal fade text-start" th:id="'noteModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content border-0 shadow">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title h6 fw-bold">
-                                                    <i class="bi bi-journal-text me-2 text-primary"></i>Operational Notes &mdash; <span th:text="${b.bookingReference}">SE-001</span>
-                                                </h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <form th:action="@{/admin/bookings/{id}/notes(id=${b.id})}" method="post">
-                                                <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                <div class="modal-body">
-                                                    <label class="form-label small fw-semibold text-secondary">Internal Operational Notes (e.g. late check-in, dietary, key details):</label>
-                                                    <textarea name="notes" class="form-control" rows="4" maxlength="1000"
-                                                              th:text="${b.operationalNotes}" placeholder="Enter notes here..."></textarea>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-sm btn-cobalt px-3">Save Note</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
                                 </div>
                             </td>
 
@@ -403,31 +313,6 @@
                                                 </li>
                                             </ul>
                                         </div>
-
-                                        <!-- Reject Remark Modal -->
-                                        <div class="modal fade text-start" th:id="'rejectModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content border-0 shadow">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title h6 fw-bold text-danger">
-                                                            <i class="bi bi-x-circle me-2"></i>Reject Booking &mdash; <span th:text="${b.bookingReference}">SE-001</span>
-                                                        </h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <form th:action="@{/admin/bookings/{id}/reject(id=${b.id})}" method="post">
-                                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                        <div class="modal-body">
-                                                            <label class="form-label small fw-semibold text-secondary">Reason for rejection (will be visible to customer):</label>
-                                                            <input type="text" name="remark" class="form-control" placeholder="e.g. Room under scheduled maintenance, capacity issue..." maxlength="500" required/>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-sm btn-danger px-3">Confirm Rejection</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
 
                                     <!-- If APPROVED: Check-In or No-Show -->
@@ -467,34 +352,6 @@
                                                 title="Issue Refund">
                                             <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
                                         </button>
-
-                                        <!-- Refund Modal -->
-                                        <div class="modal fade text-start" th:id="'refundModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content border-0 shadow">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title h6 fw-bold text-danger">
-                                                            <i class="bi bi-arrow-counterclockwise me-2"></i>Issue Verified Refund
-                                                        </h5>
-                                                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <form th:action="@{/admin/bookings/{id}/refund(id=${b.id})}" method="post">
-                                                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                        <div class="modal-body">
-                                                            <p class="small text-muted mb-2">
-                                                                Are you sure you want to refund ₹<strong th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">0.00</strong> for booking <strong th:text="${b.bookingReference}">SE-001</strong>?
-                                                            </p>
-                                                            <label class="form-label small fw-semibold text-secondary">Refund Reason:</label>
-                                                            <input type="text" name="reason" class="form-control" placeholder="e.g. Guest cancelled within policy, service adjustment..." maxlength="255" required/>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-sm btn-warning fw-bold px-3">Confirm Refund</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
 
                                     <!-- If Terminal Status and not paid -->
@@ -503,6 +360,7 @@
 
                                 </div>
                             </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -526,6 +384,154 @@
 
         <!-- Pagination (Phase 14) -->
         <div th:replace="~{fragments/pagination :: pagination(page=${page}, baseUrl='/admin/bookings')}"></div>
+
+        <!-- ============================================================================== -->
+        <!-- All Modals rendered outside the table to prevent clipping, flickering and stutter -->
+        <!-- ============================================================================== -->
+        <th:block th:each="b : ${bookings}">
+            <!-- 1. Payment Details Modal -->
+            <div class="modal fade text-start" th:id="'paymentModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title h6 fw-bold">
+                                <i class="bi bi-credit-card-2-front me-2 text-primary"></i>Payment Details &mdash; <span th:text="${b.bookingReference}">SE-001</span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-3" style="background: var(--surface-page); border: 1px solid var(--border-default);">
+                                <div>
+                                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Amount Due / Received</div>
+                                    <div class="h5 fw-bold mb-0" style="color: var(--brand-oxblood);">
+                                        ₹<span th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">0.00</span>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge px-2 py-1"
+                                          th:classappend="${b.paymentStatus.name() == 'SUCCESSFUL'} ? 'bg-success' : (${b.paymentStatus.name() == 'REFUNDED'} ? 'bg-info text-dark' : 'bg-warning text-dark')"
+                                          th:text="${b.paymentStatus}">UNPAID</span>
+                                </div>
+                            </div>
+
+                            <h6 class="small fw-bold text-uppercase text-secondary mb-2" style="font-size: 0.75rem;">Payment Transactions / History</h6>
+                            <div th:if="${transactionsByBookingId != null and transactionsByBookingId.get(b.id) != null and !transactionsByBookingId.get(b.id).isEmpty()}">
+                                <div class="list-group list-group-flush border rounded-3 mb-3">
+                                    <div class="list-group-item p-3" th:each="txn : ${transactionsByBookingId.get(b.id)}">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-semibold small text-dark font-monospace" th:text="${txn.transactionReference}">TXN-123</span>
+                                            <span class="badge" th:classappend="${txn.status.name() == 'SUCCESSFUL'} ? 'bg-success' : (${txn.status.name() == 'REFUNDED'} ? 'bg-info text-dark' : 'bg-secondary')" th:text="${txn.status}">SUCCESSFUL</span>
+                                        </div>
+                                        <div class="small text-muted mb-1">
+                                            <strong>Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(txn.amount, 1, 2)}">0.00</span> |
+                                            <strong>Method:</strong> <span th:text="${txn.paymentMethod != null ? txn.paymentMethod : 'UPI/Online'}">UPI</span>
+                                        </div>
+                                        <div class="small text-muted mb-1">
+                                            <strong>Gateway Ref:</strong> <code th:text="${txn.gatewayReference != null ? txn.gatewayReference : 'N/A'}">pay_123</code>
+                                        </div>
+                                        <div th:if="${txn.refundReference != null}" class="small text-danger mb-1">
+                                            <strong>Refund Ref:</strong> <code th:text="${txn.refundReference}">ref_123</code> (₹<span th:text="${#numbers.formatDecimal(txn.refundAmount, 1, 2)}">0.00</span>)
+                                        </div>
+                                        <div class="small text-muted" style="font-size: 0.75rem;">
+                                            <i class="bi bi-clock me-1"></i><span th:text="${#temporals.format(txn.createdAt, 'MMM d, yyyy h:mm a')}">Date</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:unless="${transactionsByBookingId != null and transactionsByBookingId.get(b.id) != null and !transactionsByBookingId.get(b.id).isEmpty()}" class="p-3 text-center text-muted small bg-light rounded-3 mb-3">
+                                No transaction records yet. Guest has not submitted payment.
+                            </div>
+
+                            <div class="small text-muted">
+                                <strong>Guest:</strong> <span th:text="${b.user != null ? b.user.fullName : 'Guest'}">Name</span> (<span th:text="${b.user != null ? b.user.email : ''}">email</span>)
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Operational Notes Modal -->
+            <div class="modal fade text-start" th:id="'noteModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title h6 fw-bold">
+                                <i class="bi bi-journal-text me-2 text-primary"></i>Operational Notes &mdash; <span th:text="${b.bookingReference}">SE-001</span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/admin/bookings/{id}/notes(id=${b.id})}" method="post">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div class="modal-body">
+                                <label class="form-label small fw-semibold text-secondary">Internal Operational Notes (e.g. late check-in, dietary, key details):</label>
+                                <textarea name="notes" class="form-control" rows="4" maxlength="1000"
+                                          th:text="${b.operationalNotes}" placeholder="Enter notes here..."></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-cobalt px-3">Save Note</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Reject Booking Modal -->
+            <div class="modal fade text-start" th:id="'rejectModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title h6 fw-bold text-danger">
+                                <i class="bi bi-x-circle me-2"></i>Reject Booking &mdash; <span th:text="${b.bookingReference}">SE-001</span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form th:action="@{/admin/bookings/{id}/reject(id=${b.id})}" method="post">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div class="modal-body">
+                                <label class="form-label small fw-semibold text-secondary">Reason for rejection (will be visible to customer):</label>
+                                <input type="text" name="remark" class="form-control" placeholder="e.g. Room under scheduled maintenance, capacity issue..." maxlength="500" required/>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-danger px-3">Confirm Rejection</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Issue Refund Modal -->
+            <div class="modal fade text-start" th:id="'refundModal-' + ${b.id}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title h6 fw-bold text-danger">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i>Issue Verified Refund
+                            </h5>
+                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form th:action="@{/admin/bookings/{id}/refund(id=${b.id})}" method="post">
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div class="modal-body">
+                                <p class="small text-muted mb-2">
+                                    Are you sure you want to refund ₹<strong th:text="${#numbers.formatDecimal(b.totalPrice, 1, 2)}">0.00</strong> for booking <strong th:text="${b.bookingReference}">SE-001</strong>?
+                                </p>
+                                <label class="form-label small fw-semibold text-secondary">Refund Reason:</label>
+                                <input type="text" name="reason" class="form-control" placeholder="e.g. Guest cancelled within policy, service adjustment..." maxlength="255" required/>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-warning fw-bold px-3">Confirm Refund</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </th:block>
 
     </div>
 </main>

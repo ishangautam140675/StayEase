@@ -369,9 +369,8 @@
                     if (form.checkValidity && !form.checkValidity()) return;
                     const submitBtn = form.querySelector('button[type="submit"]');
                     if (submitBtn) {
-                        setTimeout(function() {
-                            submitBtn.disabled = true;
-                        }, 0);
+                        submitBtn.style.pointerEvents = 'none';
+                        submitBtn.style.opacity = '0.75';
                     }
                 });
             });
