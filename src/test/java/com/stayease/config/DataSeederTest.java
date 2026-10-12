@@ -34,6 +34,7 @@ class DataSeederTest {
         String adminEmail = "seedadmin@stayease.com";
         ReflectionTestUtils.setField(seeder, "adminEmail", adminEmail);
         ReflectionTestUtils.setField(seeder, "adminPassword", "Admin1234");
+        ReflectionTestUtils.setField(seeder, "demoUsersEnabled", false);
 
         // Ensure clean state for this email
         userRepository.findByEmail(adminEmail).ifPresent(userRepository::delete);
@@ -58,6 +59,7 @@ class DataSeederTest {
         DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
         ReflectionTestUtils.setField(seeder, "adminEmail", "");
         ReflectionTestUtils.setField(seeder, "adminPassword", "");
+        ReflectionTestUtils.setField(seeder, "demoUsersEnabled", false);
 
         long roomCount = roomRepository.count();
         assertThat(roomCount).isGreaterThanOrEqualTo(8);
@@ -73,9 +75,28 @@ class DataSeederTest {
         DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
         ReflectionTestUtils.setField(seeder, "adminEmail", "");
         ReflectionTestUtils.setField(seeder, "adminPassword", "");
+        ReflectionTestUtils.setField(seeder, "demoUsersEnabled", false);
 
         long initialCount = userRepository.count();
         seeder.run();
         assertThat(userRepository.count()).isEqualTo(initialCount);
+    }
+
+    @Test
+    @DisplayName("DataSeeder seeds demo customer accounts when enabled")
+    void dataSeeder_seedsDemoCustomerUsers_whenEnabled() {
+        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
+        ReflectionTestUtils.setField(seeder, "adminEmail", "");
+        ReflectionTestUtils.setField(seeder, "adminPassword", "");
+        ReflectionTestUtils.setField(seeder, "demoUsersEnabled", true);
+
+        seeder.run();
+
+        assertThat(userRepository.findByEmail("customer@stayease.com")).isPresent();
+        User customer = userRepository.findByEmail("customer@stayease.com").orElseThrow();
+        assertThat(customer.getRole()).isEqualTo(Role.CUSTOMER);
+        assertThat(passwordEncoder.matches("Customer@1234", customer.getPasswordHash())).isTrue();
+
+        assertThat(userRepository.findByEmail("john.traveler@example.com")).isPresent();
     }
 }

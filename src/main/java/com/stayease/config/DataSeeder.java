@@ -39,6 +39,9 @@ public class DataSeeder implements CommandLineRunner {
     @Value("${app.admin.password:}")
     private String adminPassword;
 
+    @Value("${app.demo-users.enabled:true}")
+    private boolean demoUsersEnabled = true;
+
     public DataSeeder(UserRepository userRepository,
                       RoomRepository roomRepository,
                       PasswordEncoder passwordEncoder) {
@@ -50,32 +53,65 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedAdminUser();
+        if (demoUsersEnabled) {
+            seedDemoCustomerUsers();
+        }
         seedSampleRooms();
     }
 
     private void seedAdminUser() {
-        if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.isBlank()) {
+        String effectiveEmail = (adminEmail != null && !adminEmail.isBlank())
+                ? adminEmail.trim().toLowerCase()
+                : (demoUsersEnabled ? "admin@stayease.com" : null);
+
+        String effectivePassword = (adminPassword != null && !adminPassword.isBlank())
+                ? adminPassword
+                : (demoUsersEnabled ? "Admin@1234" : null);
+
+        if (effectiveEmail == null || effectivePassword == null) {
             logger.warn("Admin seed credentials (ADMIN_EMAIL / ADMIN_PASSWORD) are not set. Skipping bootstrap admin creation.");
             return;
         }
 
-        String normalizedEmail = adminEmail.trim().toLowerCase();
-
-        if (userRepository.existsByEmail(normalizedEmail)) {
-            logger.info("Admin account already exists for email: {}. Skipping seed.", normalizedEmail);
+        if (userRepository.existsByEmail(effectiveEmail)) {
+            logger.info("Admin account already exists for email: {}. Skipping seed.", effectiveEmail);
             return;
         }
 
         User adminUser = new User(
                 "Administrator",
-                normalizedEmail,
-                passwordEncoder.encode(adminPassword),
-                null,
+                effectiveEmail,
+                passwordEncoder.encode(effectivePassword),
+                "9876543211",
                 Role.ADMIN
         );
+        adminUser.setEmailVerified(true);
 
         userRepository.save(adminUser);
-        logger.info("Bootstrap ADMIN account successfully created for email: {}", normalizedEmail);
+        logger.info("Bootstrap ADMIN account successfully created for email: {}", effectiveEmail);
+    }
+
+    private void seedDemoCustomerUsers() {
+        seedSingleCustomer("Demo Customer", "customer@stayease.com", "Customer@1234", "9876543210");
+        seedSingleCustomer("John Traveler", "john.traveler@example.com", "Password123", "9876543212");
+    }
+
+    private void seedSingleCustomer(String name, String email, String password, String phone) {
+        String normalizedEmail = email.trim().toLowerCase();
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            return;
+        }
+
+        User customer = new User(
+                name,
+                normalizedEmail,
+                passwordEncoder.encode(password),
+                phone,
+                Role.CUSTOMER
+        );
+        customer.setEmailVerified(true);
+        userRepository.save(customer);
+        logger.info("Bootstrap CUSTOMER account successfully created for email: {}", normalizedEmail);
     }
 
     private void seedSampleRooms() {
