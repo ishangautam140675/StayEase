@@ -170,4 +170,60 @@ public class AdminOperationsController {
                 .contentType(org.springframework.http.MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .body(bytes);
     }
+
+    /**
+     * Deletes an individual audit log record.
+     */
+    @PostMapping("/audit-logs/{id}/delete")
+    public String deleteAuditLog(@PathVariable("id") Long id,
+                                 @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            auditLogService.deleteLog(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Audit log record #" + id + " was deleted successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete audit log: " + e.getMessage());
+        }
+        if (redirectUrl != null && !redirectUrl.isBlank() && redirectUrl.startsWith("/")) {
+            return "redirect:" + redirectUrl;
+        }
+        return "redirect:/admin/operations/audit-logs";
+    }
+
+    /**
+     * Bulk deletes selected audit log records.
+     */
+    @PostMapping("/audit-logs/bulk-delete")
+    public String bulkDeleteAuditLogs(@RequestParam(value = "logIds", required = false) java.util.List<Long> logIds,
+                                      @RequestParam(value = "redirectUrl", required = false) String redirectUrl,
+                                      RedirectAttributes redirectAttributes) {
+        if (logIds == null || logIds.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "No audit log records selected for deletion.");
+        } else {
+            try {
+                auditLogService.deleteLogs(logIds);
+                redirectAttributes.addFlashAttribute("successMessage", logIds.size() + " audit log record(s) deleted successfully.");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete audit logs: " + e.getMessage());
+            }
+        }
+        if (redirectUrl != null && !redirectUrl.isBlank() && redirectUrl.startsWith("/")) {
+            return "redirect:" + redirectUrl;
+        }
+        return "redirect:/admin/operations/audit-logs";
+    }
+
+    /**
+     * Purges all audit log records.
+     */
+    @PostMapping("/audit-logs/clear-all")
+    public String clearAllAuditLogs(RedirectAttributes redirectAttributes) {
+        try {
+            auditLogService.clearAllLogs();
+            redirectAttributes.addFlashAttribute("successMessage", "All audit log records have been cleared.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to clear audit logs: " + e.getMessage());
+        }
+        return "redirect:/admin/operations/audit-logs";
+    }
 }

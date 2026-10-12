@@ -29,8 +29,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -180,6 +184,72 @@ public class Phase10AnalyticsAndAuditTest {
                 .andExpect(status().isForbidden());
 
         mockMvc.perform(get("/admin/operations/audit-logs/export/csv"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Admin: Delete individual audit log entry")
+    @WithMockUser(username = "admin@stayease.com", roles = "ADMIN")
+    void adminCanDeleteIndividualAuditLog() throws Exception {
+        AdminAuditLog log = auditLogService.log("admin@stayease.com", "TEST_DELETE", "ROOM", "201", "Testing single delete");
+        Long logId = log.getId();
+
+        mockMvc.perform(post("/admin/operations/audit-logs/" + logId + "/delete")
+                        .with(csrf())
+                        .param("redirectUrl", "/admin/operations/audit-logs"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/operations/audit-logs"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        Page<AdminAuditLog> remaining = auditLogService.getAuditLogs(PageRequest.of(0, 50));
+        assertThat(remaining.getContent().stream().noneMatch(l -> l.getId().equals(logId))).isTrue();
+    }
+
+    @Test
+    @DisplayName("Admin: Bulk delete selected audit log entries")
+    @WithMockUser(username = "admin@stayease.com", roles = "ADMIN")
+    void adminCanBulkDeleteAuditLogs() throws Exception {
+        AdminAuditLog log1 = auditLogService.log("admin@stayease.com", "BULK_1", "ROOM", "201", "Bulk test 1");
+        AdminAuditLog log2 = auditLogService.log("admin@stayease.com", "BULK_2", "ROOM", "202", "Bulk test 2");
+
+        mockMvc.perform(post("/admin/operations/audit-logs/bulk-delete")
+                        .with(csrf())
+                        .param("logIds", String.valueOf(log1.getId()), String.valueOf(log2.getId()))
+                        .param("redirectUrl", "/admin/operations/audit-logs"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/operations/audit-logs"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        Page<AdminAuditLog> remaining = auditLogService.getAuditLogs(PageRequest.of(0, 50));
+        assertThat(remaining.getContent().stream().noneMatch(l -> l.getId().equals(log1.getId()) || l.getId().equals(log2.getId()))).isTrue();
+    }
+
+    @Test
+    @DisplayName("Admin: Clear all audit log entries")
+    @WithMockUser(username = "admin@stayease.com", roles = "ADMIN")
+    void adminCanClearAllAuditLogs() throws Exception {
+        auditLogService.log("admin@stayease.com", "CLEAR_TEST", "ROOM", "201", "Testing clear all");
+
+        mockMvc.perform(post("/admin/operations/audit-logs/clear-all")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/operations/audit-logs"))
+                .andExpect(flash().attributeExists("successMessage"));
+
+        Page<AdminAuditLog> remaining = auditLogService.getAuditLogs(PageRequest.of(0, 50));
+        assertThat(remaining.getTotalElements()).isZero();
+    }
+
+    @Test
+    @DisplayName("Security: Customers are forbidden from deleting audit logs")
+    @WithMockUser(username = "phase10guest@stayease.com", roles = "CUSTOMER")
+    void security_CustomersForbiddenFromDeletingAuditLogs() throws Exception {
+        AdminAuditLog log = auditLogService.log("admin@stayease.com", "SEC_TEST", "ROOM", "201", "Security test");
+
+        mockMvc.perform(post("/admin/operations/audit-logs/" + log.getId() + "/delete").with(csrf()))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/admin/operations/audit-logs/clear-all").with(csrf()))
                 .andExpect(status().isForbidden());
     }
 }

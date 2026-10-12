@@ -65,4 +65,32 @@ public class AuditLogService {
         String cleanAction = (action != null && !action.trim().isEmpty() && !"ALL".equalsIgnoreCase(action)) ? action.trim() : null;
         return auditLogRepository.searchAuditLogsForExport(cleanEmail, cleanAction, start, end);
     }
+
+    /**
+     * Deletes a single audit log entry by its ID.
+     */
+    @Transactional
+    public void deleteLog(Long id) {
+        if (id != null) {
+            auditLogRepository.deleteById(id);
+        }
+    }
+
+    /**
+     * Deletes multiple audit log entries by their IDs.
+     */
+    @Transactional
+    public void deleteLogs(java.util.List<Long> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            auditLogRepository.deleteAllById(ids);
+        }
+    }
+
+    /**
+     * Clears all audit log entries.
+     */
+    @Transactional
+    public void clearAllLogs() {
+        auditLogRepository.deleteAll();
+    }
 }
