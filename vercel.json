@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "https://stayease-production-a18a.up.railway.app/$1"
+    }
+  ]
+}

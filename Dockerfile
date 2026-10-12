@@ -52,10 +52,10 @@ EXPOSE 8080
 # Environment defaults
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV PORT=8080
-ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
+ENV JAVA_OPTS="-XX:+UseSerialGC -Xmx320m -Xms128m -XX:MaxMetaspaceSize=160m -Djava.security.egd=file:/dev/./urandom"
 
-# Container Healthcheck via Spring Boot Actuator
-HEALTHCHECK --interval=20s --timeout=5s --start-period=30s --retries=3 \
+# Container Healthcheck via Spring Boot Actuator with cloud-resilient startup window
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
     CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
 
 # Execute Spring Boot Application
