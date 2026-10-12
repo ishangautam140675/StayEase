@@ -27,10 +27,13 @@ class DataSeederTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.stayease.repository.BookingRepository bookingRepository;
+
     @Test
     @DisplayName("DataSeeder creates the admin once and does not create a duplicate on a second run")
     void dataSeeder_createsAdminOnce_noDuplicateOnSecondRun() {
-        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
+        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder, bookingRepository);
         String adminEmail = "seedadmin@stayease.com";
         ReflectionTestUtils.setField(seeder, "adminEmail", adminEmail);
         ReflectionTestUtils.setField(seeder, "adminPassword", "Admin1234");
@@ -56,7 +59,7 @@ class DataSeederTest {
     @Test
     @DisplayName("DataSeeder seeds 8 sample rooms when empty and does not duplicate on second run")
     void dataSeeder_seedsRoomsOnce() {
-        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
+        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder, bookingRepository);
         ReflectionTestUtils.setField(seeder, "adminEmail", "");
         ReflectionTestUtils.setField(seeder, "adminPassword", "");
         ReflectionTestUtils.setField(seeder, "demoUsersEnabled", false);
@@ -72,7 +75,7 @@ class DataSeederTest {
     @Test
     @DisplayName("DataSeeder does not create user when credentials are blank")
     void dataSeeder_skipsWhenBlank() {
-        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
+        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder, bookingRepository);
         ReflectionTestUtils.setField(seeder, "adminEmail", "");
         ReflectionTestUtils.setField(seeder, "adminPassword", "");
         ReflectionTestUtils.setField(seeder, "demoUsersEnabled", false);
@@ -85,7 +88,7 @@ class DataSeederTest {
     @Test
     @DisplayName("DataSeeder seeds demo customer accounts when enabled")
     void dataSeeder_seedsDemoCustomerUsers_whenEnabled() {
-        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder);
+        DataSeeder seeder = new DataSeeder(userRepository, roomRepository, passwordEncoder, bookingRepository);
         ReflectionTestUtils.setField(seeder, "adminEmail", "");
         ReflectionTestUtils.setField(seeder, "adminPassword", "");
         ReflectionTestUtils.setField(seeder, "demoUsersEnabled", true);

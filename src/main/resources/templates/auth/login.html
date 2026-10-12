@@ -100,42 +100,10 @@
 
                         <!-- Divider & registration link -->
                         <hr class="my-4" style="border-color:var(--border-default);">
-                        <p class="text-center small mb-3" style="color:var(--text-secondary);">
+                        <p class="text-center small mb-0" style="color:var(--text-secondary);">
                             New to StayEase?
                             <a th:href="@{/register}" class="fw-medium" style="color:var(--brand-cobalt);">Create an account</a>
                         </p>
-
-                        <!-- Demo Accounts Quick Fill -->
-                        <div class="pt-3 border-top" style="border-color: var(--border-default) !important;">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.06em; color: var(--text-secondary);">
-                                    <i class="bi bi-key-fill me-1 text-primary"></i>Demo Test Accounts
-                                </span>
-                                <span class="badge bg-light text-muted border" style="font-size: 0.68rem;">1-Click Fill</span>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-sm btn-light border text-start d-flex justify-content-between align-items-center py-2 px-3 shadow-none rounded-3"
-                                        onclick="fillDemo('customer@stayease.com', 'Customer@1234')">
-                                    <div>
-                                        <div class="fw-semibold text-dark" style="font-size: 0.82rem;">
-                                            <i class="bi bi-person-fill me-1 text-primary"></i>Demo Customer
-                                        </div>
-                                        <div class="text-muted font-monospace" style="font-size: 0.72rem;">customer@stayease.com &bull; Customer@1234</div>
-                                    </div>
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.7rem;">Auto-Fill</span>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light border text-start d-flex justify-content-between align-items-center py-2 px-3 shadow-none rounded-3"
-                                        onclick="fillDemo('admin@stayease.com', 'Admin@1234')">
-                                    <div>
-                                        <div class="fw-semibold text-dark" style="font-size: 0.82rem;">
-                                            <i class="bi bi-shield-lock-fill me-1 text-danger"></i>Demo Administrator
-                                        </div>
-                                        <div class="text-muted font-monospace" style="font-size: 0.72rem;">admin@stayease.com &bull; Admin@1234</div>
-                                    </div>
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size: 0.7rem;">Auto-Fill</span>
-                                </button>
-                            </div>
-                        </div>
 
                     </div><!-- /card-body -->
                 </div><!-- /card -->
@@ -147,18 +115,6 @@
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 <div th:replace="~{fragments/layout :: scripts}"></div>
-
-<script>
-    function fillDemo(email, password) {
-        var emailInput = document.getElementById('email');
-        var passInput = document.getElementById('password');
-        if (emailInput && passInput) {
-            emailInput.value = email;
-            passInput.value = password;
-            emailInput.focus();
-        }
-    }
-</script>
 
 </body>
 </html>
