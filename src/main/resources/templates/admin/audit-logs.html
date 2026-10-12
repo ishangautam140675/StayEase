@@ -43,8 +43,8 @@
 
         <!-- Filter Card -->
         <div class="card border-0 shadow-sm p-3 mb-4"
-             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important; position: relative; z-index: 1050;">
-            <form th:action="@{/admin/operations/audit-logs}" method="get" class="row g-2 align-items-end">
+             style="background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-default) !important; position: relative; z-index: 1050; overflow: visible !important;">
+            <form th:action="@{/admin/operations/audit-logs}" method="get" class="row g-2 align-items-end" style="overflow: visible !important;">
                 <div class="col-md-5">
                     <label class="form-label small fw-semibold text-secondary mb-1">Admin Email</label>
                     <div class="input-group input-group-sm">
@@ -53,12 +53,12 @@
                                placeholder="e.g. admin@stayease.com" th:value="${filterEmail}"/>
                     </div>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-5" style="position: relative; overflow: visible !important;">
                     <label class="form-label small fw-semibold text-secondary mb-1">Action Type</label>
                     <input type="hidden" name="action" id="actionTypeInput" th:value="${filterAction != null ? filterAction : 'ALL'}"/>
-                    <div class="dropdown" style="position: relative; z-index: 1060;">
+                    <div class="dropdown" id="actionTypeDropdownWrapper" style="position: relative; z-index: 1060; overflow: visible !important;">
                         <button class="form-select form-select-sm text-start d-flex justify-content-between align-items-center w-100 bg-white"
-                                type="button" id="actionTypeDropdownBtn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                type="button" id="actionTypeDropdownBtn" aria-expanded="false" style="cursor: pointer;">
                             <span id="actionTypeSelectedLabel" class="text-truncate"
                                   th:text="${filterAction == 'BOOKING_APPROVED' ? 'Booking Approved' :
                                            (filterAction == 'BOOKING_REJECTED' ? 'Booking Rejected' :
@@ -74,7 +74,7 @@
                         <ul class="dropdown-menu shadow w-100 border text-start py-1"
                             id="actionTypeDropdownMenu"
                             aria-labelledby="actionTypeDropdownBtn"
-                            style="max-height: 250px; overflow-y: auto; font-size: 0.82rem; border-radius: 8px; z-index: 1070;">
+                            style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; max-height: 260px; overflow-y: auto; font-size: 0.82rem; border-radius: 8px; z-index: 9999 !important; background: #ffffff !important; box-shadow: 0 10px 30px rgba(0,0,0,0.18) !important;">
                             <li><button type="button" class="dropdown-item py-1.5" data-value="ALL" th:classappend="${filterAction == 'ALL' or filterAction == null} ? ' active' : ''">All Actions</button></li>
                             <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_APPROVED" th:classappend="${filterAction == 'BOOKING_APPROVED'} ? ' active' : ''">Booking Approved</button></li>
                             <li><button type="button" class="dropdown-item py-1.5" data-value="BOOKING_REJECTED" th:classappend="${filterAction == 'BOOKING_REJECTED'} ? ' active' : ''">Booking Rejected</button></li>
@@ -341,19 +341,44 @@ document.addEventListener('DOMContentLoaded', function() {
         c.addEventListener('change', updateBulkState);
     });
 
+    const actionBtn = document.getElementById('actionTypeDropdownBtn');
     const actionMenu = document.getElementById('actionTypeDropdownMenu');
     const actionInput = document.getElementById('actionTypeInput');
     const actionLabel = document.getElementById('actionTypeSelectedLabel');
-    if (actionMenu && actionInput && actionLabel) {
+
+    if (actionBtn && actionMenu && actionInput && actionLabel) {
+        actionBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isOpen = actionMenu.classList.contains('show');
+            if (isOpen) {
+                actionMenu.classList.remove('show');
+                actionBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                actionMenu.classList.add('show');
+                actionBtn.setAttribute('aria-expanded', 'true');
+            }
+        });
+
         actionMenu.querySelectorAll('.dropdown-item').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 const val = this.getAttribute('data-value');
                 actionInput.value = val;
                 actionLabel.textContent = this.textContent.trim();
                 actionMenu.querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
+                actionMenu.classList.remove('show');
+                actionBtn.setAttribute('aria-expanded', 'false');
             });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!actionBtn.contains(e.target) && !actionMenu.contains(e.target)) {
+                actionMenu.classList.remove('show');
+                actionBtn.setAttribute('aria-expanded', 'false');
+            }
         });
     }
 });
