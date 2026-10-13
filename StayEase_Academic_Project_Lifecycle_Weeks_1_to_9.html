@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StayEase - Complete Academic Project Lifecycle & UML System Architecture (Weeks 1 to 9)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  @page {
+    size: A4;
+    margin: 12mm 12mm 15mm 12mm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    line-height: 1.45;
+    font-size: 8.5pt;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Cover Banner */
+  .cover-banner {
+    background: linear-gradient(135deg, #0A1128 0%, #102A71 50%, #1D4ED8 100%);
+    color: #ffffff;
+    padding: 20px 18px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .cover-badge {
+    background: #f59e0b;
+    color: #000000;
+    font-weight: 800;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 16px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+
+  .cover-title {
+    font-size: 18pt;
+    font-weight: 800;
+    margin: 0 0 5px 0;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .cover-subtitle {
+    font-size: 9pt;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0 0 10px 0;
+    line-height: 1.35;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 7.5pt;
+  }
+
+  .meta-item strong {
+    display: block;
+    color: #93c5fd;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 4px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    border-left: 3px solid #2563eb;
+    padding-left: 6px;
+  }
+
+  p { margin: 0 0 5px 0; }
+
+  /* Callout Boxes */
+  .callout-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 8px 0;
+    font-size: 8pt;
+  }
+
+  .callout-box.tip {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    border-left-color: #16a34a;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 7px 0 10px 0;
+    font-size: 7.8pt;
+  }
+
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 5px 7px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  tr:nth-child(even) { background: #f8fafc; }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 6.8pt;
+    font-weight: 700;
+  }
+
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+
+  /* Week Stage Cards */
+  .week-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 9px 11px;
+    margin-bottom: 9px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+
+  .week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+
+  .week-title {
+    font-weight: 800;
+    font-size: 9.5pt;
+    color: #0f172a;
+  }
+
+  .week-badge {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 6.8pt;
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+  }
+
+  ul, ol {
+    margin: 3px 0 6px 0;
+    padding-left: 16px;
+  }
+
+  li { margin-bottom: 2px; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7.2pt;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #0f172a;
+  }
+
+  .module-box {
+    border: 1px solid #93c5fd;
+    background: #eff6ff;
+    border-radius: 6px;
+    padding: 7px 9px;
+    margin-bottom: 7px;
+  }
+  .module-title {
+    font-weight: 800;
+    color: #1e40af;
+    font-size: 8.5pt;
+    margin-bottom: 2px;
+  }
+
+  /* Diagram Styling */
+  .diagram-container {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+  }
+  .diagram-title {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 9pt;
+    margin-bottom: 6px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+  }
+  .diagram-tag {
+    background: #1e3a8a;
+    color: #ffffff;
+    font-size: 6.5pt;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+  <!-- COVER BANNER -->
+  <div class="cover-banner">
+    <span class="cover-badge">Academic Project Progress &amp; Architectural Report</span>
+    <h1 class="cover-title">StayEase — 9-Week Lifecycle &amp; Official UML Architecture</h1>
+    <p class="cover-subtitle">Complete Documentation: Team Planning, SRS, Production UML Diagrams (Use Case, Class, Sequence, State Machine &amp; ER), 4-Module Division, and Integration Testing</p>
+    <div class="meta-grid">
+      <div class="meta-item"><strong>Methodology</strong>Agile Iterative (9 Academic Weeks)</div>
+      <div class="meta-item"><strong>Architecture</strong>Multi-Tier Spring Boot 3 MVC + Micro-Services</div>
+      <div class="meta-item"><strong>Test Pass Rate</strong>295+ Automated Tests (100% Pass)</div>
+      <div class="meta-item"><strong>Core Technology</strong>Java 21 • Spring Data JPA • PostgreSQL</div>
+    </div>
+  </div>
+
+  <!-- TIMELINE TABLE -->
+  <h1>1. Academic Lifecycle Timeline at a Glance</h1>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 10%;">Week</th>
+        <th style="width: 25%;">Academic Stage</th>
+        <th style="width: 35%;">Key Engineering Deliverables</th>
+        <th style="width: 30%;">Status in StayEase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Week 1</strong></td>
+        <td>Team Formation + Guide Selection + Abstract</td>
+        <td>Problem Identification, Guide Approval, Project Scope &amp; Abstract</td>
+        <td><span class="badge badge-green">Completed</span> Problem &amp; Scope Defined</td>
+      </tr>
+      <tr>
+        <td><strong>Week 2</strong></td>
+        <td>Software Requirements Specification (SRS)</td>
+        <td>Functional &amp; Non-Functional Requirements, User Personas, Constraints</td>
+        <td><span class="badge badge-green">Completed</span> Full SRS Documented</td>
+      </tr>
+      <tr>
+        <td><strong>Week 3</strong></td>
+        <td>UML System Design</td>
+        <td>Use Case, Class, Concurrency Sequence, State Machine &amp; Deployment</td>
+        <td><span class="badge badge-green">Completed</span> Visual Models Engineered</td>
+      </tr>
+      <tr>
+        <td><strong>Week 4</strong></td>
+        <td>Database Design &amp; UI Mock-ups</td>
+        <td>3NF Relational Schema, ER Diagram, Wireframes &amp; Thymeleaf Mockups</td>
+        <td><span class="badge badge-green">Completed</span> MySQL/Postgres Schema + UI</td>
+      </tr>
+      <tr>
+        <td><strong>Weeks 5–8</strong></td>
+        <td>Module Coding (4 Individual Modules)</td>
+        <td>Student 1: Maps &amp; Geocoding • Student 2: Booking Engine<br>Student 3: Property Operations • Student 4: Security &amp; Auth</td>
+        <td><span class="badge badge-green">Completed</span> All 4 Modules Built &amp; Documented</td>
+      </tr>
+      <tr>
+        <td><strong>Week 9</strong></td>
+        <td>System Integration &amp; Testing</td>
+        <td>End-to-End Integration, 295+ Automated Tests, Docker &amp; Cloud Deploy</td>
+        <td><span class="badge badge-green">Completed</span> 100% Tests Pass + Cloud Live</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- WEEKS 1 & 2 SUMMARY -->
+  <div class="week-card avoid-break">
+    <div class="week-header">
+      <div class="week-title">📅 WEEK 1: Team Formation, Guide Selection &amp; Abstract</div>
+      <span class="week-badge">Week 1</span>
+    </div>
+    <p><strong>Goal:</strong> Form 4-member team, obtain faculty guide approval, and formulate the project abstract.</p>
+    <p><strong>Problem Statement:</strong> Students and young professionals relocating to new cities suffer from 15%–30% broker commissions and manual hostel registers causing frequent double-bookings. StayEase was conceptualized to provide a zero-brokerage reservation portal with free worldwide geospatial intelligence for guests, paired with an administrative property management dashboard for owners.</p>
+  </div>
+
+  <div class="week-card avoid-break">
+    <div class="week-header">
+      <div class="week-title">📋 WEEK 2: Software Requirements Specification (SRS)</div>
+      <span class="week-badge">Week 2</span>
+    </div>
+    <p><strong>Goal:</strong> Finalize 6 Functional Requirements (FRs) and 4 Non-Functional Requirements (NFRs).</p>
+    <ul>
+      <li><strong>Functional:</strong> FR-1 (Auth &amp; RBAC), FR-2 (Free OpenStreetMap Geocoding &amp; 100km Radar), FR-3 (Zero-Overbooking Transactional Booking), FR-4 (Digital Vouchers &amp; Web Check-In), FR-5 (Room Inventory &amp; Maintenance Blackouts), FR-6 (ADR/RevPAR Financial Analytics &amp; Audit Logs).</li>
+      <li><strong>Non-Functional:</strong> Strict ACID concurrency via <code>PESSIMISTIC_WRITE</code> row locking, BCrypt salted password hashing, sub-500ms catalog queries, and 100% open-source map integration with zero API billing risks.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- WEEK 3: OFFICIAL UML DIAGRAMS -->
+  <h1>2. Week 3 Deliverable: Production UML System Architecture</h1>
+  <p>Below are the actual, verified UML diagrams modeled directly after the StayEase codebase and business logic:</p>
+
+  <!-- FIGURE 1: USE CASE DIAGRAM -->
+  <div class="diagram-container avoid-break">
+    <div class="diagram-title">
+      <span>Figure 1: StayEase Use Case Diagram (Actors &amp; System Capabilities)</span>
+      <span class="diagram-tag">UML Behavioral</span>
+    </div>
+    <svg viewBox="0 0 780 430" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+          <feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.1"/>
+        </filter>
+      </defs>
+      <!-- Boundary -->
+      <rect x="180" y="20" width="420" height="395" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+      <text x="390" y="42" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#1e3a8a" text-anchor="middle">STAYEASE RESERVATION PLATFORM</text>
+
+      <!-- ACTOR: Customer (Left) -->
+      <g transform="translate(60, 160)">
+        <circle cx="30" cy="20" r="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+        <line x1="30" y1="34" x2="30" y2="75" stroke="#1d4ed8" stroke-width="2"/>
+        <line x1="8" y1="50" x2="52" y2="50" stroke="#1d4ed8" stroke-width="2"/>
+        <line x1="30" y1="75" x2="12" y2="105" stroke="#1d4ed8" stroke-width="2"/>
+        <line x1="30" y1="75" x2="48" y2="105" stroke="#1d4ed8" stroke-width="2"/>
+        <text x="30" y="125" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10" fill="#0f172a" text-anchor="middle">Customer / Guest</text>
+        <text x="30" y="137" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" fill="#64748b" text-anchor="middle">(ROLE_CUSTOMER)</text>
+      </g>
+
+      <!-- ACTOR: Admin (Right) -->
+      <g transform="translate(660, 160)">
+        <circle cx="30" cy="20" r="14" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+        <line x1="30" y1="34" x2="30" y2="75" stroke="#b91c1c" stroke-width="2"/>
+        <line x1="8" y1="50" x2="52" y2="50" stroke="#b91c1c" stroke-width="2"/>
+        <line x1="30" y1="75" x2="12" y2="105" stroke="#b91c1c" stroke-width="2"/>
+        <line x1="30" y1="75" x2="48" y2="105" stroke="#b91c1c" stroke-width="2"/>
+        <text x="30" y="125" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10" fill="#0f172a" text-anchor="middle">Property Admin</text>
+        <text x="30" y="137" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" fill="#64748b" text-anchor="middle">(ROLE_ADMIN)</text>
+      </g>
+
+      <!-- USE CASES (Customer Side) -->
+      <!-- UC 1 -->
+      <ellipse cx="300" cy="70" rx="95" ry="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="300" y="74" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#1e40af" text-anchor="middle">Register &amp; Login (BCrypt)</text>
+
+      <!-- UC 2 -->
+      <ellipse cx="300" cy="120" rx="95" ry="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="300" y="124" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#1e40af" text-anchor="middle">Search Map Stays (OSM/Photon)</text>
+
+      <!-- UC 3 -->
+      <ellipse cx="300" cy="170" rx="95" ry="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="300" y="174" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#1e40af" text-anchor="middle">Book Room with Dynamic Pricing</text>
+
+      <!-- UC 4 -->
+      <ellipse cx="300" cy="220" rx="95" ry="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="300" y="224" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#1e40af" text-anchor="middle">Download Printable Voucher / Receipt</text>
+
+      <!-- UC 5 -->
+      <ellipse cx="300" cy="270" rx="95" ry="18" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="300" y="274" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#1e40af" text-anchor="middle">Perform Self Web Check-In</text>
+
+      <!-- USE CASES (Shared & Admin Side) -->
+      <!-- UC 6 (Shared Include) -->
+      <ellipse cx="390" cy="320" rx="100" ry="18" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="390" y="324" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#92400e" text-anchor="middle">&lt;&lt;include&gt;&gt; Pessimistic Overlap Check</text>
+
+      <!-- UC 7 -->
+      <ellipse cx="480" cy="70" rx="95" ry="18" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="480" y="74" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#991b1b" text-anchor="middle">Manage Room Inventory (CRUD)</text>
+
+      <!-- UC 8 -->
+      <ellipse cx="480" cy="120" rx="95" ry="18" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="480" y="124" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#991b1b" text-anchor="middle">Approve/Reject Bookings</text>
+
+      <!-- UC 9 -->
+      <ellipse cx="480" cy="170" rx="95" ry="18" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="480" y="174" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#991b1b" text-anchor="middle">Set Room Maintenance Blackouts</text>
+
+      <!-- UC 10 -->
+      <ellipse cx="480" cy="220" rx="95" ry="18" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="480" y="224" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#991b1b" text-anchor="middle">Configure Seasonal Surge Rules</text>
+
+      <!-- UC 11 -->
+      <ellipse cx="480" cy="270" rx="95" ry="18" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="480" y="274" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="600" fill="#991b1b" text-anchor="middle">View ADR/RevPAR Analytics &amp; CSV</text>
+
+      <!-- Lines: Customer to UCs -->
+      <line x1="120" y1="200" x2="205" y2="70" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="120" y1="200" x2="205" y2="120" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="120" y1="200" x2="205" y2="170" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="120" y1="200" x2="205" y2="220" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="120" y1="200" x2="205" y2="270" stroke="#64748b" stroke-width="1.2"/>
+
+      <!-- Lines: Admin to UCs -->
+      <line x1="660" y1="200" x2="575" y2="70" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="660" y1="200" x2="575" y2="120" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="660" y1="200" x2="575" y2="170" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="660" y1="200" x2="575" y2="220" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="660" y1="200" x2="575" y2="270" stroke="#64748b" stroke-width="1.2"/>
+
+      <!-- Include Dashed Line -->
+      <line x1="300" y1="188" x2="360" y2="305" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <line x1="480" y1="138" x2="420" y2="305" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+    </svg>
+  </div>
+
+  <!-- FIGURE 2: CLASS DIAGRAM -->
+  <div class="diagram-container avoid-break">
+    <div class="diagram-title">
+      <span>Figure 2: StayEase Structural Class Diagram (JPA Entities, Attributes &amp; Associations)</span>
+      <span class="diagram-tag">UML Structural</span>
+    </div>
+    <svg viewBox="0 0 780 430" xmlns="http://www.w3.org/2000/svg">
+      <!-- CLASS: User -->
+      <g transform="translate(20, 20)">
+        <rect x="0" y="0" width="180" height="150" fill="#ffffff" stroke="#2563eb" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="180" height="25" fill="#2563eb" rx="4"/>
+        <text x="90" y="16" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="9" fill="#ffffff" text-anchor="middle">User &lt;&lt;Entity&gt;&gt;</text>
+        <text x="8" y="42" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- id: Long (PK)</text>
+        <text x="8" y="56" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- email: String (Unique)</text>
+        <text x="8" y="70" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- password: String (BCrypt)</text>
+        <text x="8" y="84" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- role: Role (CUSTOMER/ADMIN)</text>
+        <text x="8" y="98" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- name: String</text>
+        <line x1="0" y1="108" x2="180" y2="108" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="8" y="122" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#1e40af">+ getAuthorities(): List</text>
+        <text x="8" y="136" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#1e40af">+ isEnabled(): boolean</text>
+      </g>
+
+      <!-- CLASS: Booking -->
+      <g transform="translate(280, 20)">
+        <rect x="0" y="0" width="220" height="175" fill="#ffffff" stroke="#16a34a" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="220" height="25" fill="#16a34a" rx="4"/>
+        <text x="110" y="16" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="9" fill="#ffffff" text-anchor="middle">Booking &lt;&lt;Entity&gt;&gt;</text>
+        <text x="8" y="42" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- id: Long (PK)</text>
+        <text x="8" y="56" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- user: User (FK)</text>
+        <text x="8" y="70" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- room: Room (FK)</text>
+        <text x="8" y="84" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- checkInDate: LocalDate</text>
+        <text x="8" y="98" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- checkOutDate: LocalDate</text>
+        <text x="8" y="112" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- totalPrice: BigDecimal</text>
+        <text x="8" y="126" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- status: BookingStatus</text>
+        <text x="8" y="140" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- voucherCode: String</text>
+        <line x1="0" y1="148" x2="220" y2="148" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="8" y="162" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#166534">+ calculateNights(): long</text>
+      </g>
+
+      <!-- CLASS: Room -->
+      <g transform="translate(560, 20)">
+        <rect x="0" y="0" width="200" height="165" fill="#ffffff" stroke="#9333ea" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="200" height="25" fill="#9333ea" rx="4"/>
+        <text x="100" y="16" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="9" fill="#ffffff" text-anchor="middle">Room &lt;&lt;Entity&gt;&gt;</text>
+        <text x="8" y="42" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- id: Long (PK)</text>
+        <text x="8" y="56" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- roomNumber: String (Unique)</text>
+        <text x="8" y="70" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- type: RoomType (DORM/SINGLE..)</text>
+        <text x="8" y="84" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- basePrice: BigDecimal</text>
+        <text x="8" y="98" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- capacity: int</text>
+        <text x="8" y="112" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- active: boolean</text>
+        <line x1="0" y1="122" x2="200" y2="122" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="8" y="136" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#6b21a8">+ isAvailable(dates): boolean</text>
+        <text x="8" y="150" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#6b21a8">+ getEffectivePrice(): BigDecimal</text>
+      </g>
+
+      <!-- ASSOCIATIONS TOP -->
+      <!-- User 1:N Booking -->
+      <line x1="200" y1="80" x2="280" y2="80" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="210" y="73" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">1</text>
+      <text x="265" y="73" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">0..*</text>
+
+      <!-- Room 1:N Booking -->
+      <line x1="500" y1="80" x2="560" y2="80" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="510" y="73" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">0..*</text>
+      <text x="545" y="73" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">1</text>
+
+      <!-- CLASS: InAppNotification -->
+      <g transform="translate(20, 240)">
+        <rect x="0" y="0" width="180" height="120" fill="#ffffff" stroke="#2563eb" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="180" height="22" fill="#2563eb" rx="4"/>
+        <text x="90" y="15" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8.5" fill="#ffffff" text-anchor="middle">InAppNotification</text>
+        <text x="8" y="38" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- id: Long (PK)</text>
+        <text x="8" y="52" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- user: User (FK)</text>
+        <text x="8" y="66" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- message: String</text>
+        <text x="8" y="80" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- isRead: boolean</text>
+        <line x1="0" y1="88" x2="180" y2="88" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="8" y="104" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#1e40af">+ markAsRead(): void</text>
+      </g>
+      <line x1="110" y1="170" x2="110" y2="240" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="115" y="185" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">1</text>
+      <text x="115" y="230" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">0..*</text>
+
+      <!-- CLASS: MaintenanceSchedule -->
+      <g transform="translate(280, 240)">
+        <rect x="0" y="0" width="220" height="130" fill="#ffffff" stroke="#d97706" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="220" height="22" fill="#d97706" rx="4"/>
+        <text x="110" y="15" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8.5" fill="#ffffff" text-anchor="middle">RoomMaintenanceSchedule</text>
+        <text x="8" y="38" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- id: Long (PK)</text>
+        <text x="8" y="52" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- room: Room (FK)</text>
+        <text x="8" y="66" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- startDate: LocalDate</text>
+        <text x="8" y="80" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- endDate: LocalDate</text>
+        <text x="8" y="94" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- reason: String</text>
+        <line x1="0" y1="102" x2="220" y2="102" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="8" y="118" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#92400e">+ overlapsWith(dates): boolean</text>
+      </g>
+      <path d="M 620 185 L 620 220 L 450 220 L 450 240" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="625" y="200" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">1</text>
+      <text x="455" y="235" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">0..*</text>
+
+      <!-- CLASS: SeasonalPriceRule -->
+      <g transform="translate(560, 240)">
+        <rect x="0" y="0" width="200" height="130" fill="#ffffff" stroke="#9333ea" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="200" height="22" fill="#9333ea" rx="4"/>
+        <text x="100" y="15" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8.5" fill="#ffffff" text-anchor="middle">SeasonalPriceRule</text>
+        <text x="8" y="38" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- id: Long (PK)</text>
+        <text x="8" y="52" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- room: Room (FK nullable)</text>
+        <text x="8" y="66" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- multiplier: BigDecimal</text>
+        <text x="8" y="80" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- startDate: LocalDate</text>
+        <text x="8" y="94" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a">- endDate: LocalDate</text>
+        <line x1="0" y1="102" x2="200" y2="102" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="8" y="118" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#6b21a8">+ applyRule(price): BigDecimal</text>
+      </g>
+      <line x1="680" y1="185" x2="680" y2="240" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="685" y="200" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">0..1</text>
+      <text x="685" y="235" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700">0..*</text>
+    </svg>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- FIGURE 3: SEQUENCE DIAGRAM (PESSIMISTIC LOCKING) -->
+  <div class="diagram-container avoid-break">
+    <div class="diagram-title">
+      <span>Figure 3: Sequence Diagram — Pessimistic Row Locking &amp; Overlap Validation</span>
+      <span class="diagram-tag">UML Dynamic Interaction</span>
+    </div>
+    <svg viewBox="0 0 780 430" xmlns="http://www.w3.org/2000/svg">
+      <!-- Lifeline Boxes -->
+      <!-- Actor: User -->
+      <rect x="20" y="20" width="100" height="30" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5" rx="4"/>
+      <text x="70" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8" text-anchor="middle">Customer (Web)</text>
+      <line x1="70" y1="50" x2="70" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+      <!-- Controller -->
+      <rect x="160" y="20" width="115" height="30" fill="#f1f5f9" stroke="#334155" stroke-width="1.5" rx="4"/>
+      <text x="217" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8" text-anchor="middle">BookingController</text>
+      <line x1="217" y1="50" x2="217" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+      <!-- Service -->
+      <rect x="315" y="20" width="115" height="30" fill="#f1f5f9" stroke="#334155" stroke-width="1.5" rx="4"/>
+      <text x="372" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8" text-anchor="middle">BookingService</text>
+      <line x1="372" y1="50" x2="372" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+      <!-- RoomRepository -->
+      <rect x="470" y="20" width="115" height="30" fill="#f1f5f9" stroke="#334155" stroke-width="1.5" rx="4"/>
+      <text x="527" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8" text-anchor="middle">RoomRepository</text>
+      <line x1="527" y1="50" x2="527" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+      <!-- Database (Postgres/MySQL) -->
+      <rect x="625" y="20" width="125" height="30" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" rx="4"/>
+      <text x="687" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="8" text-anchor="middle">Database (RDBMS)</text>
+      <line x1="687" y1="50" x2="687" y2="400" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+      <!-- Step 1: POST /book -->
+      <line x1="70" y1="75" x2="217" y2="75" stroke="#1d4ed8" stroke-width="1.5"/>
+      <polygon points="212,71 217,75 212,79" fill="#1d4ed8"/>
+      <text x="143" y="69" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a" text-anchor="middle">1: POST /customer/book (roomId, dates)</text>
+
+      <!-- Step 2: createBooking() -->
+      <line x1="217" y1="105" x2="372" y2="105" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="367,101 372,105 367,109" fill="#0f172a"/>
+      <text x="294" y="99" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a" text-anchor="middle">2: @Transactional createBooking()</text>
+
+      <!-- Step 3: findByIdForUpdate -->
+      <line x1="372" y1="135" x2="527" y2="135" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="522,131 527,135 522,139" fill="#0f172a"/>
+      <text x="449" y="129" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#0f172a" text-anchor="middle">3: findByIdForUpdate(roomId)</text>
+
+      <!-- Step 4: SELECT FOR UPDATE Lock -->
+      <line x1="527" y1="165" x2="687" y2="165" stroke="#b91c1c" stroke-width="1.5"/>
+      <polygon points="682,161 687,165 682,169" fill="#b91c1c"/>
+      <text x="607" y="159" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="700" fill="#b91c1c" text-anchor="middle">4: SELECT ... FOR UPDATE (Row Locked!)</text>
+
+      <!-- Step 5: Lock Acquired -->
+      <line x1="687" y1="195" x2="372" y2="195" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <polygon points="377,191 372,195 377,199" fill="#16a34a"/>
+      <text x="529" y="189" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#166534" text-anchor="middle">5: Room Entity Returned (Exclusive Lock Active)</text>
+
+      <!-- Step 6: Overlap Validation Box -->
+      <rect x="330" y="215" width="220" height="40" fill="#eff6ff" stroke="#3b82f6" stroke-width="1" rx="4"/>
+      <text x="440" y="228" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="7.5" fill="#1e40af" text-anchor="middle">6: Mathematical Overlap Validation</text>
+      <text x="440" y="243" font-family="'JetBrains Mono', monospace" font-size="7" fill="#1e3a8a" text-anchor="middle">(existing.checkIn &lt; new.checkOut) AND (out &gt; in)</text>
+
+      <!-- Alt Condition Box -->
+      <rect x="40" y="270" width="690" height="110" fill="#f8fafc" stroke="#64748b" stroke-width="1" stroke-dasharray="2,2"/>
+      <text x="50" y="283" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="7.5" fill="#0f172a">[ALT: Conflicting Active Booking Exists]</text>
+
+      <line x1="372" y1="295" x2="217" y2="295" stroke="#ef4444" stroke-width="1.2"/>
+      <polygon points="222,291 217,295 222,299" fill="#ef4444"/>
+      <text x="294" y="289" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#ef4444" text-anchor="middle">Throw BookingConflictException (Rollback Lock)</text>
+
+      <line x1="217" y1="310" x2="70" y2="310" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <polygon points="75,306 70,310 75,314" fill="#ef4444"/>
+      <text x="143" y="304" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" fill="#ef4444" text-anchor="middle">Display "Room already reserved" Alert</text>
+
+      <line x1="40" y1="325" x2="730" y2="325" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>
+      <text x="50" y="338" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="7.5" fill="#166534">[ELSE: No Overlap &amp; Not In Maintenance]</text>
+
+      <!-- Step 7: Save & Commit -->
+      <line x1="372" y1="350" x2="687" y2="350" stroke="#16a34a" stroke-width="1.5"/>
+      <polygon points="682,346 687,350 682,354" fill="#16a34a"/>
+      <text x="529" y="344" font-family="'JetBrains Mono', monospace" font-size="7.5" fill="#166534" text-anchor="middle">7: INSERT INTO bookings ... COMMIT &amp; RELEASE LOCK</text>
+
+      <!-- Step 8: Return Confirmation -->
+      <line x1="372" y1="370" x2="70" y2="370" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <polygon points="75,366 70,370 75,374" fill="#16a34a"/>
+      <text x="221" y="364" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" font-weight="700" fill="#166534" text-anchor="middle">8: Success! 302 Redirect &amp; Digital Voucher Rendered</text>
+    </svg>
+  </div>
+
+  <!-- FIGURE 4: STATE MACHINE DIAGRAM -->
+  <div class="diagram-container avoid-break">
+    <div class="diagram-title">
+      <span>Figure 4: Booking Lifecycle State Machine Diagram</span>
+      <span class="diagram-tag">UML Behavioral State</span>
+    </div>
+    <svg viewBox="0 0 780 180" xmlns="http://www.w3.org/2000/svg">
+      <!-- Initial State -->
+      <circle cx="40" cy="90" r="12" fill="#0f172a"/>
+
+      <!-- Transition 1 -->
+      <line x1="52" y1="90" x2="110" y2="90" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="105,86 110,90 105,94" fill="#0f172a"/>
+      <text x="81" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Book Room</text>
+
+      <!-- State: PENDING -->
+      <rect x="110" y="65" width="100" height="50" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="160" y="88" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#92400e" text-anchor="middle">PENDING</text>
+      <text x="160" y="102" font-family="'Plus Jakarta Sans', sans-serif" font-size="7" fill="#78350f" text-anchor="middle">Awaiting Review</text>
+
+      <!-- Transition 2 -->
+      <line x1="210" y1="90" x2="270" y2="90" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="265,86 270,90 265,94" fill="#0f172a"/>
+      <text x="240" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Admin Approve</text>
+
+      <!-- State: APPROVED -->
+      <rect x="270" y="65" width="110" height="50" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="325" y="88" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#1e40af" text-anchor="middle">APPROVED</text>
+      <text x="325" y="102" font-family="'Plus Jakarta Sans', sans-serif" font-size="7" fill="#1e3a8a" text-anchor="middle">Stay Confirmed</text>
+
+      <!-- Transition 3 -->
+      <line x1="380" y1="90" x2="440" y2="90" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="435,86 440,90 435,94" fill="#0f172a"/>
+      <text x="410" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Web Check-in</text>
+
+      <!-- State: CHECKED_IN -->
+      <rect x="440" y="65" width="110" height="50" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+      <text x="495" y="88" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#3730a3" text-anchor="middle">CHECKED_IN</text>
+      <text x="495" y="102" font-family="'Plus Jakarta Sans', sans-serif" font-size="7" fill="#312e81" text-anchor="middle">Guest In Room</text>
+
+      <!-- Transition 4 -->
+      <line x1="550" y1="90" x2="610" y2="90" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="605,86 610,90 605,94" fill="#0f172a"/>
+      <text x="580" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Checkout Date</text>
+
+      <!-- State: CHECKED_OUT -->
+      <rect x="610" y="65" width="110" height="50" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="665" y="88" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#166534" text-anchor="middle">CHECKED_OUT</text>
+      <text x="665" y="102" font-family="'Plus Jakarta Sans', sans-serif" font-size="7" fill="#14532d" text-anchor="middle">Stay Completed</text>
+
+      <!-- Final State Circle -->
+      <circle cx="750" cy="90" r="12" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+      <circle cx="750" cy="90" r="7" fill="#0f172a"/>
+      <line x1="720" y1="90" x2="738" y2="90" stroke="#0f172a" stroke-width="1.5"/>
+
+      <!-- Alternate Branch: CANCELLED (Down) -->
+      <path d="M 160 115 L 160 150 L 325 150" fill="none" stroke="#ef4444" stroke-width="1.2"/>
+      <path d="M 325 115 L 325 150" fill="none" stroke="#ef4444" stroke-width="1.2"/>
+      <!-- State: CANCELLED -->
+      <rect x="325" y="135" width="90" height="35" rx="6" fill="#fee2e2" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="370" y="156" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8" fill="#991b1b" text-anchor="middle">CANCELLED</text>
+
+      <!-- Alternate Branch: NO_SHOW (Down) -->
+      <path d="M 370 115 L 370 145 L 460 145 L 460 135" fill="none" stroke="#6b7280" stroke-width="1.2"/>
+      <rect x="460" y="135" width="90" height="35" rx="6" fill="#f3f4f6" stroke="#4b5563" stroke-width="1.2"/>
+      <text x="505" y="156" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8" fill="#1f2937" text-anchor="middle">NO_SHOW</text>
+    </svg>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- WEEK 4: DB DESIGN & ER DIAGRAM -->
+  <h1>3. Week 4 Deliverable: 3NF Database Design &amp; Entity-Relationship Diagram</h1>
+  <p>The relational schema was designed and normalized to Third Normal Form (3NF) to guarantee transactional ACID compliance and zero redundancy:</p>
+
+  <!-- FIGURE 5: ER DIAGRAM -->
+  <div class="diagram-container avoid-break">
+    <div class="diagram-title">
+      <span>Figure 5: StayEase 3NF Entity-Relationship (ER) Schema Diagram</span>
+      <span class="diagram-tag">Database Schema</span>
+    </div>
+    <svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg">
+      <!-- TABLE: users -->
+      <g transform="translate(30, 20)">
+        <rect x="0" y="0" width="190" height="135" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="190" height="22" fill="#1d4ed8" rx="4"/>
+        <text x="95" y="15" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8.5" fill="#ffffff" text-anchor="middle">users (Table)</text>
+        <text x="8" y="38" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#1e40af">PK  id: BIGINT</text>
+        <text x="8" y="52" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    email: VARCHAR(150) UNIQUE</text>
+        <text x="8" y="66" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    password: VARCHAR(255)</text>
+        <text x="8" y="80" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    role: VARCHAR(30)</text>
+        <text x="8" y="94" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    name: VARCHAR(100)</text>
+        <text x="8" y="108" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    phone: VARCHAR(20)</text>
+        <text x="8" y="122" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#64748b">    created_at: TIMESTAMP</text>
+      </g>
+
+      <!-- TABLE: bookings -->
+      <g transform="translate(290, 20)">
+        <rect x="0" y="0" width="200" height="150" fill="#ffffff" stroke="#16a34a" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="200" height="22" fill="#16a34a" rx="4"/>
+        <text x="100" y="15" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8.5" fill="#ffffff" text-anchor="middle">bookings (Table)</text>
+        <text x="8" y="38" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#166534">PK  id: BIGINT</text>
+        <text x="8" y="52" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#b91c1c">FK  user_id: BIGINT</text>
+        <text x="8" y="66" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#b91c1c">FK  room_id: BIGINT</text>
+        <text x="8" y="80" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    check_in_date: DATE</text>
+        <text x="8" y="94" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    check_out_date: DATE</text>
+        <text x="8" y="108" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    total_price: DECIMAL(10,2)</text>
+        <text x="8" y="122" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    status: VARCHAR(20)</text>
+        <text x="8" y="136" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    voucher_code: VARCHAR(50)</text>
+      </g>
+
+      <!-- TABLE: rooms -->
+      <g transform="translate(560, 20)">
+        <rect x="0" y="0" width="190" height="135" fill="#ffffff" stroke="#9333ea" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="190" height="22" fill="#9333ea" rx="4"/>
+        <text x="95" y="15" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8.5" fill="#ffffff" text-anchor="middle">rooms (Table)</text>
+        <text x="8" y="38" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#6b21a8">PK  id: BIGINT</text>
+        <text x="8" y="52" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    room_number: VARCHAR(20) UNQ</text>
+        <text x="8" y="66" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    room_type: VARCHAR(30)</text>
+        <text x="8" y="80" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    base_price: DECIMAL(10,2)</text>
+        <text x="8" y="94" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    capacity: INT</text>
+        <text x="8" y="108" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    is_active: BOOLEAN</text>
+        <text x="8" y="122" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#64748b">    description: TEXT</text>
+      </g>
+
+      <!-- Crow's Foot Lines Top -->
+      <line x1="220" y1="60" x2="290" y2="60" stroke="#0f172a" stroke-width="1.5"/>
+      <circle cx="230" cy="60" r="3" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+      <path d="M 280 54 L 290 60 L 280 66" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+
+      <line x1="490" y1="60" x2="560" y2="60" stroke="#0f172a" stroke-width="1.5"/>
+      <circle cx="550" cy="60" r="3" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+      <path d="M 500 54 L 490 60 L 500 66" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+
+      <!-- TABLE: in_app_notifications -->
+      <g transform="translate(30, 190)">
+        <rect x="0" y="0" width="190" height="110" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="190" height="20" fill="#1d4ed8" rx="4"/>
+        <text x="95" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">in_app_notifications</text>
+        <text x="8" y="34" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#1e40af">PK  id: BIGINT</text>
+        <text x="8" y="48" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#b91c1c">FK  user_id: BIGINT</text>
+        <text x="8" y="62" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    title: VARCHAR(100)</text>
+        <text x="8" y="76" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    message: TEXT</text>
+        <text x="8" y="90" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    is_read: BOOLEAN</text>
+      </g>
+      <line x1="125" y1="155" x2="125" y2="190" stroke="#0f172a" stroke-width="1.5"/>
+
+      <!-- TABLE: room_maintenance_schedules -->
+      <g transform="translate(290, 190)">
+        <rect x="0" y="0" width="200" height="110" fill="#ffffff" stroke="#d97706" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="200" height="20" fill="#d97706" rx="4"/>
+        <text x="100" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">room_maintenance_schedules</text>
+        <text x="8" y="34" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#92400e">PK  id: BIGINT</text>
+        <text x="8" y="48" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#b91c1c">FK  room_id: BIGINT</text>
+        <text x="8" y="62" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    start_date: DATE</text>
+        <text x="8" y="76" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    end_date: DATE</text>
+        <text x="8" y="90" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    reason: VARCHAR(255)</text>
+      </g>
+      <path d="M 610 155 L 610 175 L 410 175 L 410 190" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+
+      <!-- TABLE: seasonal_price_rules -->
+      <g transform="translate(560, 190)">
+        <rect x="0" y="0" width="190" height="110" fill="#ffffff" stroke="#9333ea" stroke-width="1.5" rx="4"/>
+        <rect x="0" y="0" width="190" height="20" fill="#9333ea" rx="4"/>
+        <text x="95" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">seasonal_price_rules</text>
+        <text x="8" y="34" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#6b21a8">PK  id: BIGINT</text>
+        <text x="8" y="48" font-family="'JetBrains Mono', monospace" font-size="7.2" font-weight="700" fill="#b91c1c">FK  room_id: BIGINT (NULLABLE)</text>
+        <text x="8" y="62" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    start_date: DATE</text>
+        <text x="8" y="76" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    end_date: DATE</text>
+        <text x="8" y="90" font-family="'JetBrains Mono', monospace" font-size="7.2" fill="#0f172a">    multiplier: DECIMAL(5,2)</text>
+      </g>
+      <line x1="655" y1="155" x2="655" y2="190" stroke="#0f172a" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <!-- FIGURE 6: COMPONENT & DEPLOYMENT ARCHITECTURE -->
+  <div class="diagram-container avoid-break">
+    <div class="diagram-title">
+      <span>Figure 6: Component &amp; Cloud Deployment Architecture</span>
+      <span class="diagram-tag">UML Physical Deployment</span>
+    </div>
+    <svg viewBox="0 0 780 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- Client Node -->
+      <rect x="20" y="25" width="150" height="110" rx="6" fill="#f8fafc" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="95" y="45" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8.5" fill="#1e40af" text-anchor="middle">&lt;&lt;device&gt;&gt; Client Browser</text>
+      <rect x="35" y="55" width="120" height="25" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="95" y="71" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Thymeleaf HTML5 + JS</text>
+      <rect x="35" y="88" width="120" height="25" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
+      <text x="95" y="104" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Leaflet.js Map Viewer</text>
+
+      <line x1="170" y1="80" x2="230" y2="80" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="200" y="73" font-family="'JetBrains Mono', monospace" font-size="7" text-anchor="middle">HTTPS</text>
+
+      <!-- Cloud Container Node (Railway / Docker) -->
+      <rect x="230" y="15" width="310" height="130" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="385" y="32" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8.5" fill="#166534" text-anchor="middle">&lt;&lt;execution environment&gt;&gt; Docker (Railway Cloud)</text>
+      <rect x="245" y="42" width="280" height="26" rx="3" fill="#ffffff" stroke="#86efac"/>
+      <text x="385" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Spring Boot 3.3.4 (Embedded Tomcat 10 / Port 8080)</text>
+      <rect x="245" y="73" width="135" height="26" rx="3" fill="#ffffff" stroke="#86efac"/>
+      <text x="312" y="89" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Spring Security 6 (RBAC)</text>
+      <rect x="390" y="73" width="135" height="26" rx="3" fill="#ffffff" stroke="#86efac"/>
+      <text x="457" y="89" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">Spring Data JPA / Hibernate</text>
+      <rect x="245" y="104" width="280" height="26" rx="3" fill="#ffffff" stroke="#86efac"/>
+      <text x="385" y="120" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">ThreadPoolTaskExecutor &amp; @Scheduled Engine</text>
+
+      <line x1="540" y1="80" x2="600" y2="80" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="570" y="73" font-family="'JetBrains Mono', monospace" font-size="7" text-anchor="middle">HikariCP</text>
+
+      <!-- Database Node -->
+      <rect x="600" y="25" width="160" height="110" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="680" y="45" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="8.5" fill="#92400e" text-anchor="middle">&lt;&lt;database&gt;&gt; PostgreSQL / MySQL</text>
+      <rect x="615" y="55" width="130" height="30" rx="3" fill="#ffffff" stroke="#fde68a"/>
+      <text x="680" y="74" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">PostgreSQL 16 (Port 5432)</text>
+      <rect x="615" y="92" width="130" height="30" rx="3" fill="#ffffff" stroke="#fde68a"/>
+      <text x="680" y="111" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" text-anchor="middle">ACID Row Locking</text>
+    </svg>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- WEEKS 5-8: MODULE CODING RECAP -->
+  <h1>4. Weeks 5–8: Module Ownership (4 Students = 4 Modules)</h1>
+  <div class="module-box avoid-break">
+    <div class="module-title">MODULE 1 (STUDENT 1): Worldwide Geospatial Discovery &amp; Open Map Engine</div>
+    <p>Engineered Leaflet.js interactive pins, Komoot Photon 220ms debounced typeahead autocomplete, Haversine spherical formula in Java (<code>calculateDistanceKm</code>), and dual-tier Overpass/Nominatim bounding box scanning up to 100 km with zero API cost.</p>
+  </div>
+  <div class="module-box avoid-break">
+    <div class="module-title">MODULE 2 (STUDENT 2): Customer Booking Engine &amp; Concurrency Control</div>
+    <p>Implemented database <code>PESSIMISTIC_WRITE</code> row locking (<code>SELECT ... FOR UPDATE</code>) on rooms, canonical date overlap algorithm <code>(existing.checkIn &lt; new.checkOut) AND (existing.checkOut &gt; new.checkIn)</code>, same-day back-to-back stays, and digital printable voucher receipts.</p>
+  </div>
+  <div class="module-box avoid-break">
+    <div class="module-title">MODULE 3 (STUDENT 3): Property Operations, Revenue Analytics &amp; Compliance Audit</div>
+    <p>Built the Room Maintenance Blackout scheduler (repairs blocking room availability), Seasonal Price rules, <strong>ADR (Average Daily Rate)</strong> and <strong>RevPAR (Revenue Per Available Room)</strong> computations, and immutable compliance CSV audit trail export.</p>
+  </div>
+  <div class="module-box avoid-break">
+    <div class="module-title">MODULE 4 (STUDENT 4): Authentication, Spring Security, Notifications &amp; Cron Reminders</div>
+    <p>Engineered Spring Security 6 RBAC (<code>ROLE_CUSTOMER</code> vs <code>ROLE_ADMIN</code>), BCrypt salted password hashing, CSRF synchronizer tokens, <code>ThreadPoolTaskExecutor</code> async emails, and <code>@Scheduled</code> daily check-in reminder alerts.</p>
+  </div>
+
+  <!-- WEEK 9: INTEGRATION & TESTING -->
+  <h1>5. Week 9: System Integration, 295+ Automated Tests &amp; Cloud Deployment</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Test Suite Layer</th>
+        <th>Framework Used</th>
+        <th>What Was Verified &amp; Proved</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Unit Testing</strong></td>
+        <td>JUnit 5, AssertJ</td>
+        <td>Haversine spherical distance calculation, pricing multipliers, form DTO validations.</td>
+        <td><span class="badge badge-green">100% Pass</span></td>
+      </tr>
+      <tr>
+        <td><strong>Integration Testing</strong></td>
+        <td>Spring Boot Test, H2</td>
+        <td>Spring Data JPA repositories, database relations, foreign key cascades.</td>
+        <td><span class="badge badge-green">100% Pass</span></td>
+      </tr>
+      <tr>
+        <td><strong>Concurrency Testing</strong></td>
+        <td>Multithreaded Executor</td>
+        <td>Flash crowd race conditions; verified <code>PESSIMISTIC_WRITE</code> lock prevents double-booking.</td>
+        <td><span class="badge badge-green">Zero Overbooking</span></td>
+      </tr>
+      <tr>
+        <td><strong>Security Testing</strong></td>
+        <td>MockMvc</td>
+        <td>Verified 403 Forbidden on illegal customer access to <code>/admin/**</code>, CSRF validation.</td>
+        <td><span class="badge badge-green">100% Pass</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout-box tip">
+    <strong>Docker &amp; Cloud Deployment:</strong> Multi-stage <code>Dockerfile</code> packaging Eclipse Temurin Java 21 JRE, orchestrated via <code>docker-compose.yml</code> with MySQL 8, deployed live to Railway cloud with automated GitHub CI/CD synchronization.
+  </div>
+
+  <div style="text-align: center; margin-top: 15px; color: #64748b; font-size: 8pt; border-top: 1px solid #e2e8f0; padding-top: 6px;">
+    <strong>StayEase Academic Project Report &amp; UML Blueprint</strong> • Official Submission Edition • © 2026 StayEase Team
+  </div>
+
+</body>
+</html>

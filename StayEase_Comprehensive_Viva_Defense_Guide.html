@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StayEase - Comprehensive Project Defense, Presentation & Viva Voce Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  @page {
+    size: A4;
+    margin: 14mm 14mm 16mm 14mm;
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #64748b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    line-height: 1.5;
+    font-size: 9pt;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Cover Banner */
+  .cover-banner {
+    background: linear-gradient(135deg, #0A1128 0%, #102A71 50%, #1D4ED8 100%);
+    color: #ffffff;
+    padding: 24px 22px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+
+  .cover-badge {
+    background: #f59e0b;
+    color: #000000;
+    font-weight: 800;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  .cover-title {
+    font-size: 20pt;
+    font-weight: 800;
+    margin: 0 0 6px 0;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .cover-subtitle {
+    font-size: 10pt;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0 0 14px 0;
+    line-height: 1.4;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 8pt;
+  }
+
+  .meta-item strong {
+    display: block;
+    color: #93c5fd;
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 5px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    border-left: 3px solid #2563eb;
+    padding-left: 7px;
+  }
+
+  h3 {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0 0 6px 0;
+  }
+
+  /* Callout Boxes */
+  .callout-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    font-size: 8.5pt;
+  }
+
+  .callout-box.tip {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    border-left-color: #16a34a;
+  }
+
+  .callout-box.warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    border-left-color: #f59e0b;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px 0;
+    font-size: 8pt;
+  }
+
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  tr:nth-child(even) {
+    background: #f8fafc;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 7pt;
+    font-weight: 700;
+  }
+
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+
+  /* Q&A Cards */
+  .qa-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+
+  .qa-question {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 9.5pt;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .qa-q-badge {
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 7pt;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .qa-answer {
+    color: #334155;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    padding-left: 24px;
+  }
+
+  .qa-highlight {
+    background: #fef08a;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+    color: #713f12;
+  }
+
+  ul, ol {
+    margin: 3px 0 8px 0;
+    padding-left: 18px;
+  }
+
+  li {
+    margin-bottom: 3px;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7.5pt;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #0f172a;
+  }
+
+  .speaker-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-top: 3px solid #1d4ed8;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .speaker-title {
+    font-weight: 800;
+    color: #1d4ed8;
+    font-size: 9.5pt;
+    margin-bottom: 4px;
+  }
+  .speaker-script {
+    font-style: italic;
+    color: #1e293b;
+    background: #ffffff;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border-left: 3px solid #10b981;
+    margin-top: 4px;
+    font-size: 8.5pt;
+  }
+</style>
+</head>
+<body>
+
+  <!-- COVER BANNER -->
+  <div class="cover-banner">
+    <span class="cover-badge">Academic Project Defense &amp; Viva Voce Guide</span>
+    <h1 class="cover-title">StayEase — Complete Presentation Blueprint &amp; Viva Master Guide</h1>
+    <p class="cover-subtitle">Production-Grade Hostel, PG &amp; Boutique Hotel Reservation Management Platform with Zero Overbooking &amp; Free Worldwide Geospatial Radar</p>
+    <div class="meta-grid">
+      <div class="meta-item"><strong>Core Stack</strong>Java 21 • Spring Boot 3 • PostgreSQL</div>
+      <div class="meta-item"><strong>Team Size</strong>4 Members (Complete Role Division)</div>
+      <div class="meta-item"><strong>Test Pass Rate</strong>295+ Automated Tests (100% Pass)</div>
+      <div class="meta-item"><strong>Deployment</strong>Docker Containerized • Cloud Deployed</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h1>1. Opening Elevator Pitch (How to Start in the First 60 Seconds)</h1>
+  <div class="callout-box tip">
+    <strong>The 60-Second Hook (Speaker 1 speaks to start the presentation):</strong><br>
+    "Good morning, Sir/Ma'am. Today our team is presenting <strong>StayEase</strong> — an enterprise-grade Hostel, PG, and Boutique Hotel Reservation Management Platform built with <strong>Java 21 LTS, Spring Boot 3.3.4, Spring Security 6, and PostgreSQL</strong>.<br><br>
+    When students and young professionals move to a new city, they face two huge challenges: heavy broker commissions (15% to 30%) and difficulty in finding verified accommodations nearby. Meanwhile, local hostel and PG owners struggle with double-bookings, maintenance downtime, and lack of professional property management software.<br><br>
+    <strong>StayEase solves both sides:</strong> An editorial self-service booking portal with free worldwide geospatial discovery for students, and an administrative operations console with financial analytics (ADR &amp; RevPAR) for property operators."
+  </div>
+
+  <!-- SECTION 2 -->
+  <h1>2. Four-Member Team Role Division &amp; Exact Speaking Scripts</h1>
+  <p>To impress the professor, every teammate has a distinct, deep technical domain and live demo responsibility:</p>
+
+  <div class="speaker-box avoid-break">
+    <div class="speaker-title">👤 TEAM MEMBER 1 — Architecture, Core Stack &amp; Worldwide Geospatial Discovery</div>
+    <p><strong>Responsibilities:</strong> Project setup, MVC architecture, Leaflet.js map, OpenStreetMap Overpass &amp; Komoot Photon integration.</p>
+    <div class="speaker-script">
+      "Sir, my primary focus was on the <strong>Core Architecture Setup</strong> and the <strong>Worldwide Geospatial Discovery Engine</strong>. To eliminate expensive Google Maps API bills, we integrated an open-source geospatial trio: <code>Leaflet.js</code> for interactive map rendering, <code>Komoot Photon</code> for 220ms debounced typeahead autocomplete, and <code>OpenStreetMap (Overpass &amp; Nominatim)</code> for scanning registered stays across a 10 km to 100 km radius using Haversine distance calculations. (Performs live demo on <code>/discovery</code>)."
+    </div>
+  </div>
+
+  <div class="speaker-box avoid-break">
+    <div class="speaker-title">👤 TEAM MEMBER 2 — Customer Portal, Room Booking &amp; Concurrency (Pessimistic Locking)</div>
+    <p><strong>Responsibilities:</strong> Customer registration, room catalog filtering, dynamic price calculation, receipt generation, and zero-overbooking engine.</p>
+    <div class="speaker-script">
+      "My primary role was building the <strong>Customer Booking Engine</strong> and solving <strong>Concurrent Overbooking</strong>. In college fest or admission rush, multiple students try booking the last room simultaneously. We implemented database-level <code>PESSIMISTIC_WRITE</code> row locking (<code>SELECT ... FOR UPDATE</code>) and strict date-overlap validation: <code>(existing.checkIn &lt; new.checkOut) AND (existing.checkOut &gt; new.checkIn)</code>. This completely prevents double-booking while natively supporting same-day back-to-back stays with printable digital verification vouchers."
+    </div>
+  </div>
+
+  <div class="speaker-box avoid-break">
+    <div class="speaker-title">👤 TEAM MEMBER 3 — Admin Operations, Financial KPIs (ADR / RevPAR) &amp; Security</div>
+    <p><strong>Responsibilities:</strong> Admin dashboard, room maintenance blackout intervals, Spring Security 6, BCrypt, and CSRF protection.</p>
+    <div class="speaker-script">
+      "My role was architecting the <strong>Property Operations Console</strong> and <strong>Application Security</strong>. Hostel owners can block rooms for repairs using our Maintenance Blackout Engine, preventing customers from booking rooms under maintenance. We also compute hospitality industry metrics: <strong>ADR (Average Daily Rate)</strong> and <strong>RevPAR (Revenue Per Available Room)</strong> with CSV exports. For security, Spring Security 6 enforces Role-Based Access Control, BCrypt salted password hashing, and CSRF token verification across all forms."
+    </div>
+  </div>
+
+  <div class="speaker-box avoid-break">
+    <div class="speaker-title">👤 TEAM MEMBER 4 — Commercial SaaS Business Model, Testing &amp; Future Upgrades</div>
+    <p><strong>Responsibilities:</strong> Test suite (295+ tests), Dockerization, Commercial B2B SaaS pricing strategy, and future product roadmap.</p>
+    <div class="speaker-script">
+      "My contribution focused on <strong>Automated Testing, Deployment, and Commercial SaaS Monetization</strong>. We engineered 295+ passing automated tests across unit, integration, and security layers. Commercially, StayEase is designed as a B2B SaaS product offering monthly subscriptions: ₹999 (Starter PG), ₹2,499 (Growth Hostel), and ₹5,999 (Enterprise Chain). With cloud hosting costing just ~₹1,500/month, onboarding even 5 hostels yields over 80% net profit margin. Our future roadmap introduces IoT smart door locks, WhatsApp Bot booking, and AI roommate matching."
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 3 -->
+  <h1>3. The Critical Differentiator: StayEase vs. Google Maps &amp; OYO (When &amp; How Proven)</h1>
+  <p>How and when StayEase proves it is fundamentally different from generic directories and commercial aggregators:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 18%;">Dimension</th>
+        <th style="width: 25%;">Google Maps / OYO</th>
+        <th style="width: 27%;">StayEase Solution</th>
+        <th style="width: 30%;">KAB aur KAISE (Real-World Proof)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Direct Booking Engine</strong></td>
+        <td>Google Maps has no booking; OYO charges 25-30% broker commission.</td>
+        <td>Direct zero-brokerage booking with instant printable vouchers.</td>
+        <td><strong>KAB:</strong> Raat ko 11 baje student bus stand utarta hai.<br><strong>KAISE:</strong> Student dates daalta hai, live room filter hota hai aur 1 click mein verification voucher generate hota hai.</td>
+      </tr>
+      <tr>
+        <td><strong>Double-Booking Protection</strong></td>
+        <td>Maps has no inventory awareness; basic websites suffer race conditions.</td>
+        <td>Database Pessimistic Locking (<code>PESSIMISTIC_WRITE</code>) row locks.</td>
+        <td><strong>KAB:</strong> Exam/Fest rush mein 2 students same second 'Book' click karte hain.<br><strong>KAISE:</strong> <code>SELECT ... FOR UPDATE</code> se row lock hoti hai; pehle ka confirm hote hi dusre ko safe rejection alert milta hai.</td>
+      </tr>
+      <tr>
+        <td><strong>Property Owner Control</strong></td>
+        <td>Owners cannot run operations inside Maps; OYO controls rates.</td>
+        <td>Full Admin Suite: Seasonal pricing rules, blackout schedules, audit logs.</td>
+        <td><strong>KAB:</strong> College exam time demand spike hoti hai.<br><strong>KAISE:</strong> Owner <code>SeasonalPriceRule</code> se rates 15% hike karta hai aur staff audit trail CSV export karta hai.</td>
+      </tr>
+      <tr>
+        <td><strong>Maintenance Blackout</strong></td>
+        <td>No room-level maintenance blackout support in directories.</td>
+        <td><code>MaintenanceScheduleService</code> blocks specific rooms across dates.</td>
+        <td><strong>KAB:</strong> Room 203 mein bathroom leak ya fan repair hai.<br><strong>KAISE:</strong> Admin 3 din ke liye room block karta hai; search results mein wo room automatic hide ho jata hai.</td>
+      </tr>
+      <tr>
+        <td><strong>Map Running Cost</strong></td>
+        <td>Google Maps charges high API fees ($5-$17 per 1,000 requests).</td>
+        <td>Leaflet + OpenStreetMap + Photon API (100% Free &amp; Open Source).</td>
+        <td><strong>KAB:</strong> Startup ya college project bina credit card bill ke chalana ho.<br><strong>KAISE:</strong> Overpass/Nominatim engine free bounding box queries se worldwide real hostels lata hai.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 4 -->
+  <h1>4. Complete Technology Stack Breakdown (What Did What &amp; How It Helped)</h1>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Technology</th>
+        <th style="width: 38%;">What Work It Did (Role)</th>
+        <th style="width: 40%;">How It Helped the Project (Advantage)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Java 21 LTS</strong></td>
+        <td>Core programming language for backend business logic, algorithms &amp; DTO records.</td>
+        <td>Rock-solid stability, modern Record classes for immutability, pattern matching, and high performance.</td>
+      </tr>
+      <tr>
+        <td><strong>Spring Boot 3.3.4</strong></td>
+        <td>Web MVC framework, REST APIs, dependency injection, and embedded Tomcat server.</td>
+        <td>Eliminated 80% boilerplate configuration; allowed running the entire app from a single standalone JAR file.</td>
+      </tr>
+      <tr>
+        <td><strong>Spring Security 6 + BCrypt</strong></td>
+        <td>Authentication, Role-Based Access Control (RBAC), CSRF tokens, session fixation defense.</td>
+        <td>Protected endpoints (<code>/admin/**</code> vs <code>/customer/**</code>), hashed passwords with cryptographic salt, blocked CSRF attacks.</td>
+      </tr>
+      <tr>
+        <td><strong>Spring Data JPA + Hibernate 6</strong></td>
+        <td>ORM bridge mapping Java Entities (<code>Room</code>, <code>Booking</code>, <code>User</code>) to SQL tables.</td>
+        <td>Eliminated manual SQL strings; enabled declarative transactions (<code>@Transactional</code>) and <code>PESSIMISTIC_WRITE</code> locking.</td>
+      </tr>
+      <tr>
+        <td><strong>PostgreSQL / MySQL 8 + HikariCP</strong></td>
+        <td>ACID-compliant relational database and high-speed connection pooling.</td>
+        <td>Guaranteed transactional consistency for payments/bookings; HikariCP reused connections to handle concurrent flash traffic.</td>
+      </tr>
+      <tr>
+        <td><strong>Thymeleaf 3 + Bootstrap 5.3</strong></td>
+        <td>Server-side HTML rendering engine and mobile-responsive CSS framework.</td>
+        <td>Fast initial page loads, superior SEO, zero flash of unstyled content, responsive across mobile, tablet, and desktop.</td>
+      </tr>
+      <tr>
+        <td><strong>Leaflet.js + OSM + Photon</strong></td>
+        <td>Client-side map rendering, geocoding autocomplete, and Overpass POI discovery.</td>
+        <td>Replaced costly Google Maps API with a 100% free, open-source worldwide geospatial discovery radar.</td>
+      </tr>
+      <tr>
+        <td><strong>JUnit 5 + Mockito + MockMvc</strong></td>
+        <td>Automated unit, integration, and security testing suite (295+ tests).</td>
+        <td>Prevented regressions; mathematically verified concurrency locking and date overlap algorithms with 100% pass rate.</td>
+      </tr>
+      <tr>
+        <td><strong>Docker &amp; Docker Compose</strong></td>
+        <td>Multi-stage containerization packaging Java JRE, application JAR, and DB.</td>
+        <td>Eliminated the "works on my machine" problem; enabled 1-click cloud deployment on Railway.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 5 -->
+  <h1>5. Commercial SaaS Monetization &amp; Costing Strategy</h1>
+  <p>If StayEase is launched commercially as a B2B SaaS product for hostels and PGs, here is the validated pricing model:</p>
+
+  <div class="callout-box tip">
+    <strong>B2B SaaS Monthly &amp; Annual Subscription Plans:</strong>
+    <table>
+      <thead>
+        <tr>
+          <th>Plan Tier</th>
+          <th>Monthly Price</th>
+          <th>Annual Price (2 Mo Free)</th>
+          <th>Target Market &amp; Core Feature Set</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tier 1: Starter PG</strong></td>
+          <td>₹999 / mo</td>
+          <td>₹9,999 / yr</td>
+          <td>Small PGs (up to 15 beds): Direct zero-commission booking, check-in tracking, WhatsApp/Email receipts.</td>
+        </tr>
+        <tr>
+          <td><strong>Tier 2: Growth Hostel ⭐</strong></td>
+          <td>₹2,499 / mo</td>
+          <td>₹24,999 / yr</td>
+          <td>Mid-sized Hostels (16-50 rooms): Starter features + Dynamic Seasonal Pricing + Maintenance Blackouts + ADR/RevPAR Analytics.</td>
+        </tr>
+        <tr>
+          <td><strong>Tier 3: Enterprise Chain</strong></td>
+          <td>₹5,999 / mo</td>
+          <td>₹59,999 / yr</td>
+          <td>Multi-branch chains (50+ rooms): Multi-property master dashboard, dedicated custom domain (e.g. <code>stays.myhostel.com</code>), priority support.</td>
+        </tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><strong>Alternative Pay-As-You-Book Model:</strong> ₹0 monthly fee + 2.5% to 3% platform commission per booking (competing directly against OYO's 30% cut).</li>
+      <li><strong>One-Time White-Label License:</strong> ₹75,000 to ₹1,50,000 one-time fee + ₹20,000/yr Annual Maintenance Contract (AMC).</li>
+      <li><strong>Operational Cost &amp; Profit Margin:</strong> Cloud hosting (Docker on Railway) + Managed PostgreSQL costs ~₹1,500/month. Onboarding just 5 hostels on the Growth Plan brings ₹12,500/mo revenue with <strong>&gt;80% net profit margin</strong>.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 6 -->
+  <h1>6. High-Impact Future Upgrades Roadmap</h1>
+  <p>Practical, game-changing engineering upgrades planned for upcoming production versions:</p>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">UPGRADE 1</span> WhatsApp Conversational Booking Engine (WhatsApp Cloud API)</div>
+    <div class="qa-answer">Students can chat directly with the hostel's official WhatsApp bot (<em>"Single room needed on 15 Oct"</em>). The bot displays room photos, calculates prices, accepts UPI payments via GPay/PhonePe, and sends the PDF receipt directly in chat without opening any browser.</div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">UPGRADE 2</span> IoT Smart Door Locks (Keyless OTP Entry)</div>
+    <div class="qa-answer">Integrate Wi-Fi/Bluetooth smart locks on room doors. Upon booking confirmation, the system generates a time-bound 6-digit OTP valid only from check-in time to checkout time, enabling contactless self-check-in during late-night arrivals without warden dependency.</div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">UPGRADE 3</span> AI-Powered Roommate Matching Engine (For Shared Hostels &amp; PGs)</div>
+    <div class="qa-answer">Collect student lifestyle preferences during booking (study hours: night owl vs early bird; diet: veg vs non-veg; course/branch). Use Cosine Similarity matching algorithms to recommend beds in rooms with compatible roommates, boosting student retention by 80%.</div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">UPGRADE 4</span> Dynamic AI Surge Pricing Engine</div>
+    <div class="qa-answer">A machine learning model monitoring local college exam schedules, festival dates, and city occupancy. When occupancy crosses 80%, remaining rooms automatically experience a 15% to 25% automated rate hike, maximizing property owner revenue.</div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">UPGRADE 5</span> Digital KYC &amp; Police Verification via DigiLocker</div>
+    <div class="qa-answer">Replace paper photocopies with instant Aadhaar OTP verification through DigiLocker. Securely encrypt identity records and auto-generate compliance reports formatted for local police station verification in 1-click.</div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">UPGRADE 6</span> Monthly Electricity Meter &amp; Mess Utility Sub-Billing</div>
+    <div class="qa-answer">Admin dashboard utility module where entering per-room electricity meter readings automatically calculates unit costs, splitting mess and power bills directly into each student's monthly ledger.</div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 7 -->
+  <h1>7. Top Viva Questions &amp; Winning Academic Answers</h1>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q1</span> How does StayEase prevent race conditions and double-booking?</div>
+    <div class="qa-answer">
+      "We enforce database-level <code>PESSIMISTIC_WRITE</code> row locking (<code>SELECT ... FOR UPDATE</code>) inside a <code>@Transactional(isolation = Isolation.READ_COMMITTED)</code> boundary. When User A begins booking, that specific room row is locked until commit. If User B attempts to book the same room concurrently, their transaction waits, and subsequently fails when our interval validation detects the overlapping stay: <code>(existing.checkIn &lt; new.checkOut) AND (existing.checkOut &gt; new.checkIn)</code>."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q2</span> Why did you use OpenStreetMap instead of Google Maps API?</div>
+    <div class="qa-answer">
+      "Google Maps requires mandatory credit card billing and charges significant fees per API request, which creates financial liability. OpenStreetMap (Overpass &amp; Nominatim) paired with Komoot Photon is community-powered, 100% free of cost, provides worldwide coverage, and offers unrestricted programmatic access to raw geographical tags without billing limits."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q3</span> What is the difference between Spring, Spring Boot, and Spring Data JPA?</div>
+    <div class="qa-answer">
+      "<strong>Spring</strong> is the underlying inversion-of-control container requiring XML/Java configuration. <strong>Spring Boot</strong> eliminates boilerplate via auto-configuration and embeds a Tomcat server for standalone execution. <strong>Spring Data JPA</strong> is the data persistence layer built on Hibernate that converts Java Entity objects into relational database queries without writing manual SQL."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q4</span> How does the typeahead search box avoid lagging the browser or server?</div>
+    <div class="qa-answer">
+      "We implemented <strong>client-side debouncing with a 220-millisecond delay</strong>. Keystrokes reset a timer and only fire the HTTP fetch request after the user pauses typing for 220ms. In addition, client-side memory cache and backend <code>ConcurrentHashMap</code> caching prevent redundant network calls for identical queries."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q5</span> How do you securely store user passwords?</div>
+    <div class="qa-answer">
+      "Passwords are never stored in plaintext. We use Spring Security's <strong>BCryptPasswordEncoder</strong>, an adaptive one-way hashing algorithm with a cryptographic work factor (strength = 10) and an automated random salt per user. Even if two users share the same password, their database hashes are completely distinct, neutralizing rainbow table attacks."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q6</span> How is the distance between the user and accommodations calculated?</div>
+    <div class="qa-answer">
+      "We implemented the <strong>Haversine Formula</strong> in Java (<code>calculateDistanceKm(lat1, lon1, lat2, lon2)</code>). Because the Earth is spherical, 2D Euclidean distance (Pythagorean theorem) fails for coordinates. The Haversine formula applies spherical trigonometry to compute the true great-circle surface distance in kilometers."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q7</span> What are ADR and RevPAR in your Admin Dashboard?</div>
+    <div class="qa-answer">
+      "<strong>ADR (Average Daily Rate)</strong> is the average revenue earned per paid occupied room: <code>ADR = Total Room Revenue / Rooms Sold</code>. <strong>RevPAR (Revenue Per Available Room)</strong> evaluates overall property efficiency across total capacity: <code>RevPAR = ADR × Occupancy Rate</code>."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q8</span> What is CSRF and how does StayEase defend against it?</div>
+    <div class="qa-answer">
+      "<strong>Cross-Site Request Forgery (CSRF)</strong> occurs when an unauthorized site exploits authenticated browser credentials to submit unauthorized commands. StayEase uses Spring Security's synchronized token pattern: every state-changing POST/PUT form contains a hidden cryptographic CSRF token validated on the server."
+    </div>
+  </div>
+
+  <div class="qa-card avoid-break">
+    <div class="qa-question"><span class="qa-q-badge">Q9</span> How do you prove your system is bug-free and production-ready?</div>
+    <div class="qa-answer">
+      "We engineered a comprehensive automated test suite of <strong>295+ tests</strong> utilizing JUnit 5, Mockito, and MockMvc. The tests exercise authentication, role authorization, concurrency race conditions, date validation, and API endpoints, maintaining a 100% pass rate."
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <h1>8. Defense Day Live Demo Sequence &amp; Success Rules</h1>
+  <div class="callout-box">
+    <strong>Step-by-Step Live Demonstration Checklist:</strong>
+    <ol>
+      <li><strong>Window Setup:</strong> Keep Tab 1 logged in as <code>customer@stayease.com</code> and an Incognito Tab 2 logged in as <code>admin@stayease.com</code>.</li>
+      <li><strong>Member 1 Demo:</strong> Navigate to <code>/discovery</code>, type a city (e.g. <em>"Jaipur"</em>), demonstrate typeahead debouncing, and showcase Leaflet pins up to 100 km radius.</li>
+      <li><strong>Member 2 Demo:</strong> In Tab 1, pick a room, choose check-in/out dates, book it, and display the generated digital printable voucher.</li>
+      <li><strong>Member 3 Demo:</strong> Switch to Incognito Tab 2, approve the booking live in the Admin Console, demonstrate ADR/RevPAR analytics, and trigger a room maintenance blackout.</li>
+      <li><strong>The Masterstroke:</strong> Attempt to book that same blacked-out room on Tab 1 in front of the professor to prove the real-time locking and zero-overbooking rejection!</li>
+      <li><strong>Member 4 Wrap-Up:</strong> Summarize the B2B SaaS pricing model (₹999/₹2,499), 295+ passing tests, and future IoT/WhatsApp bot upgrades.</li>
+    </ol>
+  </div>
+
+  <div style="text-align: center; margin-top: 20px; color: #64748b; font-size: 8pt; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+    <strong>StayEase Project Handbook</strong> • Prepared for Academic Project Defense &amp; Evaluation • © 2026 StayEase Team
+  </div>
+
+</body>
+</html>

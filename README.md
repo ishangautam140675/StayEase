@@ -188,9 +188,10 @@ Services started:
 
 ## 8. Documentation & Runbooks
 
-* [**Operations Runbook (`docs/RUNBOOK.md`)**](file:///d:/Projects/StayEase/docs/RUNBOOK.md): Pre-flight verification, database migrations, backup/restore scripts, logging rotation, and incident response procedures.
-* [**API & Integration Guide (`docs/API_GUIDE.md`)**](file:///d:/Projects/StayEase/docs/API_GUIDE.md): Catalog of notification polling, webhook callbacks, actuator endpoints, and CSV export specifications.
-* [**Testing Checklist (`docs/TEST-CHECKLIST.md`)**](file:///d:/Projects/StayEase/docs/TEST-CHECKLIST.md): Verification matrices across authentication, booking flows, and concurrency.
+* [**Software Requirements Specification (`docs/SRS.md`)**](docs/SRS.md): Official SRS document with high-resolution visual scans (Pages 1–3), functional/non-functional requirements, and business rules.
+* [**Operations Runbook (`docs/RUNBOOK.md`)**](docs/RUNBOOK.md): Pre-flight verification, database migrations, backup/restore scripts, logging rotation, and incident response procedures.
+* [**API & Integration Guide (`docs/API_GUIDE.md`)**](docs/API_GUIDE.md): Catalog of notification polling, webhook callbacks, actuator endpoints, and CSV export specifications.
+* [**Testing Checklist (`docs/TEST-CHECKLIST.md`)**](docs/TEST-CHECKLIST.md): Verification matrices across authentication, booking flows, and concurrency.
 
 ---
 
