@@ -72,7 +72,21 @@ Designed from the ground up for high concurrency, zero-overbooking guarantees, a
 
 ---
 
-## 4. Features by Persona
+## 4. Visual Interface Showcase
+
+| 🌟 1. Landing Page (`/`) | 🗺️ 2. Worldwide Map Radar (`/discovery`) |
+|:---:|:---:|
+| <img src="docs/screenshots/01_landing_page.png" width="450" alt="Landing Page"/> | <img src="docs/screenshots/02_worldwide_discovery_map.png" width="450" alt="Discovery Map"/> |
+| **3. Room Catalog & Filters (`/rooms`)** | **4. Room Details & Live Booking (`/rooms/1`)** |
+| <img src="docs/screenshots/03_room_catalog.png" width="450" alt="Room Catalog"/> | <img src="docs/screenshots/04_room_details.png" width="450" alt="Room Details"/> |
+| **5. Customer Dashboard (`/customer/dashboard`)** | **6. Admin Analytics Console (`/admin/dashboard`)** |
+| <img src="docs/screenshots/05_customer_dashboard.png" width="450" alt="Customer Dashboard"/> | <img src="docs/screenshots/06_admin_operations_dashboard.png" width="450" alt="Admin Dashboard"/> |
+
+> 📷 *Explore the complete gallery and route walkthrough in [**docs/SCREENSHOTS.md**](docs/SCREENSHOTS.md).*
+
+---
+
+## 5. Features by Persona
 
 ### 🌐 Public & Anonymous Guests
 * **Landing Page (`/`)**: Hero destination search, amenities showcase, community reviews, and real-time room availability preview.
@@ -112,7 +126,7 @@ Designed from the ground up for high concurrency, zero-overbooking guarantees, a
 
 ---
 
-## 5. Quick Start Guide
+## 6. Quick Start Guide
 
 ### Prerequisites
 * **Java Development Kit (JDK)**: Version 21 LTS installed (`java -version`).
@@ -155,7 +169,7 @@ StayEase automatically provisions default seed accounts upon first launch:
 
 ---
 
-## 6. Docker Containerization
+## 7. Docker Containerization
 
 StayEase includes multi-stage containerization with Docker and Docker Compose:
 
@@ -170,7 +184,7 @@ Services started:
 
 ---
 
-## 7. Configuration Reference (12-Factor Variables)
+## 8. Configuration Reference (12-Factor Variables)
 
 | Variable | Description | Default (Dev) | Production Required |
 |---|---|---|:---:|
@@ -186,8 +200,9 @@ Services started:
 
 ---
 
-## 8. Documentation & Runbooks
+## 9. Documentation & Runbooks
 
+* [**Visual Interface Showcase (`docs/SCREENSHOTS.md`)**](docs/SCREENSHOTS.md): High-resolution screenshots of the landing page, worldwide map radar, room details, and admin operations console.
 * [**Software Requirements Specification (`docs/SRS.md`)**](docs/SRS.md): Official SRS document with high-resolution visual scans (Pages 1–3), functional/non-functional requirements, and business rules.
 * [**Operations Runbook (`docs/RUNBOOK.md`)**](docs/RUNBOOK.md): Pre-flight verification, database migrations, backup/restore scripts, logging rotation, and incident response procedures.
 * [**API & Integration Guide (`docs/API_GUIDE.md`)**](docs/API_GUIDE.md): Catalog of notification polling, webhook callbacks, actuator endpoints, and CSV export specifications.
@@ -195,6 +210,6 @@ Services started:
 
 ---
 
-## 9. License
+## 10. License
 
 Proprietary — Developed for StayEase Hospitality Management. All rights reserved.
