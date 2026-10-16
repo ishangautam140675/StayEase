@@ -49,3 +49,11 @@ Explore the live user interfaces, customer workflows, geospatial discovery engin
 > Live inventory ribbon (Total, Active, Occupied, Vacant), industry KPIs (**ADR**, **RevPAR**, **Occupancy Rate**), maintenance blackouts, and compliance audit trail with CSV export.
 
 ![06 Admin Operations Dashboard](screenshots/06_admin_operations_dashboard.png)
+
+---
+
+### 7. Multi-Persona Authentication & Access Control
+> **Route:** `/login`  
+> Secure authentication gateway featuring BCrypt password hashing, session fixation defense, CSRF token validation, and automated role-aware navigation routing (`ROLE_ADMIN` vs `ROLE_CUSTOMER`).
+
+![07 User Authentication & Login](screenshots/07_user_authentication_login.png)
