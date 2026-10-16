@@ -11,6 +11,50 @@ Designed from the ground up for high concurrency, zero-overbooking guarantees, a
 
 ---
 
+## 👥 Project Engineering Team & Academic Credits
+
+**Rajasthan Technical University (RTU), Kota** — Department of Computer Science & Engineering
+
+| S.No. | Name | RTU Roll No. | Assigned Role | Primary Focus & Domain Ownership |
+|:---:|:---|:---:|:---|:---|
+| 1 | **Ishan Gautam** *(Team Leader)* | `24EARCS065` | **Core Developer** | Architecture, Concurrency & Locking, Payment Integration, Spring Security, Async Engine |
+| 2 | **Manisha Sharma** | `24EARCS089` | **Database Manager & Tester** | Relational Schema, Indexes, Foreign Keys, HikariCP, Data Seeder, `@DataJpaTest` Suites |
+| 3 | **Pragati Jain** | `24EARCS113` | **Documentation Lead** | SRS Specification, UML Lifecycle, Operations Runbook, API Guides, Viva Prep Material |
+| 4 | **Prince Pariyani** | `24EARCS120` | **UI/UX & Testing Lead** | Design System, Thymeleaf Views, Geospatial Radar, Responsive Layouts, Cross-Browser Tests |
+
+<details open>
+<summary><b>🔍 Click to Expand/Collapse Detailed Contributions</b></summary>
+<br/>
+
+#### 1. Ishan Gautam (Team Leader) — `24EARCS065` | *Core Developer*
+* **Architecture & Backend Orchestration:** Designed and initialized the modular Spring Boot 3 & Java 21 architecture, decoupling controllers, service layers, and repositories.
+* **Concurrency & Zero-Overbooking Engine:** Implemented pessimistic database write locking (`PESSIMISTIC_WRITE` / `SELECT ... FOR UPDATE`) in `BookingRepository` ensuring thread-safe reservations and mathematical date overlap validation `(checkIn < newCheckOut AND checkOut > newCheckIn)`.
+* **Pluggable Payment Gateway:** Built payment abstraction layer supporting Razorpay HMAC-SHA256 signature verification and sandbox transactions with idempotency keys.
+* **Security & Authentication:** Configured Spring Security 6 filter chains, BCrypt password hashing, session fixation protection, and role-based routing (`ROLE_ADMIN` / `ROLE_CUSTOMER`).
+* **Async Notifications & Background Engine:** Implemented non-blocking background notifications via `ThreadPoolTaskExecutor` and automated check-in reminder scheduling (`BookingReminderService`).
+
+#### 2. Manisha Sharma — `24EARCS089` | *Database Manager and Tester*
+* **Relational Schema Modeling:** Designed and normalized the MySQL 8 schema (tables: `users`, `rooms`, `bookings`, `room_maintenance_schedules`, `seasonal_price_rules`, `admin_audit_logs`, `in_app_notifications`).
+* **Database Optimization & Indexing:** Implemented composite indexes (`idx_bookings_room_dates` on `room_id, check_in, check_out`) and foreign key constraints for fast query execution and data integrity.
+* **Connection Pooling:** Configured HikariCP pool parameters for high-throughput concurrency and multi-byte UTF-8 (`utf8mb4`) encoding.
+* **Automated Data Persistence Testing:** Authored and verified `@DataJpaTest` test suites in `RepositoryTests.java`, confirming unique constraint behavior, cascade rules, and ACID transaction boundaries.
+
+#### 3. Pragati Jain — `24EARCS113` | *Documentation Lead*
+* **SRS Specification & Lifecycle Guides:** Authored the comprehensive Software Requirements Specification (`docs/SRS.md`) detailing functional/non-functional requirements, data dictionaries, and operational constraints.
+* **System Architecture & UML Modeling:** Documented entity-relationship diagrams, use-case diagrams, sequence diagrams, and booking state transitions.
+* **Operational Runbooks & API Catalogs:** Produced the Production Runbook (`docs/RUNBOOK.md`), API Integration Specifications (`docs/API_GUIDE.md`), and Testing Checklist (`docs/TEST-CHECKLIST.md`).
+* **Academic Submission & Viva Materials:** Compiled weekly project lifecycle deliverables (Weeks 1–9) and structured viva voce question banks covering project architecture and defense questions.
+
+#### 4. Prince Pariyani — `24EARCS120` | *UI/UX and Testing Lead*
+* **Design System & Styling:** Engineered the custom **Editorial Hospitality × Bold Color Blocking** design language with custom CSS tokens (`app.css`), modern typography (DM Sans), and curated color palettes.
+* **Thymeleaf Template Engineering:** Developed dynamic, mobile-first layouts, role-differentiated navigation bars, interactive booking modlets, and customer/admin dashboards.
+* **Geospatial Map Integration:** Built the interactive OpenStreetMap + Leaflet radar on `/discovery` with 220ms debounced search, radius filters (up to 100 km), and client GPS location detection.
+* **End-to-End User Experience & Testing:** Developed printable digital booking receipts (`booking-receipt.html`), conducted cross-browser compatibility tests, viewport responsiveness audits, and form validation tests.
+
+</details>
+
+---
+
 ## 1. Key Architectural Highlights
 
 * **Pessimistic Concurrency & Zero-Overbooking**: Enforces `PESSIMISTIC_WRITE` database row locks (`SELECT ... FOR UPDATE`) during room availability checks and reservation creation, completely preventing double-bookings even under concurrent flash-booking traffic.
@@ -213,46 +257,7 @@ Services started:
 
 ---
 
-## 10. Project Team & Academic Credits
-
-**Rajasthan Technical University (RTU), Kota** — Department of Computer Science & Engineering
-
-| S.No. | Name | RTU Roll No. | Assigned Role | Primary Focus & Domain Ownership |
-|:---:|:---|:---:|:---|:---|
-| 1 | **Ishan Gautam** *(Team Leader)* | `24EARCS065` | **Core Developer** | Architecture, Concurrency & Locking, Payment Integration, Spring Security, Async Engine |
-| 2 | **Manisha Sharma** | `24EARCS089` | **Database Manager & Tester** | Relational Schema, Indexes, Foreign Keys, HikariCP, Data Seeder, `@DataJpaTest` Suites |
-| 3 | **Pragati Jain** | `24EARCS113` | **Documentation Lead** | SRS Specification, UML Lifecycle, Operations Runbook, API Guides, Viva Prep Material |
-| 4 | **Prince Pariyani** | `24EARCS120` | **UI/UX & Testing Lead** | Design System, Thymeleaf Views, Geospatial Radar, Responsive Layouts, Cross-Browser Tests |
-
-### Detailed Contributions
-
-#### 1. Ishan Gautam (Team Leader) — `24EARCS065` | *Core Developer*
-* **Architecture & Backend Orchestration:** Designed and initialized the modular Spring Boot 3 & Java 21 architecture, decoupling controllers, service layers, and repositories.
-* **Concurrency & Zero-Overbooking Engine:** Implemented pessimistic database write locking (`PESSIMISTIC_WRITE` / `SELECT ... FOR UPDATE`) in `BookingRepository` ensuring thread-safe reservations and mathematical date overlap validation `(checkIn < newCheckOut AND checkOut > newCheckIn)`.
-* **Pluggable Payment Gateway:** Built payment abstraction layer supporting Razorpay HMAC-SHA256 signature verification and sandbox transactions with idempotency keys.
-* **Security & Authentication:** Configured Spring Security 6 filter chains, BCrypt password hashing, session fixation protection, and role-based routing (`ROLE_ADMIN` / `ROLE_CUSTOMER`).
-* **Async Notifications & Background Engine:** Implemented non-blocking background notifications via `ThreadPoolTaskExecutor` and automated check-in reminder scheduling (`BookingReminderService`).
-
-#### 2. Manisha Sharma — `24EARCS089` | *Database Manager and Tester*
-* **Relational Schema Modeling:** Designed and normalized the MySQL 8 schema (tables: `users`, `rooms`, `bookings`, `room_maintenance_schedules`, `seasonal_price_rules`, `admin_audit_logs`, `in_app_notifications`).
-* **Database Optimization & Indexing:** Implemented composite indexes (`idx_bookings_room_dates` on `room_id, check_in, check_out`) and foreign key constraints for fast query execution and data integrity.
-* **Connection Pooling:** Configured HikariCP pool parameters for high-throughput concurrency and multi-byte UTF-8 (`utf8mb4`) encoding.
-* **Automated Data Persistence Testing:** Authored and verified `@DataJpaTest` test suites in `RepositoryTests.java`, confirming unique constraint behavior, cascade rules, and ACID transaction boundaries.
-
-#### 3. Pragati Jain — `24EARCS113` | *Documentation Lead*
-* **SRS Specification & Lifecycle Guides:** Authored the comprehensive Software Requirements Specification (`docs/SRS.md`) detailing functional/non-functional requirements, data dictionaries, and operational constraints.
-* **System Architecture & UML Modeling:** Documented entity-relationship diagrams, use-case diagrams, sequence diagrams, and booking state transitions.
-* **Operational Runbooks & API Catalogs:** Produced the Production Runbook (`docs/RUNBOOK.md`), API Integration Specifications (`docs/API_GUIDE.md`), and Testing Checklist (`docs/TEST-CHECKLIST.md`).
-* **Academic Submission & Viva Materials:** Compiled weekly project lifecycle deliverables (Weeks 1–9) and structured viva voce question banks covering project architecture and defense questions.
-
-#### 4. Prince Pariyani — `24EARCS120` | *UI/UX and Testing Lead*
-* **Design System & Styling:** Engineered the custom **Editorial Hospitality × Bold Color Blocking** design language with custom CSS tokens (`app.css`), modern typography (DM Sans), and curated color palettes.
-* **Thymeleaf Template Engineering:** Developed dynamic, mobile-first layouts, role-differentiated navigation bars, interactive booking modlets, and customer/admin dashboards.
-* **Geospatial Map Integration:** Built the interactive OpenStreetMap + Leaflet radar on `/discovery` with 220ms debounced search, radius filters (up to 100 km), and client GPS location detection.
-* **End-to-End User Experience & Testing:** Developed printable digital booking receipts (`booking-receipt.html`), conducted cross-browser compatibility tests, viewport responsiveness audits, and form validation tests.
-
----
-
-## 11. License
+## 10. License
 
 Proprietary — Developed for StayEase Hospitality Management. All rights reserved.
+
