@@ -38,3 +38,8 @@ run.ps1
 
 .vercel
 .env*
+
+# -- Local Viva & Academic Defense Guides --
+StayEase_Comprehensive_Viva_Defense_Guide.*
+StayEase_Project_Report_Viva_Guide.*
+StayEase_Viva_Guide_Hinglish_Complete.*
